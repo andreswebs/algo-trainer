@@ -68,70 +68,6 @@ function parseArguments(args: string[]): {
 }
 
 /**
- * Main CLI function
- */
-export async function main(args: string[] = []): Promise<void> {
-  try {
-    // Parse command line arguments
-    const parsed = parseArguments(args);
-
-    // Handle global flags
-    if (parsed.flags.version) {
-      console.log(`Algo Trainer v${VERSION}`);
-      return;
-    }
-
-    // Set output options based on flags
-    setOutputOptions({
-      useColors: !parsed.flags['no-color'],
-      useEmoji: !parsed.flags['no-emoji'],
-      verbosity: parsed.flags.verbose ? 'verbose' : parsed.flags.quiet ? 'quiet' : 'normal',
-    });
-
-    if (parsed.flags.help || parsed.positional.length === 0) {
-      showHelp();
-      return;
-    }
-
-    // Initialize configuration
-    await initializeConfig();
-
-    // Extract command and arguments
-    const command = parsed.positional[0];
-    const subcommand = parsed.positional.length > 1 ? parsed.positional[1] : undefined;
-    const remainingArgs = parsed.positional.slice(subcommand ? 2 : 1);
-
-    const commandArgs: CommandArgs = {
-      command,
-      args: remainingArgs,
-      flags: {
-        verbose: parsed.flags.verbose || false,
-        quiet: parsed.flags.quiet || false,
-        'no-color': parsed.flags['no-color'] || false,
-        'no-emoji': parsed.flags['no-emoji'] || false,
-        config: parsed.flags.config,
-      },
-    };
-
-    // Add subcommand if present
-    if (subcommand !== undefined) {
-      commandArgs.subcommand = subcommand;
-    }
-
-    // Route to appropriate command handler
-    const result = routeCommand(commandArgs);
-
-    if (!result.success) {
-      exitWithError(result.error || 'Command failed', result.exitCode);
-    }
-  } catch (error) {
-    const errorMessage = formatError(error);
-    logError('Unexpected error occurred', errorMessage);
-    Deno.exit(1);
-  }
-}
-
-/**
  * Route command to appropriate handler
  */
 function routeCommand(
@@ -208,8 +144,65 @@ For more information about a specific command, run:
 }
 
 /**
- * Entry point when run as main module
+ * Main CLI function
  */
-if (import.meta.main) {
-  main(Deno.args);
+export async function main(args: string[] = []): Promise<void> {
+  try {
+    // Parse command line arguments
+    const parsed = parseArguments(args);
+
+    // Handle global flags
+    if (parsed.flags.version) {
+      console.log(`Algo Trainer v${VERSION}`);
+      return;
+    }
+
+    // Set output options based on flags
+    setOutputOptions({
+      useColors: !parsed.flags['no-color'],
+      useEmoji: !parsed.flags['no-emoji'],
+      verbosity: parsed.flags.verbose ? 'verbose' : parsed.flags.quiet ? 'quiet' : 'normal',
+    });
+
+    if (parsed.flags.help || parsed.positional.length === 0) {
+      showHelp();
+      return;
+    }
+
+    // Initialize configuration
+    await initializeConfig();
+
+    // Extract command and arguments
+    const command = parsed.positional[0];
+    const subcommand = parsed.positional.length > 1 ? parsed.positional[1] : undefined;
+    const remainingArgs = parsed.positional.slice(subcommand ? 2 : 1);
+
+    const commandArgs: CommandArgs = {
+      command,
+      args: remainingArgs,
+      flags: {
+        verbose: parsed.flags.verbose || false,
+        quiet: parsed.flags.quiet || false,
+        'no-color': parsed.flags['no-color'] || false,
+        'no-emoji': parsed.flags['no-emoji'] || false,
+        config: parsed.flags.config,
+      },
+    };
+
+    // Add subcommand if present
+    if (subcommand !== undefined) {
+      commandArgs.subcommand = subcommand;
+    }
+
+    // Route to appropriate command handler
+    const result = routeCommand(commandArgs);
+
+    if (!result.success) {
+      exitWithError(result.error || 'Command failed', result.exitCode);
+    }
+  } catch (error) {
+    const errorMessage = formatError(error);
+    logError('Unexpected error occurred', errorMessage);
+    Deno.exit(1);
+  }
 }
