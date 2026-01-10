@@ -6,106 +6,32 @@
  * @module cli/main
  */
 
-import { exitWithError, logError, logSuccess, setOutputOptions } from '../utils/output.ts';
+import { parseArgs } from '@std/cli/parse-args';
+import { exitWithError, logError, setOutputOptions } from '../utils/output.ts';
 import { formatError } from '../utils/errors.ts';
 import { initializeConfig } from '../config/manager.ts';
-import type { CommandArgs } from './types.ts';
+import { dispatch, getAvailableCommands } from './commands/mod.ts';
+import { extractGlobalFlags } from './types.ts';
 
-/**
- * Application version
- */
 const VERSION = '2.0.0';
 
-/**
- * Simple argument parser
- */
-function parseArguments(args: string[]): {
-  flags: Record<string, boolean | string>;
-  positional: string[];
-} {
-  const flags: Record<string, boolean | string> = {};
-  const positional: string[] = [];
+const PARSE_OPTIONS = {
+  alias: {
+    h: 'help',
+    v: 'version',
+    c: 'config',
+  },
+  boolean: ['help', 'version', 'verbose', 'quiet'],
+  string: ['config'],
+  negatable: ['color', 'emoji'],
+  default: {
+    verbose: false,
+    quiet: false,
+    color: true,
+    emoji: true,
+  },
+} as const;
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-
-    if (arg.startsWith('--')) {
-      const flagName = arg.slice(2);
-      if (flagName.includes('=')) {
-        const [name, value] = flagName.split('=', 2);
-        flags[name] = value;
-      } else {
-        // Check if next arg is a value
-        const nextArg = args[i + 1];
-        if (nextArg && !nextArg.startsWith('-')) {
-          flags[flagName] = nextArg;
-          i++; // Skip next arg
-        } else {
-          flags[flagName] = true;
-        }
-      }
-    } else if (arg.startsWith('-') && arg.length > 1) {
-      const flagName = arg.slice(1);
-      if (flagName === 'h') flags.help = true;
-      else if (flagName === 'v') flags.version = true;
-      else if (flagName === 'c') {
-        const nextArg = args[i + 1];
-        if (nextArg && !nextArg.startsWith('-')) {
-          flags.config = nextArg;
-          i++;
-        } else {
-          flags.config = true;
-        }
-      } else {
-        flags[flagName] = true;
-      }
-    } else {
-      positional.push(arg);
-    }
-  }
-
-  return { flags, positional };
-}
-
-/**
- * Route command to appropriate handler
- */
-function routeCommand(
-  args: CommandArgs,
-): { success: boolean; error?: string; exitCode: number } {
-  switch (args.command) {
-    case 'challenge':
-      logSuccess(`Challenge command called with args: ${JSON.stringify(args)}`);
-      return { success: true, exitCode: 0 };
-
-    case 'complete':
-      logSuccess(`Complete command called with args: ${JSON.stringify(args)}`);
-      return { success: true, exitCode: 0 };
-
-    case 'hint':
-      logSuccess(`Hint command called with args: ${JSON.stringify(args)}`);
-      return { success: true, exitCode: 0 };
-
-    case 'config':
-      logSuccess(`Config command called with args: ${JSON.stringify(args)}`);
-      return { success: true, exitCode: 0 };
-
-    case 'init':
-      logSuccess(`Init command called with args: ${JSON.stringify(args)}`);
-      return { success: true, exitCode: 0 };
-
-    default:
-      return {
-        success: false,
-        error: `Unknown command: ${args.command}`,
-        exitCode: 1,
-      };
-  }
-}
-
-/**
- * Show help information
- */
 function showHelp(): void {
   const help = `
 Algo Trainer v${VERSION} - Practice algorithmic problem solving
@@ -143,62 +69,34 @@ For more information about a specific command, run:
   console.error(help.trim());
 }
 
-/**
- * Main CLI function
- */
-export async function main(args: string[] = []): Promise<void> {
+export async function main(inputArgs: string[] = Deno.args): Promise<void> {
   try {
-    // Parse command line arguments
-    const parsed = parseArguments(args);
+    const args = parseArgs(inputArgs, PARSE_OPTIONS);
+    const globalFlags = extractGlobalFlags(args);
 
-    // Handle global flags
-    if (parsed.flags.version) {
+    if (globalFlags.version) {
       console.log(`Algo Trainer v${VERSION}`);
       return;
     }
 
-    // Set output options based on flags
     setOutputOptions({
-      useColors: !parsed.flags['no-color'],
-      useEmoji: !parsed.flags['no-emoji'],
-      verbosity: parsed.flags.verbose ? 'verbose' : parsed.flags.quiet ? 'quiet' : 'normal',
+      useColors: globalFlags.color,
+      useEmoji: globalFlags.emoji,
+      verbosity: globalFlags.verbose ? 'verbose' : globalFlags.quiet ? 'quiet' : 'normal',
     });
 
-    if (parsed.flags.help || parsed.positional.length === 0) {
+    if (globalFlags.help || args._.length === 0) {
       showHelp();
       return;
     }
 
-    // Initialize configuration
     await initializeConfig();
 
-    // Extract command and arguments
-    const command = parsed.positional[0];
-    const subcommand = parsed.positional.length > 1 ? parsed.positional[1] : undefined;
-    const remainingArgs = parsed.positional.slice(subcommand ? 2 : 1);
-
-    const commandArgs: CommandArgs = {
-      command,
-      args: remainingArgs,
-      flags: {
-        verbose: parsed.flags.verbose || false,
-        quiet: parsed.flags.quiet || false,
-        'no-color': parsed.flags['no-color'] || false,
-        'no-emoji': parsed.flags['no-emoji'] || false,
-        config: parsed.flags.config,
-      },
-    };
-
-    // Add subcommand if present
-    if (subcommand !== undefined) {
-      commandArgs.subcommand = subcommand;
-    }
-
-    // Route to appropriate command handler
-    const result = routeCommand(commandArgs);
+    const command = String(args._[0]);
+    const result = await dispatch(command, args);
 
     if (!result.success) {
-      exitWithError(result.error || 'Command failed', result.exitCode);
+      exitWithError(result.error ?? 'Command failed', result.exitCode);
     }
   } catch (error) {
     const errorMessage = formatError(error);

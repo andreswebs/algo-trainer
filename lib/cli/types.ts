@@ -1,67 +1,35 @@
 /**
  * CLI type definitions
  *
- * Types specific to the CLI interface.
+ * Types specific to the CLI interface, aligned with @std/cli parseArgs.
  *
  * @module cli/types
  */
 
+import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../types/global.ts';
+
+/**
+ * Handler function for a CLI command
+ */
+export type CommandHandler = (args: Args) => Promise<CommandResult>;
 
 /**
  * CLI command definition
  */
-export interface Command {
+export interface CommandDefinition {
   /** Command name */
   name: string;
   /** Command aliases */
-  aliases?: string[];
+  aliases?: string[] | undefined;
   /** Short description */
   description: string;
   /** Detailed usage information */
-  usage?: string;
+  usage?: string | undefined;
   /** Command examples */
-  examples?: string[];
-  /** Command flags */
-  flags?: Flag[];
-  /** Subcommands */
-  subcommands?: Command[];
+  examples?: string[] | undefined;
   /** Command handler function */
-  handler: (args: CommandArgs) => Promise<CommandResult>;
-}
-
-/**
- * CLI flag definition
- */
-export interface Flag {
-  /** Flag name (without dashes) */
-  name: string;
-  /** Short flag alias */
-  short?: string;
-  /** Flag description */
-  description: string;
-  /** Flag type */
-  type: 'boolean' | 'string' | 'number';
-  /** Default value */
-  default?: unknown;
-  /** Whether the flag is required */
-  required?: boolean;
-  /** Allowed values (for validation) */
-  choices?: string[];
-}
-
-/**
- * Parsed command arguments
- */
-export interface CommandArgs {
-  /** Command name */
-  command: string;
-  /** Subcommand name (if any) */
-  subcommand?: string;
-  /** Positional arguments */
-  args: string[];
-  /** Flag values */
-  flags: Record<string, unknown>;
+  handler: CommandHandler;
 }
 
 /**
@@ -76,4 +44,43 @@ export interface CliContext {
   version: string;
   /** Whether running in CI/automated mode */
   ci: boolean;
+}
+
+/**
+ * Parse args options configuration
+ */
+export interface ParseArgsConfig {
+  alias: Record<string, string>;
+  boolean: string[];
+  string: string[];
+  negatable: string[];
+  default: Record<string, unknown>;
+}
+
+/**
+ * Global CLI flags that apply to all commands
+ */
+export interface GlobalFlags {
+  help: boolean;
+  version: boolean;
+  verbose: boolean;
+  quiet: boolean;
+  config: string | undefined;
+  color: boolean;
+  emoji: boolean;
+}
+
+/**
+ * Extract global flags from parsed args
+ */
+export function extractGlobalFlags(args: Args): GlobalFlags {
+  return {
+    help: Boolean(args.help),
+    version: Boolean(args.version),
+    verbose: Boolean(args.verbose),
+    quiet: Boolean(args.quiet),
+    config: args.config as string | undefined,
+    color: args.color !== false,
+    emoji: args.emoji !== false,
+  };
 }

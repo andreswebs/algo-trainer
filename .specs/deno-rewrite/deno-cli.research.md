@@ -5,35 +5,35 @@
 Use `@std/cli/parse-args` for argument parsing with native support for flags, options, and type conversions:
 
 ```typescript
-import { parseArgs } from "jsr:@std/cli/parse-args";
+import { parseArgs } from 'jsr:@std/cli/parse-args';
 
 const args = parseArgs(Deno.args, {
-  alias: { "help": "h", "version": "v", "output": "o" },
-  boolean: ["help", "version", "verbose"],
-  string: ["output", "input"],
-  default: { "output": "stdout", "verbose": false },
-  collect: ["tag"],
-  negatable: ["verbose"]
+  alias: { 'help': 'h', 'version': 'v', 'output': 'o' },
+  boolean: ['help', 'version', 'verbose'],
+  string: ['output', 'input'],
+  default: { 'output': 'stdout', 'verbose': false },
+  collect: ['tag'],
+  negatable: ['verbose'],
 });
 
 // Access parsed arguments
-const inputFile = args._[0];          // Positional arguments
-const outputFile = args.output;       // Named options
-const isVerbose = args.verbose;       // Boolean flags
-const tags = args.tag;                // Collected arrays
+const inputFile = args._[0]; // Positional arguments
+const outputFile = args.output; // Named options
+const isVerbose = args.verbose; // Boolean flags
+const tags = args.tag; // Collected arrays
 ```
 
 ### Interactive CLI Elements
 
 ```typescript
-import { promptSecret } from "jsr:@std/cli/prompt-secret";
-import { Spinner } from "@std/cli/unstable-spinner";
+import { promptSecret } from 'jsr:@std/cli/prompt-secret';
+import { Spinner } from '@std/cli/unstable-spinner';
 
 // Password input
-const apiToken = await promptSecret("Enter API token: ", { mask: "*" });
+const apiToken = await promptSecret('Enter API token: ', { mask: '*' });
 
 // Progress indicators
-const spinner = new Spinner({ message: "Processing...", color: "cyan" });
+const spinner = new Spinner({ message: 'Processing...', color: 'cyan' });
 spinner.start();
 await longRunningOperation();
 spinner.stop();
@@ -45,37 +45,39 @@ spinner.stop();
 
 ```typescript
 // Asynchronous file operations (preferred)
-const content = await Deno.readTextFile("config.json");
-const binaryData = await Deno.readFile("image.png");
+const content = await Deno.readTextFile('config.json');
+const binaryData = await Deno.readFile('image.png');
 
-await Deno.writeTextFile("output.txt", "content");
-await Deno.writeTextFile("log.txt", "entry\n", { append: true });
+await Deno.writeTextFile('output.txt', 'content');
+await Deno.writeTextFile('log.txt', 'entry\n', { append: true });
 
 // File permissions during creation
-await Deno.writeTextFile("script.sh", "#!/bin/bash", { mode: 0o755 });
+await Deno.writeTextFile('script.sh', '#!/bin/bash', { mode: 0o755 });
 ```
 
 ### Standard Library File Operations
 
 ```typescript
-import { ensureDir, copy, walk, expandGlob } from "@std/fs";
+import { copy, ensureDir, expandGlob, walk } from '@std/fs';
 
 // Directory creation with parents
-await ensureDir("./dist/assets/images");
+await ensureDir('./dist/assets/images');
 
 // File copying
-await copy("src/index.ts", "dist/index.ts", { overwrite: true });
+await copy('src/index.ts', 'dist/index.ts', { overwrite: true });
 
 // Directory traversal
-for await (const entry of walk("./src", { 
-  includeDirs: false, 
-  exts: [".ts", ".tsx"] 
-})) {
-  console.log("Processing:", entry.path);
+for await (
+  const entry of walk('./src', {
+    includeDirs: false,
+    exts: ['.ts', '.tsx'],
+  })
+) {
+  console.log('Processing:', entry.path);
 }
 
 // Glob pattern matching
-for await (const entry of expandGlob("src/**/*.ts")) {
+for await (const entry of expandGlob('src/**/*.ts')) {
   const relativePath = entry.path.substring(Deno.cwd().length + 1);
   console.log(`Found: ${relativePath}`);
 }
@@ -84,13 +86,13 @@ for await (const entry of expandGlob("src/**/*.ts")) {
 ### Cross-Platform Path Handling
 
 ```typescript
-import { join, dirname, basename, extname, resolve } from "@std/path";
+import { basename, dirname, extname, join, resolve } from '@std/path';
 
-const configPath = join("config", "app.json");
-const dir = dirname(configPath);                    // "config"
-const file = basename(configPath);                  // "app.json"
-const ext = extname(configPath);                    // ".json"
-const absolute = resolve(".", configPath);         // Full path
+const configPath = join('config', 'app.json');
+const dir = dirname(configPath); // "config"
+const file = basename(configPath); // "app.json"
+const ext = extname(configPath); // ".json"
+const absolute = resolve('.', configPath); // Full path
 ```
 
 ## Process Management and Subprocess Execution
@@ -98,26 +100,26 @@ const absolute = resolve(".", configPath);         // Full path
 ### Basic Command Execution
 
 ```typescript
-const command = new Deno.Command("echo", {
-  args: ["Hello from subprocess"]
+const command = new Deno.Command('echo', {
+  args: ['Hello from subprocess'],
 });
 
 const { code, stdout, stderr } = await command.output();
 
 if (code === 0) {
   const output = new TextDecoder().decode(stdout);
-  console.log("Result:", output);
+  console.log('Result:', output);
 }
 ```
 
 ### Interactive Subprocess Communication
 
 ```typescript
-const command = new Deno.Command("deno", {
-  args: ["fmt", "-"],
-  stdin: "piped",
-  stdout: "piped",
-  stderr: "piped"
+const command = new Deno.Command('deno', {
+  args: ['fmt', '-'],
+  stdin: 'piped',
+  stdout: 'piped',
+  stderr: 'piped',
 });
 
 const process = command.spawn();
@@ -133,9 +135,9 @@ const status = await process.status;
 ### JSON Output Processing
 
 ```typescript
-const command = new Deno.Command("deno", {
-  args: ["eval", "console.log(JSON.stringify({name: 'Deno'}))"],
-  stdout: "piped"
+const command = new Deno.Command('deno', {
+  args: ['eval', "console.log(JSON.stringify({name: 'Deno'}))"],
+  stdout: 'piped',
 });
 
 const process = command.spawn();
@@ -171,8 +173,8 @@ console.log(`Runtime: ${data.name}`);
 
 ```typescript
 // Direct access
-const apiKey = Deno.env.get("API_KEY");
-const port = Deno.env.get("PORT") ?? "8000";
+const apiKey = Deno.env.get('API_KEY');
+const port = Deno.env.get('PORT') ?? '8000';
 
 // Validated environment loading
 function getRequiredEnv(key: string): string {
@@ -184,7 +186,7 @@ function getRequiredEnv(key: string): string {
 }
 
 // .env file loading
-import "@std/dotenv/load";
+import '@std/dotenv/load';
 ```
 
 ### Typed Configuration
@@ -193,22 +195,22 @@ import "@std/dotenv/load";
 interface CLIConfig {
   apiUrl: string;
   apiKey: string;
-  logLevel: "debug" | "info" | "warn" | "error";
-  outputFormat: "json" | "text" | "csv";
+  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  outputFormat: 'json' | 'text' | 'csv';
 }
 
 function loadConfig(): CLIConfig {
-  const apiUrl = Deno.env.get("API_URL");
-  if (!apiUrl) throw new Error("API_URL required");
-  
-  const apiKey = Deno.env.get("API_KEY");
-  if (!apiKey) throw new Error("API_KEY required");
-  
+  const apiUrl = Deno.env.get('API_URL');
+  if (!apiUrl) throw new Error('API_URL required');
+
+  const apiKey = Deno.env.get('API_KEY');
+  if (!apiKey) throw new Error('API_KEY required');
+
   return {
     apiUrl,
     apiKey,
-    logLevel: (Deno.env.get("LOG_LEVEL") ?? "info") as CLIConfig["logLevel"],
-    outputFormat: (Deno.env.get("OUTPUT_FORMAT") ?? "text") as CLIConfig["outputFormat"]
+    logLevel: (Deno.env.get('LOG_LEVEL') ?? 'info') as CLIConfig['logLevel'],
+    outputFormat: (Deno.env.get('OUTPUT_FORMAT') ?? 'text') as CLIConfig['outputFormat'],
   };
 }
 ```
@@ -219,17 +221,17 @@ function loadConfig(): CLIConfig {
 
 ```typescript
 try {
-  const data = await Deno.readTextFile("config.json");
+  const data = await Deno.readTextFile('config.json');
   return JSON.parse(data);
 } catch (error) {
   if (error instanceof Deno.errors.NotFound) {
-    console.error("Configuration file not found");
+    console.error('Configuration file not found');
     Deno.exit(1);
   } else if (error instanceof Deno.errors.PermissionDenied) {
-    console.error("Permission denied reading file");
+    console.error('Permission denied reading file');
     Deno.exit(1);
   } else if (error instanceof SyntaxError) {
-    console.error("Invalid JSON in configuration");
+    console.error('Invalid JSON in configuration');
     Deno.exit(1);
   } else {
     throw error;
@@ -254,7 +256,7 @@ async function main(): Promise<void> {
     // Application logic
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      console.error("Error: File not found");
+      console.error('Error: File not found');
       Deno.exit(EXIT_CODES.FILE_NOT_FOUND);
     }
     // Other error handling
@@ -266,15 +268,15 @@ async function main(): Promise<void> {
 
 ```typescript
 function logError(message: string): void {
-  console.log("%cERROR: " + message, "color: red; font-weight: bold");
+  console.log('%cERROR: ' + message, 'color: red; font-weight: bold');
 }
 
 function logWarning(message: string): void {
-  console.log("%cWARNING: " + message, "color: orange");
+  console.log('%cWARNING: ' + message, 'color: orange');
 }
 
 function logSuccess(message: string): void {
-  console.log("%cSUCCESS: " + message, "color: green");
+  console.log('%cSUCCESS: ' + message, 'color: green');
 }
 ```
 
@@ -283,14 +285,14 @@ function logSuccess(message: string): void {
 ### Basic Testing
 
 ```typescript
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+import { assertEquals, assertThrows } from 'jsr:@std/assert';
 
-Deno.test("add function returns sum", () => {
+Deno.test('add function returns sum', () => {
   assertEquals(add(2, 3), 5);
 });
 
-Deno.test("handles errors correctly", () => {
-  assertThrows(() => validateInput(""), Error, "Invalid input");
+Deno.test('handles errors correctly', () => {
+  assertThrows(() => validateInput(''), Error, 'Invalid input');
 });
 ```
 
@@ -298,24 +300,24 @@ Deno.test("handles errors correctly", () => {
 
 ```typescript
 Deno.test({
-  name: "CLI processes file correctly",
+  name: 'CLI processes file correctly',
   async fn() {
-    const testFile = "./test_input.txt";
-    await Deno.writeTextFile(testFile, "test content");
-    
+    const testFile = './test_input.txt';
+    await Deno.writeTextFile(testFile, 'test content');
+
     try {
-      const command = new Deno.Command("deno", {
-        args: ["run", "src/cli.ts", testFile],
-        stdout: "piped"
+      const command = new Deno.Command('deno', {
+        args: ['run', 'src/cli.ts', testFile],
+        stdout: 'piped',
       });
-      
+
       const process = command.spawn();
       const output = await process.stdout.text();
-      assertEquals(output.includes("test content"), true);
+      assertEquals(output.includes('test content'), true);
     } finally {
       await Deno.remove(testFile);
     }
-  }
+  },
 });
 ```
 
@@ -323,31 +325,31 @@ Deno.test({
 
 ```typescript
 Deno.test({
-  name: "reads file with read permission",
-  permissions: { read: ["./test_file.txt"] },
+  name: 'reads file with read permission',
+  permissions: { read: ['./test_file.txt'] },
   async fn() {
-    const content = await Deno.readTextFile("./test_file.txt");
-    assertEquals(typeof content, "string");
-  }
+    const content = await Deno.readTextFile('./test_file.txt');
+    assertEquals(typeof content, 'string');
+  },
 });
 
 Deno.test({
-  name: "fails without read permission",
+  name: 'fails without read permission',
   permissions: { read: [] },
   async fn() {
     try {
-      await Deno.readTextFile("./test_file.txt");
-      throw new Error("Expected permission error");
+      await Deno.readTextFile('./test_file.txt');
+      throw new Error('Expected permission error');
     } catch (error) {
       assertEquals(error instanceof Deno.errors.PermissionDenied, true);
     }
-  }
+  },
 });
 ```
 
 ## Project Structure
 
-```
+```txt
 my-cli-app/
 ├── deno.json
 ├── deno.lock
@@ -383,35 +385,35 @@ export interface InitOptions {
 export async function initCommand(options: InitOptions): Promise<void> {
   const projectDir = options.projectName;
   await Deno.mkdir(projectDir, { recursive: true });
-  
+
   const config = {
     name: options.projectName,
-    version: "0.1.0"
+    version: '0.1.0',
   };
-  
+
   await Deno.writeTextFile(
     `${projectDir}/deno.json`,
-    JSON.stringify(config, null, 2)
+    JSON.stringify(config, null, 2),
   );
 }
 
 // main.ts
-import { parseArgs } from "jsr:@std/cli/parse-args";
-import { initCommand } from "./src/commands/init.ts";
+import { parseArgs } from 'jsr:@std/cli/parse-args';
+import { initCommand } from './src/commands/init.ts';
 
 const args = parseArgs(Deno.args, {
-  string: ["name"],
-  boolean: ["help", "typescript"],
-  alias: { h: "help" }
+  string: ['name'],
+  boolean: ['help', 'typescript'],
+  alias: { h: 'help' },
 });
 
 const command = args._[0] as string;
 
 switch (command) {
-  case "init":
+  case 'init':
     await initCommand({
-      projectName: args.name || "new-project",
-      typescript: args.typescript
+      projectName: args.name || 'new-project',
+      typescript: args.typescript,
     });
     break;
   default:
@@ -490,10 +492,10 @@ deno compile --allow-all -o my-cli-linux --target x86_64-unknown-linux-gnu src/c
 ```typescript
 #!/usr/bin/env -S deno run --allow-read --allow-write
 
-import { parseArgs } from "jsr:@std/cli/parse-args";
+import { parseArgs } from 'jsr:@std/cli/parse-args';
 
 const args = parseArgs(Deno.args);
-console.log("Arguments:", args);
+console.log('Arguments:', args);
 ```
 
 ## Performance Considerations
@@ -503,11 +505,11 @@ console.log("Arguments:", args);
 ```typescript
 async function processLargeFile(path: string): Promise<void> {
   const file = await Deno.open(path);
-  
+
   try {
     const buffer = new Uint8Array(64 * 1024); // 64KB chunks
     let bytesRead = 0;
-    
+
     while ((bytesRead = await file.read(buffer)) !== null) {
       const chunk = buffer.slice(0, bytesRead);
       processChunk(chunk);
@@ -522,12 +524,12 @@ async function processLargeFile(path: string): Promise<void> {
 
 ```typescript
 // Top-level imports are cached more effectively
-import { parseArgs } from "jsr:@std/cli/parse-args";
+import { parseArgs } from 'jsr:@std/cli/parse-args';
 
 // Lazy imports for rarely used modules
 async function readLargeFile() {
-  const { readFile } = await import("jsr:@std/fs");
-  return readFile("large_file.bin");
+  const { readFile } = await import('jsr:@std/fs');
+  return readFile('large_file.bin');
 }
 ```
 
@@ -536,12 +538,12 @@ async function readLargeFile() {
 ### Platform Detection
 
 ```typescript
-if (Deno.build.os === "windows") {
-  console.log("Windows-specific logic");
-} else if (Deno.build.os === "darwin") {
-  console.log("macOS-specific logic");
+if (Deno.build.os === 'windows') {
+  console.log('Windows-specific logic');
+} else if (Deno.build.os === 'darwin') {
+  console.log('macOS-specific logic');
 } else {
-  console.log("Linux-specific logic");
+  console.log('Linux-specific logic');
 }
 ```
 
@@ -549,13 +551,11 @@ if (Deno.build.os === "windows") {
 
 ```typescript
 // Automatic handling
-await Deno.writeTextFile("output.txt", "Line 1\nLine 2\n");
+await Deno.writeTextFile('output.txt', 'Line 1\nLine 2\n');
 
 // Explicit control
-const content = "Line 1\nLine 2\n";
-const normalized = Deno.build.os === "windows" 
-  ? content.replace(/\n/g, "\r\n")
-  : content;
+const content = 'Line 1\nLine 2\n';
+const normalized = Deno.build.os === 'windows' ? content.replace(/\n/g, '\r\n') : content;
 ```
 
 ## Essential Patterns Summary
@@ -574,7 +574,7 @@ const normalized = Deno.build.os === "windows"
 ## Key Standard Library Modules
 
 - `@std/cli` - Argument parsing and CLI utilities
-- `@std/fs` - File system operations and utilities  
+- `@std/fs` - File system operations and utilities
 - `@std/path` - Cross-platform path manipulation
 - `@std/assert` - Testing assertions
 - `@std/dotenv` - Environment variable loading
