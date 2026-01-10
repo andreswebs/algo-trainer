@@ -1,22 +1,11 @@
-/**
- * Algo Trainer - CLI Entry Point
- *
- * Main entry point for the Algo Trainer CLI application.
- * This file exports the main CLI functionality.
- */
-
 export { main } from './lib/cli/main.ts';
 
-// Run CLI if this is the main module
 try {
-  if ((import.meta as any)?.main) {
+  if (import.meta.main) {
     const { main } = await import('./lib/cli/main.ts');
-
-    const args = (globalThis as any)?.Deno?.args ||
-      (globalThis as any)?.process?.argv?.slice(2) ||
-      [];
-    await main(args);
+    await main(Deno.args);
   }
-} catch {
-  // Not running as main module or error occurred
+} catch (error) {
+  console.error(error);
+  Deno.exit(1);
 }

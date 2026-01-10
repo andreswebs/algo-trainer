@@ -6,7 +6,7 @@
  * @module config/paths
  */
 
-import { getAppPaths, joinPath } from '../../utils/fs.ts';
+import { getAppPaths, joinPath } from '../utils/fs.ts';
 
 /**
  * Application name for configuration paths
@@ -48,27 +48,4 @@ export function getConfigFilePaths(): {
     progress: joinPath(paths.data, 'progress.json'),
     cache: joinPath(paths.cache, 'api-cache.json'),
   };
-}
-
-/**
- * Get legacy configuration paths for migration
- */
-export function getLegacyConfigPaths(): {
-  oldConfig: string;
-  oldWorkspace: string;
-} {
-  try {
-    // @ts-ignore: Deno may not be available
-    const home = Deno.env.get('HOME') || '/tmp';
-
-    return {
-      oldConfig: joinPath(home, '.leetcode-config.json'),
-      oldWorkspace: joinPath(home, '.algo-trainer'),
-    };
-  } catch {
-    return {
-      oldConfig: '/tmp/.leetcode-config.json',
-      oldWorkspace: '/tmp/.algo-trainer',
-    };
-  }
 }

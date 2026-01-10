@@ -28,28 +28,6 @@ export const DEFAULT_CONFIG: Config = {
 };
 
 /**
- * Configuration migration info
- */
-export interface ConfigMigration {
-  from: string;
-  to: string;
-  migrated: boolean;
-  timestamp: Date;
-}
-
-/**
- * Legacy configuration format (for migration)
- */
-export interface LegacyConfig {
-  language?: string;
-  defaultWorkspace?: string;
-  useAI?: boolean;
-  preferredCompanies?: string[];
-  // Other legacy fields
-  [key: string]: unknown;
-}
-
-/**
  * Configuration validation result
  */
 export interface ConfigValidationResult {

@@ -19,7 +19,6 @@
     "@std/json": "jsr:@std/json@^1.0.0"
   },
   "compilerOptions": {
-    "allowJs": false,
     "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -42,5 +41,5 @@
       "exclude": ["no-unused-vars"]
     }
   },
-  "exclude": ["tests/fixtures/", "docs/examples/"]
+  "exclude": ["tests/fixtures/", "docs/examples/", "_.local-leetcode-trainer.legacy/"]
 }

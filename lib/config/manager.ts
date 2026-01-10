@@ -7,13 +7,13 @@
  * @module config/manager
  */
 
-import { createDirectory, pathExists, readJsonFile, writeJsonFile } from '../../utils/fs.ts';
-import { validateConfig, validateOrThrow } from '../../utils/validation.ts';
-import { ConfigError, createErrorContext } from '../../utils/errors.ts';
-import { logInfo, logWarning } from '../../utils/output.ts';
-import { getConfigFilePaths, getConfigPaths, getLegacyConfigPaths } from './paths.ts';
-import { type ConfigMigration, DEFAULT_CONFIG, type LegacyConfig } from './types.ts';
-import type { Config, SupportedLanguage, UserPreferences } from '../../types/global.ts';
+import { createDirectory, pathExists, readJsonFile, writeJsonFile } from '../utils/fs.ts';
+import { validateConfig, validateOrThrow } from '../utils/validation.ts';
+import { ConfigError, createErrorContext } from '../utils/errors.ts';
+import { logInfo } from '../utils/output.ts';
+import { getConfigFilePaths, getConfigPaths } from './paths.ts';
+import { DEFAULT_CONFIG } from './types.ts';
+import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
 
 /**
  * Configuration manager class
@@ -47,12 +47,6 @@ export class ConfigManager {
         // Merge with defaults to handle missing fields
         this.config = { ...DEFAULT_CONFIG, ...configData };
         return this.config;
-      }
-
-      // Try to migrate from legacy config
-      const migrated = await this.tryMigrateLegacyConfig();
-      if (migrated) {
-        return this.config!;
       }
 
       // Create default config
@@ -197,85 +191,6 @@ export class ConfigManager {
     this.config = { ...DEFAULT_CONFIG };
     await this.save();
     logInfo('Configuration reset to defaults');
-  }
-
-  /**
-   * Try to migrate legacy configuration
-   */
-  private async tryMigrateLegacyConfig(): Promise<boolean> {
-    const legacyPaths = getLegacyConfigPaths();
-
-    try {
-      if (await pathExists(legacyPaths.oldConfig)) {
-        logInfo('Found legacy configuration, migrating...');
-
-        const legacyConfig = await readJsonFile<LegacyConfig>(
-          legacyPaths.oldConfig,
-        );
-
-        // Map legacy fields to new format
-        const migratedConfig: Config = {
-          ...DEFAULT_CONFIG,
-          language: this.mapLegacyLanguage(legacyConfig.language) ||
-            DEFAULT_CONFIG.language,
-          workspace: legacyConfig.defaultWorkspace || DEFAULT_CONFIG.workspace,
-          aiEnabled: legacyConfig.useAI ?? DEFAULT_CONFIG.aiEnabled,
-          companies: legacyConfig.preferredCompanies || DEFAULT_CONFIG.companies,
-        };
-
-        this.config = migratedConfig;
-        await this.save();
-
-        // Create migration record
-        const migration: ConfigMigration = {
-          from: legacyPaths.oldConfig,
-          to: this.configPath,
-          migrated: true,
-          timestamp: new Date(),
-        };
-
-        // Save migration info
-        const migrationPath = getConfigFilePaths().main.replace(
-          'config.json',
-          'migration.json',
-        );
-        await writeJsonFile(migrationPath, migration, { ensureParents: true });
-
-        logInfo('Legacy configuration migrated successfully');
-        logWarning(
-          `Please consider removing the legacy config file: ${legacyPaths.oldConfig}`,
-        );
-
-        return true;
-      }
-    } catch (error) {
-      logWarning(`Failed to migrate legacy configuration: ${String(error)}`);
-    }
-
-    return false;
-  }
-
-  /**
-   * Map legacy language names to current format
-   */
-  private mapLegacyLanguage(language?: string): SupportedLanguage | null {
-    if (!language) return null;
-
-    const languageMap: Record<string, SupportedLanguage> = {
-      js: 'javascript',
-      javascript: 'javascript',
-      ts: 'typescript',
-      typescript: 'typescript',
-      py: 'python',
-      python: 'python',
-      java: 'java',
-      'c++': 'cpp',
-      cpp: 'cpp',
-      rust: 'rust',
-      go: 'go',
-    };
-
-    return languageMap[language.toLowerCase()] || null;
   }
 }
 

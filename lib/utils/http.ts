@@ -163,10 +163,10 @@ export class HttpClient {
         const response = await fetch(fullUrl, {
           method: options.method || 'GET',
           headers,
-          body: options.body,
+          ...(options.body !== undefined && { body: options.body }),
           redirect: options.redirect || 'follow',
           signal: controller.signal,
-          cache: options.cache,
+          ...(options.cache !== undefined && { cache: options.cache }),
         });
 
         clearTimeout(timeoutId);
@@ -216,7 +216,7 @@ export class HttpClient {
   /**
    * GET request
    */
-  async get<T = unknown>(
+  get<T = unknown>(
     url: string,
     options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<HttpResponse<T>> {
@@ -226,7 +226,7 @@ export class HttpClient {
   /**
    * POST request
    */
-  async post<T = unknown>(
+  post<T = unknown>(
     url: string,
     body?: string | object,
     options: Omit<RequestOptions, 'method'> = {},
@@ -248,7 +248,7 @@ export class HttpClient {
   /**
    * PUT request
    */
-  async put<T = unknown>(
+  put<T = unknown>(
     url: string,
     body?: string | object,
     options: Omit<RequestOptions, 'method'> = {},
@@ -270,7 +270,7 @@ export class HttpClient {
   /**
    * DELETE request
    */
-  async delete<T = unknown>(
+  delete<T = unknown>(
     url: string,
     options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<HttpResponse<T>> {

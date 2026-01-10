@@ -119,7 +119,7 @@ export async function main(args: string[] = []): Promise<void> {
     }
 
     // Route to appropriate command handler
-    const result = await routeCommand(commandArgs);
+    const result = routeCommand(commandArgs);
 
     if (!result.success) {
       exitWithError(result.error || 'Command failed', result.exitCode);
@@ -127,26 +127,16 @@ export async function main(args: string[] = []): Promise<void> {
   } catch (error) {
     const errorMessage = formatError(error);
     logError('Unexpected error occurred', errorMessage);
-
-    // @ts-ignore: Deno may not be available
-    try {
-      Deno.exit(1);
-    } catch {
-      try {
-        process.exit?.(1);
-      } catch {
-        /* ignore */
-      }
-    }
+    Deno.exit(1);
   }
 }
 
 /**
  * Route command to appropriate handler
  */
-async function routeCommand(
+function routeCommand(
   args: CommandArgs,
-): Promise<{ success: boolean; error?: string; exitCode: number }> {
+): { success: boolean; error?: string; exitCode: number } {
   switch (args.command) {
     case 'challenge':
       logSuccess(`Challenge command called with args: ${JSON.stringify(args)}`);
@@ -220,15 +210,6 @@ For more information about a specific command, run:
 /**
  * Entry point when run as main module
  */
-try {
-  // @ts-ignore: Check if running as main module
-  if ((import.meta as any)?.main) {
-    // @ts-ignore: Get command line arguments from available runtime
-    const args = (globalThis as any)?.Deno?.args ||
-      (globalThis as any)?.process?.argv?.slice(2) ||
-      [];
-    main(args);
-  }
-} catch {
-  // Not running as main module or not in supported environment
+if (import.meta.main) {
+  main(Deno.args);
 }

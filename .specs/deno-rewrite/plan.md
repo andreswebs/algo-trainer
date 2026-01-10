@@ -1,8 +1,52 @@
 # Algo Trainer - Deno TypeScript Rewrite Plan
 
+## Progress Summary
+
+| Phase                                           | Status         | Progress |
+| ----------------------------------------------- | -------------- | -------- |
+| Phase 1: Foundation & Core Infrastructure       | ✅ COMPLETED   | 100%     |
+| Phase 2: Problem Management System              | ⏳ Not Started | 0%       |
+| Phase 3: CLI Interface & Commands               | ⏳ Not Started | 0%       |
+| Phase 4: AI Teaching Engine & Advanced Features | ⏳ Not Started | 0%       |
+| Phase 5: Testing, Documentation & Polish        | ⏳ Not Started | 0%       |
+
+**Last Updated:** January 2026
+
+**Phase 1 Highlights:**
+
+- All utility modules implemented (`output`, `display`, `errors`, `fs`, `validation`, `http`)
+- Type system complete (`global.ts`, `external.ts`)
+- XDG-compliant configuration system working
+- Basic CLI skeleton with argument parsing
+- HTTP client moved up from Phase 4 (already implemented)
+
+---
+
+## Rewrite Strategy: Clean Break
+
+**This is a complete rewrite with NO backwards compatibility and NO migration support.**
+
+The new Algo Trainer v2.0 is an entirely new application that:
+
+- Does NOT read or recognize legacy configuration files (`.leetcode-config.json`)
+- Does NOT attempt to migrate workspaces from the previous version
+- Does NOT maintain command compatibility with the legacy CLI
+- Does NOT provide any migration utilities or transition tools
+
+Users of the legacy application must start fresh with the new version. The legacy codebase is preserved in `_.local-leetcode-trainer.legacy/` for reference only during development.
+
+**Rationale:** A clean break allows us to:
+
+- Design optimal data structures without legacy constraints
+- Avoid complex migration code that adds maintenance burden
+- Focus development effort on new features rather than compatibility shims
+- Ship faster with a simpler, more focused codebase
+
+---
+
 ## Executive Summary
 
-This document outlines a complete rewrite plan for the Algo Trainer application (previously Local Leetcode Trainer), migrating from Node.js/JavaScript to Deno/TypeScript while incorporating modern 12-factor CLI application principles. The rewrite aims to create a more maintainable, type-safe, and user-friendly application.
+This document outlines a complete rewrite plan for the Algo Trainer application (previously Local Leetcode Trainer), building a new Deno/TypeScript application from scratch while incorporating modern 12-factor CLI application principles. The rewrite aims to create a more maintainable, type-safe, and user-friendly application.
 
 ## Current State Analysis
 
@@ -51,115 +95,89 @@ From the codebase analysis, the main functional areas are:
 
 ## Architecture Design
 
-### New Project Structure
+### Project Structure
 
-```
+```txt
+# Current Implementation (Phase 1 Complete)
 lib/
 ├── cli/                    # CLI interface and commands
-│   ├── commands/          # Individual command implementations
-│   │   ├── challenge.ts
-│   │   ├── complete.ts
-│   │   ├── hint.ts
-│   │   ├── learn.ts
-│   │   ├── config.ts
-│   │   └── init.ts
-│   ├── types.ts           # CLI-specific types
-│   ├── main.ts            # Main CLI entry point
-│   └── router.ts          # Command routing logic
-├── core/                  # Core business logic
-│   ├── problem/           # Problem management
-│   │   ├── manager.ts     # Problem CRUD operations
-│   │   ├── parser.ts      # Problem file parsing
-│   │   ├── templates.ts   # Code template generation
-│   │   └── types.ts       # Problem-related types
-│   ├── ai/               # AI Teaching Engine
-│   │   ├── engine.ts     # Main AI interaction
-│   │   ├── hints.ts      # Hint generation system
-│   │   ├── teaching.ts   # Teaching script generation
-│   │   └── types.ts      # AI-related types
-│   ├── config/           # Configuration management
-│   │   ├── manager.ts    # Config CRUD (XDG compliant)
-│   │   ├── paths.ts      # Path resolution utilities
-│   │   └── types.ts      # Config types
-│   ├── workspace/        # Workspace management
-│   │   ├── manager.ts    # Workspace operations
-│   │   ├── files.ts      # File operations
-│   │   └── types.ts      # Workspace types
-│   └── testing/          # Test execution
-│       ├── runner.ts     # Multi-language test runner
-│       ├── languages/    # Language-specific runners
-│       └── types.ts      # Testing types
-├── utils/                # Shared utilities
-│   ├── errors.ts         # Standardized error handling
-│   ├── output.ts         # CLI output utilities (stdout/stderr)
-│   ├── display.ts        # Colors, spinners, tables
-│   ├── validation.ts     # Input validation
-│   ├── http.ts           # HTTP client (for scraping)
-│   └── fs.ts             # File system utilities
-├── types/                # Global type definitions
-│   ├── index.ts          # Re-exports all types
-│   ├── global.ts         # Global types
-│   └── external.ts       # External API types
-└── data/                 # Static data and templates
-    ├── problems/         # Problem definitions (converted to JSON)
-    ├── templates/        # Code templates by language
-    └── scripts/          # Teaching scripts
+│   ├── main.ts            # ✅ Main CLI entry point with arg parsing
+│   └── types.ts           # ✅ CLI-specific types
+├── config/                # ✅ Configuration management (moved from core/)
+│   ├── manager.ts         # ✅ Config CRUD (XDG compliant)
+│   ├── paths.ts           # ✅ Path resolution utilities
+│   └── types.ts           # ✅ Config types and defaults
+├── types/                 # ✅ Global type definitions
+│   ├── index.ts           # ✅ Re-exports all types
+│   ├── global.ts          # ✅ Global types
+│   └── external.ts        # ✅ External API types
+└── utils/                 # ✅ Shared utilities
+    ├── display.ts         # ✅ Colors, tables, progress bars
+    ├── errors.ts          # ✅ Standardized error handling
+    ├── fs.ts              # ✅ File system utilities with XDG
+    ├── http.ts            # ✅ HTTP client (moved from Phase 4)
+    ├── output.ts          # ✅ CLI output utilities (stdout/stderr)
+    └── validation.ts      # ✅ Input validation
 
-tests/                    # Comprehensive test suite
-├── unit/                 # Unit tests
-├── integration/          # Integration tests
-└── fixtures/             # Test data
+main.ts                    # ✅ Application entry point
+deno.json                  # ✅ Deno configuration
+deno.lock                  # ✅ Lock file
 
-docs/                     # Documentation
-├── README.md
-├── DEVELOPMENT.md
-├── CONTRIBUTING.md
-├── API.md
-└── examples/
+tests/                     # Test suite
+├── config_test.ts         # ✅ Configuration tests
+└── foundation_test.ts     # ✅ Foundation tests
 
-deno.json                 # Deno configuration
-deno.lock                 # Lock file
-mod.ts                    # Main module export
+# Planned for Future Phases
+lib/
+├── cli/
+│   └── commands/          # Phase 3: Individual command implementations
+│       ├── challenge.ts
+│       ├── complete.ts
+│       ├── hint.ts
+│       ├── config.ts
+│       └── init.ts
+├── core/                  # Phase 2-4: Core business logic
+│   ├── problem/           # Phase 2: Problem management
+│   │   ├── manager.ts
+│   │   ├── parser.ts
+│   │   ├── templates.ts
+│   │   └── types.ts
+│   ├── workspace/         # Phase 2: Workspace management
+│   │   ├── manager.ts
+│   │   ├── files.ts
+│   │   └── types.ts
+│   ├── ai/               # Phase 4: AI Teaching Engine
+│   │   ├── engine.ts
+│   │   ├── hints.ts
+│   │   ├── teaching.ts
+│   │   └── types.ts
+│   └── testing/          # Phase 4: Test execution
+│       ├── runner.ts
+│       ├── languages/
+│       └── types.ts
+└── data/                 # Phase 2: Static data and templates
+    ├── problems/
+    ├── templates/
+    └── scripts/
+
+docs/                     # Phase 5: Documentation
+tests/
+├── unit/                 # Phase 5: Comprehensive tests
+├── integration/
+└── fixtures/
 ```
 
-### Core Type Definitions
+**Structural Decisions:**
+
+- `config/` is at `lib/config/` not `lib/core/config/` for simpler imports
+- No `mod.ts` - using `main.ts` as entry point
+- No `router.ts` - routing inline in `main.ts` (will extract if complexity grows)
+- Commands are stubs for now - will be extracted to `lib/cli/commands/` in Phase 3
+
+### Core Type Definitions (Implemented)
 
 ```typescript
-// types/global.ts
-export interface Problem {
-  id: string;
-  slug: string;
-  title: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  description: string;
-  examples: Example[];
-  constraints: string[];
-  hints: string[];
-  tags: string[];
-  companies?: string[];
-  leetcodeUrl?: string;
-}
-
-export interface Example {
-  input: Record<string, any>;
-  output: any;
-  explanation?: string;
-}
-
-export interface Config {
-  language: SupportedLanguage;
-  workspace: string;
-  aiEnabled: boolean;
-  companies: string[];
-  preferences: UserPreferences;
-}
-
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto';
-  verbosity: 'quiet' | 'normal' | 'verbose';
-  autoSave: boolean;
-  templateStyle: 'minimal' | 'documented' | 'comprehensive';
-}
+// lib/types/global.ts - Current implementation
 
 export type SupportedLanguage =
   | 'typescript'
@@ -170,6 +188,54 @@ export type SupportedLanguage =
   | 'rust'
   | 'go';
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
+export interface Example {
+  input: Record<string, unknown>;
+  output: unknown;
+  explanation?: string;
+}
+
+export interface Problem {
+  id: string;
+  slug: string;
+  title: string;
+  difficulty: Difficulty;
+  description: string;
+  examples: Example[];
+  constraints: string[];
+  hints: string[];
+  tags: string[];
+  companies?: string[];
+  leetcodeUrl?: string;
+  metadata?: ProblemMetadata;
+}
+
+export interface ProblemMetadata {
+  createdAt?: Date;
+  updatedAt?: Date;
+  source?: string;
+  sourceId?: string;
+}
+
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'auto';
+  verbosity: 'quiet' | 'normal' | 'verbose';
+  autoSave: boolean;
+  templateStyle: 'minimal' | 'documented' | 'comprehensive';
+  useEmoji: boolean; // Added: control emoji in output
+  useColors: boolean; // Added: control colors in output
+}
+
+export interface Config {
+  language: SupportedLanguage;
+  workspace: string;
+  aiEnabled: boolean;
+  companies: string[];
+  preferences: UserPreferences;
+  version: string; // Config schema version for validation
+}
+
 export interface WorkspaceStructure {
   root: string;
   problems: string;
@@ -177,68 +243,113 @@ export interface WorkspaceStructure {
   templates: string;
   config: string;
 }
+
+// Additional types implemented:
+// - ProblemProgress, ProblemStatus, SolutionMetrics
+// - TemplateConfig, CommandResult, FileOperationResult
 ```
+
+**Key additions from original plan:**
+
+- `Difficulty` type alias for better type safety
+- `ProblemMetadata` interface for tracking problem sources
+- `useEmoji` and `useColors` in `UserPreferences` for output customization
+- `version` field in `Config` for schema validation
+- Additional types for progress tracking and command results
 
 ## Implementation Phases
 
-### Phase 1: Foundation & Core Infrastructure (Week 1-2)
+### Phase 1: Foundation & Core Infrastructure (Week 1-2) - COMPLETED
 
 **Goal**: Establish the basic project structure and core utilities
 
-**Tasks:**
+**Status**: ✅ COMPLETED (with some scope adjustments noted below)
 
-1. **Project Setup**
+**Completed Tasks:**
 
-   - Create new Deno project structure
-   - Configure deno.json with tasks, imports, and compiler options
-   - Set up TypeScript strict mode configuration
-   - Establish testing framework with @std/assert
+1. **Project Setup** ✅
 
-2. **Core Utilities**
+   - Created Deno project structure
+   - Configured `deno.json` with tasks, imports, compiler options, formatting, and linting
+   - TypeScript strict mode enabled with `noImplicitAny`, `noImplicitReturns`, `strictNullChecks`, `exactOptionalPropertyTypes`
+   - Testing framework configured with `@std/assert`
 
-   - Create output utilities for proper stdout/stderr separation (stderr: all human messages, stdout: only machine-readable data)
-   - Build display utilities (colors, spinners, progress bars)
-   - Implement XDG-compliant configuration paths
+2. **Core Utilities** ✅
 
-3. **Type System Foundation**
+   - `lib/utils/output.ts` - Output utilities with proper stdout/stderr separation following 12-factor principles
+   - `lib/utils/display.ts` - Colors, tables, progress bars, text formatting
+   - `lib/utils/errors.ts` - Standardized error handling with custom error classes (`AlgoTrainerError`, `ConfigError`, `FileSystemError`, etc.)
+   - `lib/utils/fs.ts` - File system utilities with XDG path resolution
+   - `lib/utils/validation.ts` - Comprehensive input validation for configs, problems, and primitives
+   - `lib/utils/http.ts` - HTTP client with rate limiting (moved up from Phase 4)
 
-   - Define all core interfaces and types
-   - Create comprehensive type definitions for problems, configs, workspace
-   - Establish API contracts between modules
+3. **Type System Foundation** ✅
 
-4. **Configuration System**
-   - Build XDG-compliant config manager
-   - Implement config migration from old format
-   - Add validation and default config generation
+   - `lib/types/global.ts` - Core interfaces: `Problem`, `Config`, `UserPreferences`, `WorkspaceStructure`, `SupportedLanguage`, etc.
+   - `lib/types/external.ts` - External API types: `LeetCodeProblem`, `ApiResponse`, `RateLimitInfo`, `CacheMetadata`
+   - `lib/types/index.ts` - Central re-export point
 
-**Deliverables:**
+4. **Configuration System** ✅
 
-- Project structure with all directories
-- Core utility modules
-- Type definitions
-- Configuration management system
-- Basic test suite setup
+   - `lib/config/manager.ts` - XDG-compliant ConfigManager class with load/save/update operations
+   - `lib/config/paths.ts` - Application-specific XDG path utilities
+   - `lib/config/types.ts` - Default config values and validation types
 
-**Files to Create:**
+5. **Basic CLI Skeleton** ✅ (Moved up from Phase 3)
 
-- `lib/utils/` (all files)
-- `lib/types/` (all files)
-- `lib/config/` (all files)
-- `deno.json`, `mod.ts`
+   - `lib/cli/main.ts` - Entry point with argument parsing and command routing skeleton
+   - `lib/cli/types.ts` - CLI-specific types: `Command`, `Flag`, `CommandArgs`, `CliContext`
+   - `main.ts` - Application entry point
 
-**Estimated Effort:** 20-25 hours
+**Key Implementation Decisions (Deviations from Original Plan):**
+
+- **No `mod.ts`**: Entry point is `main.ts` which imports `lib/cli/main.ts`
+- **No `lib/cli/router.ts`**: Command routing is inline in `lib/cli/main.ts` for simplicity
+- **No `lib/cli/commands/` directory yet**: Commands are stubs in main.ts, to be extracted in Phase 3
+- **HTTP client early**: `lib/utils/http.ts` implemented now to establish patterns for later phases
+- **Extended `UserPreferences`**: Added `useEmoji` and `useColors` fields
+- **Config versioning**: `Config` type includes a `version` field for schema validation
+
+**Files Created:**
+
+```txt
+lib/
+├── cli/
+│   ├── main.ts          # CLI entry point with arg parsing
+│   └── types.ts         # CLI-specific types
+├── config/
+│   ├── manager.ts       # XDG-compliant config manager
+│   ├── paths.ts         # Path resolution utilities
+│   └── types.ts         # Default config and validation types
+├── types/
+│   ├── external.ts      # External API types
+│   ├── global.ts        # Core application types
+│   └── index.ts         # Re-exports
+└── utils/
+    ├── display.ts       # Colors, tables, progress bars
+    ├── errors.ts        # Custom error classes
+    ├── fs.ts            # File system utilities
+    ├── http.ts          # HTTP client (moved from Phase 4)
+    ├── output.ts        # stdout/stderr separation
+    └── validation.ts    # Input validation
+
+main.ts                  # Application entry
+deno.json               # Deno configuration
+```
+
+**Actual Effort:** ~20 hours
 
 ### Phase 2: Problem Management System (Week 3)
 
-**Goal**: Rebuild the problem management core with type safety
+**Goal**: Build the problem management core with type safety
 
 **Tasks:**
 
-1. **Problem Data Migration**
+1. **Problem Data Structure**
 
-   - Convert existing 120+ problem files to structured JSON/TypeScript
-   - Validate all problem data against new type definitions
-   - Create problem database with indexing
+   - Create new problem definitions in structured JSON/TypeScript format
+   - Define problem schema and validation against type definitions
+   - Build problem database with indexing
 
 2. **Problem Manager**
 
@@ -277,48 +388,55 @@ export interface WorkspaceStructure {
 
 **Goal**: Create the modern CLI interface following 12-factor principles
 
-**Tasks:**
+**Pre-existing from Phase 1:**
 
-1. **CLI Framework**
+- ✅ Basic argument parser in `lib/cli/main.ts`
+- ✅ Command routing skeleton with stubs
+- ✅ Global flags implemented: `--no-color`, `--no-emoji`, `--verbose`, `--quiet`, `--config`
+- ✅ Help system with basic usage information
+- ✅ Version command (`-v`, `--version`)
+- ✅ CLI types defined in `lib/cli/types.ts`
 
-   - Build command router with flag-based arguments
-   - Implement help system with examples and completions
-   - Add version command and global options
-   - Add global flags: `--no-color`, `--no-emoji`, `--verbose`, `--quiet`
+**Remaining Tasks:**
 
-2. **Core Commands**
+1. **Command Implementations**
 
+   - Extract command handlers to `lib/cli/commands/` directory
    - `at challenge` - Problem generation with enhanced UX
    - `at complete` - Mark problems as completed/active
-   - `at config` - Configuration management
+   - `at config` - Configuration management (get/set/list/reset)
    - `at init` - Workspace initialization
    - `at progress` - Progress tracking with tables
+   - `at hint` - Get hints for current problem
 
-3. **Interactive Features**
+2. **Interactive Features**
 
    - Add prompts for missing required inputs
-   - Implement table displays for data
-   - Create progress indicators for long operations
+   - Implement table displays for data (using `lib/utils/display.ts`)
+   - Create progress indicators for long operations (using `ProgressIndicator`)
 
-4. **Shell Integration**
+3. **Shell Integration**
    - Generate shell completions (bash, zsh, fish)
-   - Add environment variable support
+   - Add environment variable support for all config options
    - Implement proper exit codes
 
 **Deliverables:**
 
-- Complete CLI interface
-- All core commands implemented
+- Complete CLI interface with all commands
 - Shell completion scripts
 - Interactive features
 
 **Files to Create:**
 
-- `lib/cli/` (all files)
+- `lib/cli/commands/challenge.ts`
+- `lib/cli/commands/complete.ts`
+- `lib/cli/commands/config.ts`
+- `lib/cli/commands/hint.ts`
+- `lib/cli/commands/init.ts`
+- `lib/cli/commands/progress.ts`
 - Shell completion scripts
-- CLI help documentation
 
-**Estimated Effort:** 20-25 hours
+**Estimated Effort:** 15-20 hours (reduced due to Phase 1 foundations)
 
 ### Phase 4: AI Teaching Engine & Advanced Features (Week 5)
 
@@ -360,9 +478,16 @@ export interface WorkspaceStructure {
 
 - `lib/core/ai/` (all files)
 - `lib/core/testing/` (all files)
-- `lib/utils/http.ts`
 
-**Estimated Effort:** 25-30 hours
+**Note:** `lib/utils/http.ts` was moved to Phase 1 and is already implemented with:
+
+- `HttpClient` class with rate limiting support
+- GET, POST, PUT, DELETE methods
+- Timeout handling and error wrapping
+- Cache metadata and rate limit header extraction
+- Factory function `createServiceClient()` for specialized clients
+
+**Estimated Effort:** 20-25 hours (reduced due to HTTP client already complete)
 
 ### Phase 5: Testing, Documentation & Polish (Week 6)
 
@@ -408,82 +533,35 @@ export interface WorkspaceStructure {
 
 **Estimated Effort:** 15-20 hours
 
-## Migration Strategy
+## Development Approach
 
-### Code Reuse Approach
+### Clean Rewrite (No Migration)
 
-**High Reuse (80-90% logic retained):**
+As stated in the "Rewrite Strategy" section above, this project takes a **clean break approach**:
 
-- Problem definitions and templates (with format conversion)
-- AI teaching prompts and scripts
-- Configuration schemas
-- Test cases and examples
+- **No backwards compatibility** with the legacy Node.js application
+- **No migration utilities** for config, workspaces, or data
+- **No command compatibility** with previous CLI syntax
+- **No legacy format support** - all formats are new
 
-**Medium Reuse (50-70% logic retained):**
+The legacy codebase in `_.local-leetcode-trainer.legacy/` serves only as a reference for understanding the original feature set. Code is rewritten from scratch using modern patterns.
 
-- CLI command logic (restructured for better UX)
-- File management operations
-- Problem management algorithms
-- Display and formatting logic
+### Reference Material from Legacy
 
-**Low Reuse (20-30% logic retained):**
+The following aspects of the legacy codebase may be referenced for **conceptual understanding only**:
 
-- Module system (CommonJS → ES modules)
-- Error handling (completely restructured)
-- Configuration management (XDG compliance)
-- Output handling (stdout/stderr separation)
+- AI teaching prompts and educational content (ideas, not code)
+- Problem solving patterns and hint structures
+- General feature requirements and user workflows
 
-**No Reuse (complete rewrite):**
-
-- Package management approach
-- Type definitions (adding TypeScript)
-- CLI argument parsing (flag-based approach)
-- Permission and security model
-
-### Backward Compatibility Strategy
-
-1. **Config Migration**
-
-   - Auto-detect old `.leetcode-config.json` files
-   - Provide migration utility: `at migrate-config`
-   - Show clear migration instructions
-
-2. **Workspace Compatibility**
-
-   - Detect existing problem directories
-   - Preserve user-created solution files
-   - Upgrade workspace structure gracefully
-
-3. **Command Compatibility**
-   - Maintain old command syntax with deprecation warnings
-   - Provide command equivalence documentation
-   - Gradual transition period
-
-### Data Migration Plan
-
-1. **Problem Database**
-
-   - Convert existing problem files to new JSON format
-   - Validate all data against TypeScript interfaces
-   - Create migration scripts for any schema changes
-
-2. **Configuration**
-
-   - Convert old config format to new XDG-compliant structure
-   - Preserve user preferences and customizations
-   - Add new configuration options with sensible defaults
-
-3. **Workspace Structure**
-   - Respect existing problem organization
-   - Upgrade directory structure while preserving files
-   - Add new metadata files for enhanced functionality
+All implementation is new TypeScript code following the patterns established in Phase 1.
 
 ## Technical Specifications
 
-### Deno Configuration
+### Deno Configuration (Implemented)
 
 ```json
-// deno.json
+// deno.json - Current implementation
 {
   "tasks": {
     "dev": "deno run --allow-all --watch lib/cli/main.ts",
@@ -505,7 +583,6 @@ export interface WorkspaceStructure {
     "@std/json": "jsr:@std/json@^1.0.0"
   },
   "compilerOptions": {
-    "allowJs": false,
     "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -528,7 +605,7 @@ export interface WorkspaceStructure {
       "exclude": ["no-unused-vars"]
     }
   },
-  "exclude": ["tests/fixtures/", "docs/examples/"]
+  "exclude": ["tests/fixtures/", "docs/examples/", "_.local-leetcode-trainer.legacy/"]
 }
 ```
 
@@ -560,64 +637,81 @@ const PERMISSIONS = {
 } as const;
 ```
 
-### Error Handling System
+### Error Handling System (Implemented)
 
-Keep it simple! Just ensure proper stream separation:
+The error system has two components: typed errors and output utilities.
+
+**1. Custom Error Classes (`lib/utils/errors.ts`):**
 
 ```typescript
-// utils/output.ts - Simple output helpers with customization options
-interface OutputOptions {
-  useColors: boolean;
-  useEmoji: boolean;
-}
+// Base error class with code and context
+export abstract class AlgoTrainerError extends Error {
+  public readonly code: string;
+  public readonly context: Record<string, unknown> | undefined;
 
-let options: OutputOptions = {
-  useColors: !Deno.env.get('NO_COLOR') && Deno.stdout.isTerminal,
-  useEmoji: true,
-};
-
-export function setOutputOptions(opts: Partial<OutputOptions>): void {
-  options = { ...options, ...opts };
-}
-
-export function logSuccess(message: string): void {
-  const prefix = options.useEmoji ? '✅ ' : 'SUCCESS: ';
-  console.error(`${prefix}${message}`);
-}
-
-export function logError(message: string, details?: string): void {
-  const prefix = options.useEmoji ? '❌ ' : 'ERROR: ';
-  console.error(`${prefix}${message}`);
-  if (details) {
-    console.error(`   ${details}`);
+  getFormattedMessage(): string {
+    // Returns "CODE: message (context details)"
   }
 }
 
-export function logWarning(message: string): void {
-  const prefix = options.useEmoji ? '⚠️  ' : 'WARNING: ';
-  console.error(`${prefix}${message}`);
+// Specialized error types
+export class ConfigError extends AlgoTrainerError {/* code: CONFIG_ERROR */}
+export class FileSystemError extends AlgoTrainerError {/* code: FS_ERROR */}
+export class ProblemError extends AlgoTrainerError {/* code: PROBLEM_ERROR */}
+export class WorkspaceError extends AlgoTrainerError {/* code: WORKSPACE_ERROR */}
+export class ValidationError extends AlgoTrainerError {/* code: VALIDATION_ERROR */}
+export class CommandError extends AlgoTrainerError {/* code: COMMAND_ERROR */}
+export class NetworkError extends AlgoTrainerError {/* code: NETWORK_ERROR */}
+export class TemplateError extends AlgoTrainerError {/* code: TEMPLATE_ERROR */}
+
+// Helper to create error context with operation, timestamp, platform, version
+export function createErrorContext(
+  operation: string,
+  additional?: Record<string, unknown>,
+): ErrorContext;
+```
+
+**2. Output Utilities (`lib/utils/output.ts`):**
+
+```typescript
+interface OutputOptions {
+  useColors: boolean;
+  useEmoji: boolean;
+  verbosity: 'quiet' | 'normal' | 'verbose';
 }
 
-export function logInfo(message: string): void {
-  const prefix = options.useEmoji ? 'ℹ️  ' : 'INFO: ';
-  console.error(`${prefix}${message}`);
-}
+// All human-readable output goes to stderr
+export function logSuccess(message: string): void;
+export function logError(message: string, details?: string): void;
+export function logErrorObject(error: unknown): void; // Handles AlgoTrainerError specially
+export function logWarning(message: string): void;
+export function logInfo(message: string): void; // Respects quiet mode
+export function logDebug(message: string): void; // Only in verbose mode
+export function logProgress(message: string): void; // Respects quiet mode
 
-export function exitWithError(message: string, code = 1): never {
-  logError(message);
-  Deno.exit(code);
-}
+export function exitWithError(message: string, code?: number): never;
+export function exitWithErrorObject(error: unknown, code?: number): never;
 
 // Only for machine-readable output that other tools consume
-export function outputData(data: string): void {
-  console.log(data);
+export function outputData(data: string | object): void;
+
+// Progress indicator with spinner animation
+export class ProgressIndicator {
+  start(): void;
+  stop(finalMessage?: string): void;
 }
 ```
 
 **Stream Usage Rules:**
 
-- **stderr**: All human messages (success, errors, warnings, info, progress)
-- **stdout**: Only machine-readable data meant for piping/consumption by other tools
+- **stderr**: All human messages (success, errors, warnings, info, progress, spinners)
+- **stdout**: Only machine-readable data for piping/consumption (via `outputData()`)
+
+**Verbosity Levels:**
+
+- `quiet`: Suppresses info/progress messages, only shows errors/warnings
+- `normal`: Shows all messages except debug
+- `verbose`: Shows everything including debug and stack traces
 
 ## Quality Assurance
 
@@ -693,9 +787,9 @@ export function outputData(data: string): void {
 
 ### Functional Metrics
 
-- [ ] **Feature Parity**: All existing functionality preserved or improved
-- [ ] **Language Support**: All current languages (JS, Python, Java, C++) supported
-- [ ] **AI Features**: Enhanced AI teaching capabilities
+- [ ] **Core Features**: Problem management, hints, progress tracking implemented
+- [ ] **Language Support**: TypeScript, JavaScript, Python, Java, C++ supported
+- [ ] **AI Features**: AI teaching capabilities implemented
 - [ ] **Cross-platform**: Works on macOS, Linux, Windows
 - [ ] **Offline Capability**: Full functionality without internet connection
 
@@ -703,19 +797,15 @@ export function outputData(data: string): void {
 
 ### High Risk Areas
 
-1. **Complex Problem Data Migration**
+1. **AI System Complexity**
 
-   - **Risk**: Loss of problem data or metadata during conversion
-   - **Mitigation**: Comprehensive backup strategy, validation testing, rollback plan
+   - **Risk**: AI teaching features are complex to reimplement correctly
+   - **Mitigation**: Study legacy implementation thoroughly, extensive testing, iterate on UX
 
-2. **AI System Integration**
+2. **Feature Completeness**
 
-   - **Risk**: Breaking AI teaching features during rewrite
-   - **Mitigation**: Port AI logic early, extensive testing, gradual rollout
-
-3. **User Adoption**
-   - **Risk**: Users reject new CLI interface despite improvements
-   - **Mitigation**: Maintain backward compatibility, provide migration guide, gradual transition
+   - **Risk**: Missing important features that users relied on
+   - **Mitigation**: Document all legacy features, prioritize core functionality, gather feedback early
 
 ### Medium Risk Areas
 
@@ -737,12 +827,12 @@ export function outputData(data: string): void {
 
 ### Development Timeline
 
-**Total Duration**: 6 weeks (120-150 hours)
+**Total Duration**: 6 weeks (~100-120 hours remaining)
 
-- **Week 1-2**: Foundation & Infrastructure (40-50 hours)
+- **Week 1-2**: Foundation & Infrastructure - ✅ COMPLETED (~20 hours spent)
 - **Week 3**: Problem Management System (25-30 hours)
-- **Week 4**: CLI Interface & Commands (20-25 hours)
-- **Week 5**: AI Engine & Advanced Features (25-30 hours)
+- **Week 4**: CLI Interface & Commands (15-20 hours - reduced due to Phase 1 foundations)
+- **Week 5**: AI Engine & Advanced Features (20-25 hours - reduced due to HTTP client done)
 - **Week 6**: Testing & Documentation (15-20 hours)
 
 ### Resource Requirements
@@ -762,16 +852,18 @@ export function outputData(data: string): void {
 
 ### Milestone Schedule
 
-**Milestone 1** (End of Week 2): Core infrastructure complete
+**Milestone 1** (End of Week 2): Core infrastructure complete ✅ ACHIEVED
 
-- Project structure established
-- Configuration system working
-- Type definitions complete
-- Basic CLI framework operational
+- ✅ Project structure established
+- ✅ Configuration system working (XDG-compliant)
+- ✅ Type definitions complete
+- ✅ Basic CLI framework operational
+- ✅ All utility modules implemented
+- ✅ HTTP client ready (moved up from Phase 4)
 
 **Milestone 2** (End of Week 3): Problem system functional
 
-- Problem database migrated
+- Problem database created
 - Template generation working
 - File operations complete
 - Basic problem management operational
@@ -783,9 +875,9 @@ export function outputData(data: string): void {
 - Shell integration complete
 - User experience optimized
 
-**Milestone 4** (End of Week 5): Full feature parity
+**Milestone 4** (End of Week 5): Core features complete
 
-- AI system ported and enhanced
+- AI teaching system implemented
 - Test runner functional
 - Advanced features complete
 - Beta testing ready

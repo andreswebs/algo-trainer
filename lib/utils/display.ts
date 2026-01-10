@@ -133,11 +133,12 @@ export function createTable(
 
       let padded: string;
       switch (align) {
-        case 'center':
+        case 'center': {
           const leftPad = Math.floor((width - cell.length) / 2);
           const rightPad = width - cell.length - leftPad;
           padded = ' '.repeat(leftPad) + cell + ' '.repeat(rightPad);
           break;
+        }
         case 'right':
           padded = cell.padStart(width);
           break;
