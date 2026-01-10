@@ -1,0 +1,326 @@
+<file path="ai-challenge.js">
+const fs = require('fs')
+const path = require('path')
+const AITeachingEngine = require('./dynamic/ai-teaching-engine')
+const ProblemManager = require('./dynamic/problem-manager')
+
+class AIChallenge:
+    constructor()
+    async startChallenge(problemIdentifier)
+    showIntroduction()
+    showPrePrompt()
+    displayProblem()
+    setupCodingEnvironment()
+    generateSolutionTemplate()
+    generateTestTemplate()
+    generateHelperTemplate()
+    getProblemPath()
+    ensureWorkingDirectory()
+    async handleHelpRequest(query = '')
+    processExecution(code, stdout, stderr, passed)
+const args = process.argv.slice(2)
+const command = args[0]
+const aiChallenge = new AIChallenge()
+const problemId = args[1]
+const query = args.slice(1).join(' ')
+</file>
+
+<file path="challenge.js">
+const fs = require("fs")
+const path = require("path")
+const {
+  getCurrentLanguage,
+  getLanguageConfig,
+  DIFFICULTY_NAMES,
+  getPracticePath,
+} = require("./config.js")
+let dynamicSystem = null
+const { ProblemManagerImpl } = require("./dynamic/problem-manager")
+const { OfflineManager } = require("./dynamic/offline-manager")
+function getExistingProblems()
+async function generateDynamicProblems(difficulty, count, specificProblem = null)
+async function createProblemFiles(difficulty, problem)
+function displayProblemInfo(problem, created, index)
+async function showProgressStats()
+async function main()
+</file>
+
+<file path="complete.js">
+const fs = require("fs")
+const path = require("path")
+const { getPracticePath } = require("./config.js")
+function resolveProblemPath(input)
+function markAsCompleted(problemInput)
+function listCompleted()
+function markAsActive(problemInput)
+function main()
+</file>
+
+<file path="config.js">
+const fs = require("fs")
+const path = require("path")
+const readline = require("readline")
+const PRACTICE_DIRECTORIES = [
+  "practice/easy",
+  "practice/medium",
+  "practice/hard",
+]
+const DIFFICULTY_NAMES = ["easy", "medium", "hard"]
+function getPracticePath(difficulty: string) -> string
+const LANGUAGE_CONFIGS = { javascript, python, java, cpp }
+const CONFIG_FILE = path.join(process.cwd(), "lct", "config.json")
+function readConfig()
+function writeConfig(config)
+function getCurrentLanguage()
+function getLanguageConfig(language)
+function askConfirmation(question)
+function countProblems()
+function archiveCurrentWork(currentLanguage)
+function createFreshWorkspace()
+function showCurrentConfig()
+async function switchLanguage(newLanguage)
+async function main()
+</file>
+
+<file path="demo-ai-teaching.js">
+const AITeachingEngine = require('./dynamic/ai-teaching-engine')
+const path = require('path')
+async function demoAITeaching()
+</file>
+
+<file path="enhanced-challenge.js">
+const fs = require('fs')
+const path = require('path')
+const AITeachingEngine = require('./dynamic/ai-teaching-engine')
+const ProblemManager = require('./dynamic/problem-manager')
+
+class AIChallenge:
+    constructor()
+    async startChallenge(problemIdentifier)
+    showIntroduction()
+    showPrePrompt()
+    displayProblem()
+    setupCodingEnvironment()
+    generateSolutionTemplate()
+    generateTestTemplate()
+    generateHelperTemplate()
+    getProblemPath()
+    ensureWorkingDirectory()
+    async handleHelpRequest(query = '')
+    processExecution(code, stdout, stderr, passed)
+const args = process.argv.slice(2)
+const command = args[0]
+const aiChallenge = new AIChallenge()
+const problemId = args[1]
+const query = args.slice(1).join(' ')
+</file>
+
+<file path="enhanced-hint.js">
+const fs = require('fs')
+const path = require('path')
+const AITeachingEngine = require('./dynamic/ai-teaching-engine')
+
+class EnhancedHintSystem:
+    constructor()
+    async getHint(problemName, level = 1, query = '')
+    getAIHint(problemName, level, query)
+    getSimulatedCodeForLevel(level)
+    findProblemPath(problemName)
+    getFallbackHint(problemName, level)
+    async showLearning(problemName)
+async function main()
+</file>
+
+<file path="generate-all-teaching-scripts.js">
+const fs = require("fs")
+const path = require("path")
+const { getPracticePath } = require("./config.js")
+const TeachingScriptGenerator = require("./generate-teaching-script")
+
+class UniversalTeachingGenerator:
+    constructor()
+    async generateAll()
+    async processDifficulty(difficultyPath, difficulty)
+    async processProblemDirectory(problemPath, problemName, difficulty)
+    async processProblemFile(problemFilePath, fileName, difficulty)
+    async generateTeachingScript(problemPath, problemName, difficulty)
+    getTemplateType(difficulty)
+    printSummary()
+async function main()
+</file>
+
+<file path="generate-teaching-script.js">
+const fs = require("fs")
+const path = require("path")
+const { DIFFICULTY_NAMES } = require("./config.js")
+const yaml = require("js-yaml")
+
+class TeachingScriptGenerator:
+    constructor()
+    generateScript(problemPath, templateType = "basic", options = {})
+    findProblemFile(problemPath)
+    populateTemplate(template, problemData, options)
+    customizeForProblem(script, problemData, options)
+    addDPHints(script)
+    addTreeHints(script)
+    addHashTableHints(script)
+    addTwoPointerHints(script)
+    addAdvancedGuidance(script)
+    getBasicTemplate()
+    getComprehensiveTemplate()
+    getAdvancedTemplate()
+    listTemplates()
+const args = process.argv.slice(2)
+const generator = new TeachingScriptGenerator()
+const problemPath = args[0]
+const templateType = args[1] || "basic"
+const options = { language }
+</file>
+
+<file path="hint.js">
+const fs = require('fs')
+const path = require('path')
+const { getCurrentLanguage, getLanguageConfig } = require('./config.js')
+const { getCondensedGuide } = require('./dynamic/condensed-guide.js')
+const ALGORITHM_PATTERNS = { 'two-sum', 'palindrome-number', 'add-two-numbers', 'longest-common-prefix', 'valid-parentheses', 'median-of-two-sorted-arrays' }
+function getProblemName(problemPath)
+function provideHints(problemPath, level = 1)
+function showProblemAnalysis(problemPath)
+function resolveProblemPath(input)
+function main()
+</file>
+
+<file path="index.js">
+const { getCurrentLanguage, getLanguageConfig, LANGUAGE_CONFIGS } = require('./config.js')
+</file>
+
+<file path="init.js">
+const fs = require('fs')
+const path = require('path')
+function main()
+</file>
+
+<file path="learn.js">
+const fs = require('fs')
+const path = require('path')
+const { getCurrentLanguage, getLanguageConfig } = require('./config.js')
+const { ALGORITHM_PATTERNS } = require('./hint.js')
+const { getCondensedGuide } = require('./dynamic/condensed-guide.js')
+function getProblemName(problemPath)
+function resolveProblemPath(input)
+function readProblemFile(problemPath)
+function generateAILearningPrompts(problemName, pattern, problemContent)
+function showAILearningSession(problemPath)
+function generateQuickPrompt(problemPath, promptType = 'understanding')
+function main()
+</file>
+
+<file path="open-problem.js">
+const fs = require("fs")
+const path = require("path")
+const { exec } = require("child_process")
+const {
+  getCurrentLanguage,
+  getLanguageConfig,
+  getPracticePath,
+} = require("./config.js")
+function extractLeetCodeLink(filePath)
+function isProblemFile(filename)
+function findProblemFiles(dir = process.cwd())
+function openInBrowser(url)
+function resolveProblemPath(input)
+function main()
+</file>
+
+<file path="progress-check.js">
+const fs = require("fs")
+const path = require("path")
+const { DIFFICULTY_NAMES, getPracticePath } = require("./config.js")
+const {
+  getAllProblems,
+  getStatistics,
+} = require("./dynamic/problems/index.js")
+function getCompletedProblems()
+function getActiveProblemCount()
+function main()
+</file>
+
+<file path="setup.js">
+const fs = require("fs")
+const path = require("path")
+const directories = ["practice/easy", "practice/medium", "practice/hard"]
+const configPath = ".leetcode-config.json"
+const defaultConfig = { language, companies, createdAt }
+</file>
+
+<file path="simple-challenge.js">
+const fs = require("fs")
+const path = require("path")
+const { SimpleLeetCodeScraper } = require("./simple-scraper")
+const {
+  getCurrentLanguage,
+  getLanguageConfig,
+  DIFFICULTY_NAMES,
+  getPracticePath,
+} = require("./config")
+const POPULAR_PROBLEMS = { easy, medium, hard }
+
+class SimpleChallengeGenerator:
+    constructor()
+    async generateChallenge(difficulty, count = 1)
+    getExistingProblems()
+    selectRandomProblem(difficulty, existingProblems)
+    async createProblemFiles(difficulty, problemData)
+    generateProblemFile(problemData, language, langConfig)
+    generateTestFile(problemData, language, langConfig)
+    generateReadmeFile(problemData)
+    displayResults(results)
+    async delay(ms)
+async function main()
+</file>
+
+<file path="simple-scraper.js">
+const https = require('https')
+const { URL } = require('url')
+
+class SimpleLeetCodeScraper:
+    constructor()
+    async getProblem(problemSlug)
+    async fetchHTML(url)
+    async makeRequest(url, attempt = 1)
+    parseProblemHTML(html, problemSlug)
+    extractDifficulty(html)
+    extractDescription(html)
+    extractExamples(html)
+    parseExample(exampleText)
+    extractConstraints(html)
+    cleanHTML(html)
+</file>
+
+<file path="test-runner.js">
+const fs = require("fs")
+const path = require("path")
+const { exec } = require("child_process")
+const {
+  getCurrentLanguage,
+  getLanguageConfig,
+  getPracticePath,
+} = require("./config.js")
+function runJavaScriptTests(problemPath)
+function runPythonTests(problemPath)
+function runJavaTests(problemPath)
+function runCppTests(problemPath)
+function runTests(problemPath)
+function isProblemFile(filename)
+function findProblemFiles(dir = process.cwd())
+function resolveProblemPath(input)
+const args = process.argv.slice(2)
+let input = args[0]
+const problemFiles = findProblemFiles()
+const activeProblems = []
+const completedProblems = []
+const problemPath = problemFiles[0]
+const projectRoot = process.cwd()
+const relativePath = path.relative(projectRoot, problemPath)
+const problemPath = resolveProblemPath(input)
+</file>

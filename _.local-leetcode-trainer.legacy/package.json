@@ -1,0 +1,64 @@
+{
+  "name": "local-leetcode-trainer",
+  "version": "1.12.0",
+  "description": "A complete local LeetCode practice environment with multi-language support - use your IDE, collaborate with AI, submit with confidence",
+  "main": "scripts/index.js",
+  "bin": {
+    "local-leetcode-trainer": "bin/leetcode-trainer.js",
+    "lct": "bin/leetcode-trainer.js",
+    "leetcode-trainer": "bin/leetcode-trainer.js"
+  },
+  "scripts": {
+    "test": "node scripts/test-runner.js",
+    "open": "node scripts/open-problem.js",
+    "challenge": "node scripts/challenge.js",
+    "complete": "node scripts/complete.js",
+    "lang": "node scripts/config.js",
+    "hint": "node scripts/hint.js",
+    "learn": "node scripts/learn.js",
+    "postinstall": "node scripts/setup.js"
+  },
+  "keywords": [
+    "leetcode",
+    "algorithms",
+    "practice",
+    "offline",
+    "coding-interview",
+    "data-structures",
+    "problem-solving",
+    "programming-practice",
+    "ai-friendly",
+    "multi-language",
+    "javascript",
+    "python",
+    "java",
+    "cpp",
+    "interview-prep",
+    "coding-practice",
+    "algorithm-practice"
+  ],
+  "author": "Asa Tsai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karote00/local-leetcode-trainer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/karote00/local-leetcode-trainer/issues"
+  },
+  "homepage": "https://github.com/karote00/local-leetcode-trainer#readme",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "files": [
+    "scripts/",
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "preferGlobal": true,
+  "dependencies": {
+    "commander": "^14.0.0",
+    "js-yaml": "^4.1.0"
+  }
+}
