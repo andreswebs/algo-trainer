@@ -3,15 +3,15 @@
  *
  * Provides path resolution following XDG Base Directory Specification.
  *
- * @module core/config/paths
+ * @module config/paths
  */
 
-import { joinPath, getAppPaths } from "../../utils/fs.ts";
+import { getAppPaths, joinPath } from '../../utils/fs.ts';
 
 /**
  * Application name for configuration paths
  */
-export const APP_NAME = "algo-trainer";
+export const APP_NAME = 'algo-trainer';
 
 /**
  * Get all application-specific paths
@@ -43,10 +43,10 @@ export function getConfigFilePaths(): {
   const paths = getConfigPaths();
 
   return {
-    main: joinPath(paths.config, "config.json"),
-    workspace: joinPath(paths.state, "workspace.json"),
-    progress: joinPath(paths.data, "progress.json"),
-    cache: joinPath(paths.cache, "api-cache.json"),
+    main: joinPath(paths.config, 'config.json'),
+    workspace: joinPath(paths.state, 'workspace.json'),
+    progress: joinPath(paths.data, 'progress.json'),
+    cache: joinPath(paths.cache, 'api-cache.json'),
   };
 }
 
@@ -59,16 +59,16 @@ export function getLegacyConfigPaths(): {
 } {
   try {
     // @ts-ignore: Deno may not be available
-    const home = Deno.env.get("HOME") || "/tmp";
+    const home = Deno.env.get('HOME') || '/tmp';
 
     return {
-      oldConfig: joinPath(home, ".leetcode-config.json"),
-      oldWorkspace: joinPath(home, ".algo-trainer"),
+      oldConfig: joinPath(home, '.leetcode-config.json'),
+      oldWorkspace: joinPath(home, '.algo-trainer'),
     };
   } catch {
     return {
-      oldConfig: "/tmp/.leetcode-config.json",
-      oldWorkspace: "/tmp/.algo-trainer",
+      oldConfig: '/tmp/.leetcode-config.json',
+      oldWorkspace: '/tmp/.algo-trainer',
     };
   }
 }

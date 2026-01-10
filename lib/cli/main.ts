@@ -6,20 +6,15 @@
  * @module cli/main
  */
 
-import {
-  logError,
-  logSuccess,
-  setOutputOptions,
-  exitWithError,
-} from "../utils/output.ts";
-import { formatError } from "../utils/errors.ts";
-import { initializeConfig } from "../core/config/manager.ts";
-import type { CommandArgs } from "./types.ts";
+import { exitWithError, logError, logSuccess, setOutputOptions } from '../utils/output.ts';
+import { formatError } from '../utils/errors.ts';
+import { initializeConfig } from '../config/manager.ts';
+import type { CommandArgs } from './types.ts';
 
 /**
  * Application version
  */
-const VERSION = "2.0.0";
+const VERSION = '2.0.0';
 
 /**
  * Simple argument parser
@@ -34,28 +29,28 @@ function parseArguments(args: string[]): {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg.startsWith("--")) {
+    if (arg.startsWith('--')) {
       const flagName = arg.slice(2);
-      if (flagName.includes("=")) {
-        const [name, value] = flagName.split("=", 2);
+      if (flagName.includes('=')) {
+        const [name, value] = flagName.split('=', 2);
         flags[name] = value;
       } else {
         // Check if next arg is a value
         const nextArg = args[i + 1];
-        if (nextArg && !nextArg.startsWith("-")) {
+        if (nextArg && !nextArg.startsWith('-')) {
           flags[flagName] = nextArg;
           i++; // Skip next arg
         } else {
           flags[flagName] = true;
         }
       }
-    } else if (arg.startsWith("-") && arg.length > 1) {
+    } else if (arg.startsWith('-') && arg.length > 1) {
       const flagName = arg.slice(1);
-      if (flagName === "h") flags.help = true;
-      else if (flagName === "v") flags.version = true;
-      else if (flagName === "c") {
+      if (flagName === 'h') flags.help = true;
+      else if (flagName === 'v') flags.version = true;
+      else if (flagName === 'c') {
         const nextArg = args[i + 1];
-        if (nextArg && !nextArg.startsWith("-")) {
+        if (nextArg && !nextArg.startsWith('-')) {
           flags.config = nextArg;
           i++;
         } else {
@@ -88,13 +83,9 @@ export async function main(args: string[] = []): Promise<void> {
 
     // Set output options based on flags
     setOutputOptions({
-      useColors: !parsed.flags["no-color"],
-      useEmoji: !parsed.flags["no-emoji"],
-      verbosity: parsed.flags.verbose
-        ? "verbose"
-        : parsed.flags.quiet
-        ? "quiet"
-        : "normal",
+      useColors: !parsed.flags['no-color'],
+      useEmoji: !parsed.flags['no-emoji'],
+      verbosity: parsed.flags.verbose ? 'verbose' : parsed.flags.quiet ? 'quiet' : 'normal',
     });
 
     if (parsed.flags.help || parsed.positional.length === 0) {
@@ -107,8 +98,7 @@ export async function main(args: string[] = []): Promise<void> {
 
     // Extract command and arguments
     const command = parsed.positional[0];
-    const subcommand =
-      parsed.positional.length > 1 ? parsed.positional[1] : undefined;
+    const subcommand = parsed.positional.length > 1 ? parsed.positional[1] : undefined;
     const remainingArgs = parsed.positional.slice(subcommand ? 2 : 1);
 
     const commandArgs: CommandArgs = {
@@ -117,8 +107,8 @@ export async function main(args: string[] = []): Promise<void> {
       flags: {
         verbose: parsed.flags.verbose || false,
         quiet: parsed.flags.quiet || false,
-        "no-color": parsed.flags["no-color"] || false,
-        "no-emoji": parsed.flags["no-emoji"] || false,
+        'no-color': parsed.flags['no-color'] || false,
+        'no-emoji': parsed.flags['no-emoji'] || false,
         config: parsed.flags.config,
       },
     };
@@ -132,17 +122,16 @@ export async function main(args: string[] = []): Promise<void> {
     const result = await routeCommand(commandArgs);
 
     if (!result.success) {
-      exitWithError(result.error || "Command failed", result.exitCode);
+      exitWithError(result.error || 'Command failed', result.exitCode);
     }
   } catch (error) {
     const errorMessage = formatError(error);
-    logError("Unexpected error occurred", errorMessage);
+    logError('Unexpected error occurred', errorMessage);
 
     // @ts-ignore: Deno may not be available
     try {
       Deno.exit(1);
     } catch {
-      // @ts-ignore: process may not be available
       try {
         process.exit?.(1);
       } catch {
@@ -156,26 +145,26 @@ export async function main(args: string[] = []): Promise<void> {
  * Route command to appropriate handler
  */
 async function routeCommand(
-  args: CommandArgs
+  args: CommandArgs,
 ): Promise<{ success: boolean; error?: string; exitCode: number }> {
   switch (args.command) {
-    case "challenge":
+    case 'challenge':
       logSuccess(`Challenge command called with args: ${JSON.stringify(args)}`);
       return { success: true, exitCode: 0 };
 
-    case "complete":
+    case 'complete':
       logSuccess(`Complete command called with args: ${JSON.stringify(args)}`);
       return { success: true, exitCode: 0 };
 
-    case "hint":
+    case 'hint':
       logSuccess(`Hint command called with args: ${JSON.stringify(args)}`);
       return { success: true, exitCode: 0 };
 
-    case "config":
+    case 'config':
       logSuccess(`Config command called with args: ${JSON.stringify(args)}`);
       return { success: true, exitCode: 0 };
 
-    case "init":
+    case 'init':
       logSuccess(`Init command called with args: ${JSON.stringify(args)}`);
       return { success: true, exitCode: 0 };
 
@@ -235,8 +224,7 @@ try {
   // @ts-ignore: Check if running as main module
   if ((import.meta as any)?.main) {
     // @ts-ignore: Get command line arguments from available runtime
-    const args =
-      (globalThis as any)?.Deno?.args ||
+    const args = (globalThis as any)?.Deno?.args ||
       (globalThis as any)?.process?.argv?.slice(2) ||
       [];
     main(args);

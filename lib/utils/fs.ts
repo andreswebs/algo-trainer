@@ -6,10 +6,10 @@
  * @module utils/fs
  */
 
-import { join, dirname, resolve, relative, basename, extname } from "@std/path";
-import { ensureDir, exists, copy } from "@std/fs";
-import { FileSystemError, createErrorContext } from "./errors.ts";
-import type { FileOperationResult } from "../types/global.ts";
+import { basename, dirname, extname, join, relative, resolve } from '@std/path';
+import { copy, ensureDir, exists } from '@std/fs';
+import { createErrorContext, FileSystemError } from './errors.ts';
+import type { FileOperationResult } from '../types/global.ts';
 
 /**
  * File operation options
@@ -61,35 +61,34 @@ export interface XdgPaths {
 export function getXdgPaths(): XdgPaths {
   try {
     // @ts-ignore: Deno may not be available
-    const home = Deno.env.get("HOME") || "/tmp";
+    const home = Deno.env.get('HOME') || '/tmp';
 
     return {
       // @ts-ignore: Deno may not be available
-      configHome: Deno.env.get("XDG_CONFIG_HOME") || join(home, ".config"),
+      configHome: Deno.env.get('XDG_CONFIG_HOME') || join(home, '.config'),
       // @ts-ignore: Deno may not be available
-      dataHome: Deno.env.get("XDG_DATA_HOME") || join(home, ".local", "share"),
+      dataHome: Deno.env.get('XDG_DATA_HOME') || join(home, '.local', 'share'),
       // @ts-ignore: Deno may not be available
-      cacheHome: Deno.env.get("XDG_CACHE_HOME") || join(home, ".cache"),
+      cacheHome: Deno.env.get('XDG_CACHE_HOME') || join(home, '.cache'),
       // @ts-ignore: Deno may not be available
-      stateHome:
-        Deno.env.get("XDG_STATE_HOME") || join(home, ".local", "state"),
+      stateHome: Deno.env.get('XDG_STATE_HOME') || join(home, '.local', 'state'),
       // @ts-ignore: Deno may not be available
-      configDirs: (Deno.env.get("XDG_CONFIG_DIRS") || "/etc/xdg").split(":"),
+      configDirs: (Deno.env.get('XDG_CONFIG_DIRS') || '/etc/xdg').split(':'),
       // @ts-ignore: Deno may not be available
       dataDirs: (
-        Deno.env.get("XDG_DATA_DIRS") || "/usr/local/share:/usr/share"
-      ).split(":"),
+        Deno.env.get('XDG_DATA_DIRS') || '/usr/local/share:/usr/share'
+      ).split(':'),
     };
   } catch {
     // Fallback for non-Deno environments
-    const home = "/tmp";
+    const home = '/tmp';
     return {
-      configHome: join(home, ".config"),
-      dataHome: join(home, ".local", "share"),
-      cacheHome: join(home, ".cache"),
-      stateHome: join(home, ".local", "state"),
-      configDirs: ["/etc/xdg"],
-      dataDirs: ["/usr/local/share", "/usr/share"],
+      configHome: join(home, '.config'),
+      dataHome: join(home, '.local', 'share'),
+      cacheHome: join(home, '.cache'),
+      stateHome: join(home, '.local', 'state'),
+      configDirs: ['/etc/xdg'],
+      dataDirs: ['/usr/local/share', '/usr/share'],
     };
   }
 }
@@ -116,7 +115,7 @@ export async function pathExists(path: string): Promise<boolean> {
   } catch (error) {
     throw new FileSystemError(
       `Failed to check if path exists: ${path}`,
-      createErrorContext("pathExists", { path, error: String(error) })
+      createErrorContext('pathExists', { path, error: String(error) }),
     );
   }
 }
@@ -131,7 +130,7 @@ export async function readTextFile(path: string): Promise<string> {
   } catch (error) {
     throw new FileSystemError(
       `Failed to read file: ${path}`,
-      createErrorContext("readTextFile", { path, error: String(error) })
+      createErrorContext('readTextFile', { path, error: String(error) }),
     );
   }
 }
@@ -142,7 +141,7 @@ export async function readTextFile(path: string): Promise<string> {
 export async function writeTextFile(
   path: string,
   content: string,
-  options: FileOptions = {}
+  options: FileOptions = {},
 ): Promise<FileOperationResult> {
   try {
     if (options.ensureParents) {
@@ -153,7 +152,7 @@ export async function writeTextFile(
     if (!options.overwrite && (await pathExists(path))) {
       throw new FileSystemError(
         `File already exists and overwrite is disabled: ${path}`,
-        createErrorContext("writeTextFile", { path, overwrite: false })
+        createErrorContext('writeTextFile', { path, overwrite: false }),
       );
     }
 
@@ -171,7 +170,7 @@ export async function writeTextFile(
     }
     throw new FileSystemError(
       `Failed to write file: ${path}`,
-      createErrorContext("writeTextFile", { path, error: String(error) })
+      createErrorContext('writeTextFile', { path, error: String(error) }),
     );
   }
 }
@@ -189,7 +188,7 @@ export async function readJsonFile<T = unknown>(path: string): Promise<T> {
     }
     throw new FileSystemError(
       `Failed to read JSON file: ${path}`,
-      createErrorContext("readJsonFile", { path, error: String(error) })
+      createErrorContext('readJsonFile', { path, error: String(error) }),
     );
   }
 }
@@ -200,7 +199,7 @@ export async function readJsonFile<T = unknown>(path: string): Promise<T> {
 export async function writeJsonFile<T>(
   path: string,
   data: T,
-  options: FileOptions & { indent?: number } = {}
+  options: FileOptions & { indent?: number } = {},
 ): Promise<FileOperationResult> {
   try {
     const { indent = 2, ...fileOptions } = options;
@@ -212,7 +211,7 @@ export async function writeJsonFile<T>(
     }
     throw new FileSystemError(
       `Failed to write JSON file: ${path}`,
-      createErrorContext("writeJsonFile", { path, error: String(error) })
+      createErrorContext('writeJsonFile', { path, error: String(error) }),
     );
   }
 }
@@ -221,7 +220,7 @@ export async function writeJsonFile<T>(
  * Create directory with parents
  */
 export async function createDirectory(
-  path: string
+  path: string,
 ): Promise<FileOperationResult> {
   try {
     await ensureDir(path);
@@ -232,7 +231,7 @@ export async function createDirectory(
   } catch (error) {
     throw new FileSystemError(
       `Failed to create directory: ${path}`,
-      createErrorContext("createDirectory", { path, error: String(error) })
+      createErrorContext('createDirectory', { path, error: String(error) }),
     );
   }
 }
@@ -242,7 +241,7 @@ export async function createDirectory(
  */
 export async function remove(
   path: string,
-  options: { recursive?: boolean } = {}
+  options: { recursive?: boolean } = {},
 ): Promise<FileOperationResult> {
   try {
     // @ts-ignore: Deno may not be available
@@ -254,7 +253,7 @@ export async function remove(
   } catch (error) {
     throw new FileSystemError(
       `Failed to remove: ${path}`,
-      createErrorContext("remove", { path, error: String(error) })
+      createErrorContext('remove', { path, error: String(error) }),
     );
   }
 }
@@ -265,7 +264,7 @@ export async function remove(
 export async function copyPath(
   src: string,
   dest: string,
-  options: FileOptions = {}
+  options: FileOptions = {},
 ): Promise<FileOperationResult> {
   try {
     if (options.ensureParents) {
@@ -275,7 +274,7 @@ export async function copyPath(
     if (!options.overwrite && (await pathExists(dest))) {
       throw new FileSystemError(
         `Destination already exists and overwrite is disabled: ${dest}`,
-        createErrorContext("copyPath", { src, dest, overwrite: false })
+        createErrorContext('copyPath', { src, dest, overwrite: false }),
       );
     }
 
@@ -292,7 +291,7 @@ export async function copyPath(
     }
     throw new FileSystemError(
       `Failed to copy from ${src} to ${dest}`,
-      createErrorContext("copyPath", { src, dest, error: String(error) })
+      createErrorContext('copyPath', { src, dest, error: String(error) }),
     );
   }
 }
@@ -302,18 +301,17 @@ export async function copyPath(
  */
 export async function listDirectory(
   path: string,
-  options: ListOptions = {}
+  options: ListOptions = {},
 ): Promise<Array<{ name: string; path: string; isDirectory: boolean }>> {
   try {
-    const result: Array<{ name: string; path: string; isDirectory: boolean }> =
-      [];
+    const result: Array<{ name: string; path: string; isDirectory: boolean }> = [];
 
     // @ts-ignore: Deno may not be available
     for await (const entry of Deno.readDir(path)) {
       const { includeHidden = false } = options;
 
       // Skip hidden files if not requested
-      if (!includeHidden && entry.name.startsWith(".")) {
+      if (!includeHidden && entry.name.startsWith('.')) {
         continue;
       }
 
@@ -337,7 +335,7 @@ export async function listDirectory(
   } catch (error) {
     throw new FileSystemError(
       `Failed to list directory: ${path}`,
-      createErrorContext("listDirectory", { path, error: String(error) })
+      createErrorContext('listDirectory', { path, error: String(error) }),
     );
   }
 }
@@ -367,7 +365,7 @@ export async function getStats(path: string): Promise<{
   } catch (error) {
     throw new FileSystemError(
       `Failed to get stats for: ${path}`,
-      createErrorContext("getStats", { path, error: String(error) })
+      createErrorContext('getStats', { path, error: String(error) }),
     );
   }
 }
@@ -378,17 +376,16 @@ export async function getStats(path: string): Promise<{
 export async function findFiles(
   searchPath: string,
   pattern: RegExp | string,
-  options: ListOptions = {}
+  options: ListOptions = {},
 ): Promise<string[]> {
   try {
     const entries = await listDirectory(searchPath, {
       ...options,
       recursive: true,
     });
-    const matcher =
-      typeof pattern === "string"
-        ? new RegExp(pattern.replace(/\*/g, ".*").replace(/\?/g, "."))
-        : pattern;
+    const matcher = typeof pattern === 'string'
+      ? new RegExp(pattern.replace(/\*/g, '.*').replace(/\?/g, '.'))
+      : pattern;
 
     return entries
       .filter((entry) => !entry.isDirectory && matcher.test(entry.name))
@@ -396,11 +393,11 @@ export async function findFiles(
   } catch (error) {
     throw new FileSystemError(
       `Failed to find files in: ${searchPath}`,
-      createErrorContext("findFiles", {
+      createErrorContext('findFiles', {
         searchPath,
         pattern: String(pattern),
         error: String(error),
-      })
+      }),
     );
   }
 }

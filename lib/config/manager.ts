@@ -4,33 +4,16 @@
  * Handles reading, writing, and validating application configuration
  * following XDG Base Directory Specification.
  *
- * @module core/config/manager
+ * @module config/manager
  */
 
-import {
-  pathExists,
-  readJsonFile,
-  writeJsonFile,
-  createDirectory,
-} from "../../utils/fs.ts";
-import { validateConfig, validateOrThrow } from "../../utils/validation.ts";
-import { ConfigError, createErrorContext } from "../../utils/errors.ts";
-import { logInfo, logWarning } from "../../utils/output.ts";
-import {
-  getConfigPaths,
-  getConfigFilePaths,
-  getLegacyConfigPaths,
-} from "./paths.ts";
-import {
-  DEFAULT_CONFIG,
-  type ConfigMigration,
-  type LegacyConfig,
-} from "./types.ts";
-import type {
-  Config,
-  UserPreferences,
-  SupportedLanguage,
-} from "../../types/global.ts";
+import { createDirectory, pathExists, readJsonFile, writeJsonFile } from '../../utils/fs.ts';
+import { validateConfig, validateOrThrow } from '../../utils/validation.ts';
+import { ConfigError, createErrorContext } from '../../utils/errors.ts';
+import { logInfo, logWarning } from '../../utils/output.ts';
+import { getConfigFilePaths, getConfigPaths, getLegacyConfigPaths } from './paths.ts';
+import { type ConfigMigration, DEFAULT_CONFIG, type LegacyConfig } from './types.ts';
+import type { Config, SupportedLanguage, UserPreferences } from '../../types/global.ts';
 
 /**
  * Configuration manager class
@@ -56,8 +39,8 @@ export class ConfigManager {
         const validation = validateConfig(configData);
         if (!validation.valid) {
           throw new ConfigError(
-            `Invalid configuration: ${validation.errors.join(", ")}`,
-            createErrorContext("loadConfig", { path: this.configPath })
+            `Invalid configuration: ${validation.errors.join(', ')}`,
+            createErrorContext('loadConfig', { path: this.configPath }),
           );
         }
 
@@ -73,7 +56,7 @@ export class ConfigManager {
       }
 
       // Create default config
-      logInfo("No configuration found, creating default configuration");
+      logInfo('No configuration found, creating default configuration');
       this.config = { ...DEFAULT_CONFIG };
       await this.save();
       return this.config;
@@ -83,10 +66,10 @@ export class ConfigManager {
       }
       throw new ConfigError(
         `Failed to load configuration: ${String(error)}`,
-        createErrorContext("loadConfig", {
+        createErrorContext('loadConfig', {
           path: this.configPath,
           error: String(error),
-        })
+        }),
       );
     }
   }
@@ -97,8 +80,8 @@ export class ConfigManager {
   async save(): Promise<void> {
     if (!this.config) {
       throw new ConfigError(
-        "No configuration to save",
-        createErrorContext("saveConfig", { path: this.configPath })
+        'No configuration to save',
+        createErrorContext('saveConfig', { path: this.configPath }),
       );
     }
 
@@ -108,7 +91,7 @@ export class ConfigManager {
       await createDirectory(configPaths.config);
 
       // Validate before saving
-      validateOrThrow(this.config, validateConfig, "configuration");
+      validateOrThrow(this.config, validateConfig, 'configuration');
 
       // Save to file
       await writeJsonFile(this.configPath, this.config, {
@@ -116,17 +99,17 @@ export class ConfigManager {
         indent: 2,
       });
 
-      logInfo("Configuration saved successfully");
+      logInfo('Configuration saved successfully');
     } catch (error) {
       if (error instanceof ConfigError) {
         throw error;
       }
       throw new ConfigError(
         `Failed to save configuration: ${String(error)}`,
-        createErrorContext("saveConfig", {
+        createErrorContext('saveConfig', {
           path: this.configPath,
           error: String(error),
-        })
+        }),
       );
     }
   }
@@ -137,8 +120,8 @@ export class ConfigManager {
   getConfig(): Config {
     if (!this.config) {
       throw new ConfigError(
-        "Configuration not loaded",
-        createErrorContext("getConfig")
+        'Configuration not loaded',
+        createErrorContext('getConfig'),
       );
     }
     return { ...this.config };
@@ -150,8 +133,8 @@ export class ConfigManager {
   async updateConfig(updates: Partial<Config>): Promise<void> {
     if (!this.config) {
       throw new ConfigError(
-        "Configuration not loaded",
-        createErrorContext("updateConfig")
+        'Configuration not loaded',
+        createErrorContext('updateConfig'),
       );
     }
 
@@ -166,12 +149,12 @@ export class ConfigManager {
    * Update user preferences
    */
   async updatePreferences(
-    preferences: Partial<UserPreferences>
+    preferences: Partial<UserPreferences>,
   ): Promise<void> {
     if (!this.config) {
       throw new ConfigError(
-        "Configuration not loaded",
-        createErrorContext("updatePreferences")
+        'Configuration not loaded',
+        createErrorContext('updatePreferences'),
       );
     }
 
@@ -213,7 +196,7 @@ export class ConfigManager {
   async reset(): Promise<void> {
     this.config = { ...DEFAULT_CONFIG };
     await this.save();
-    logInfo("Configuration reset to defaults");
+    logInfo('Configuration reset to defaults');
   }
 
   /**
@@ -224,22 +207,20 @@ export class ConfigManager {
 
     try {
       if (await pathExists(legacyPaths.oldConfig)) {
-        logInfo("Found legacy configuration, migrating...");
+        logInfo('Found legacy configuration, migrating...');
 
         const legacyConfig = await readJsonFile<LegacyConfig>(
-          legacyPaths.oldConfig
+          legacyPaths.oldConfig,
         );
 
         // Map legacy fields to new format
         const migratedConfig: Config = {
           ...DEFAULT_CONFIG,
-          language:
-            this.mapLegacyLanguage(legacyConfig.language) ||
+          language: this.mapLegacyLanguage(legacyConfig.language) ||
             DEFAULT_CONFIG.language,
           workspace: legacyConfig.defaultWorkspace || DEFAULT_CONFIG.workspace,
           aiEnabled: legacyConfig.useAI ?? DEFAULT_CONFIG.aiEnabled,
-          companies:
-            legacyConfig.preferredCompanies || DEFAULT_CONFIG.companies,
+          companies: legacyConfig.preferredCompanies || DEFAULT_CONFIG.companies,
         };
 
         this.config = migratedConfig;
@@ -255,14 +236,14 @@ export class ConfigManager {
 
         // Save migration info
         const migrationPath = getConfigFilePaths().main.replace(
-          "config.json",
-          "migration.json"
+          'config.json',
+          'migration.json',
         );
         await writeJsonFile(migrationPath, migration, { ensureParents: true });
 
-        logInfo("Legacy configuration migrated successfully");
+        logInfo('Legacy configuration migrated successfully');
         logWarning(
-          `Please consider removing the legacy config file: ${legacyPaths.oldConfig}`
+          `Please consider removing the legacy config file: ${legacyPaths.oldConfig}`,
         );
 
         return true;
@@ -281,17 +262,17 @@ export class ConfigManager {
     if (!language) return null;
 
     const languageMap: Record<string, SupportedLanguage> = {
-      js: "javascript",
-      javascript: "javascript",
-      ts: "typescript",
-      typescript: "typescript",
-      py: "python",
-      python: "python",
-      java: "java",
-      "c++": "cpp",
-      cpp: "cpp",
-      rust: "rust",
-      go: "go",
+      js: 'javascript',
+      javascript: 'javascript',
+      ts: 'typescript',
+      typescript: 'typescript',
+      py: 'python',
+      python: 'python',
+      java: 'java',
+      'c++': 'cpp',
+      cpp: 'cpp',
+      rust: 'rust',
+      go: 'go',
     };
 
     return languageMap[language.toLowerCase()] || null;
@@ -321,7 +302,7 @@ export function getCurrentConfig(): Config {
  * Update configuration
  */
 export async function updateConfiguration(
-  updates: Partial<Config>
+  updates: Partial<Config>,
 ): Promise<void> {
   return await configManager.updateConfig(updates);
 }

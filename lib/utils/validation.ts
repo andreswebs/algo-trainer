@@ -7,15 +7,15 @@
  * @module utils/validation
  */
 
-import { ValidationError } from "./errors.ts";
+import { ValidationError } from './errors.ts';
 import type {
-  SupportedLanguage,
+  Config,
   Difficulty,
   Problem,
-  Config,
-  UserPreferences,
   ProblemProgress,
-} from "../types/global.ts";
+  SupportedLanguage,
+  UserPreferences,
+} from '../types/global.ts';
 
 /**
  * Validation result
@@ -30,7 +30,7 @@ export interface ValidationResult {
  */
 export function createValidationResult(
   valid: boolean,
-  errors: string[] = []
+  errors: string[] = [],
 ): ValidationResult {
   return { valid, errors };
 }
@@ -40,7 +40,7 @@ export function createValidationResult(
  */
 export function validateRequired<T>(
   value: T | null | undefined,
-  fieldName: string
+  fieldName: string,
 ): ValidationResult {
   if (value === null || value === undefined) {
     return createValidationResult(false, [`${fieldName} is required`]);
@@ -59,7 +59,7 @@ export function validateString(
     maxLength?: number;
     pattern?: RegExp;
     allowEmpty?: boolean;
-  } = {}
+  } = {},
 ): ValidationResult {
   const {
     minLength = 0,
@@ -69,7 +69,7 @@ export function validateString(
   } = options;
   const errors: string[] = [];
 
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     errors.push(`${fieldName} must be a string`);
     return createValidationResult(false, errors);
   }
@@ -84,7 +84,7 @@ export function validateString(
 
   if (value.length > maxLength) {
     errors.push(
-      `${fieldName} must be no more than ${maxLength} characters long`
+      `${fieldName} must be no more than ${maxLength} characters long`,
     );
   }
 
@@ -105,7 +105,7 @@ export function validateNumber(
     min?: number;
     max?: number;
     integer?: boolean;
-  } = {}
+  } = {},
 ): ValidationResult {
   const {
     min = Number.MIN_SAFE_INTEGER,
@@ -114,7 +114,7 @@ export function validateNumber(
   } = options;
   const errors: string[] = [];
 
-  if (typeof value !== "number" || isNaN(value)) {
+  if (typeof value !== 'number' || isNaN(value)) {
     errors.push(`${fieldName} must be a number`);
     return createValidationResult(false, errors);
   }
@@ -139,9 +139,9 @@ export function validateNumber(
  */
 export function validateBoolean(
   value: unknown,
-  fieldName: string
+  fieldName: string,
 ): ValidationResult {
-  if (typeof value !== "boolean") {
+  if (typeof value !== 'boolean') {
     return createValidationResult(false, [`${fieldName} must be a boolean`]);
   }
   return createValidationResult(true);
@@ -157,7 +157,7 @@ export function validateArray<T>(
   options: {
     minLength?: number;
     maxLength?: number;
-  } = {}
+  } = {},
 ): ValidationResult {
   const { minLength = 0, maxLength = Number.MAX_SAFE_INTEGER } = options;
   const errors: string[] = [];
@@ -180,7 +180,7 @@ export function validateArray<T>(
       const result = itemValidator(item, index);
       if (!result.valid) {
         errors.push(
-          ...result.errors.map((err) => `${fieldName}[${index}]: ${err}`)
+          ...result.errors.map((err) => `${fieldName}[${index}]: ${err}`),
         );
       }
     });
@@ -195,11 +195,11 @@ export function validateArray<T>(
 export function validateEnum<T extends string>(
   value: unknown,
   fieldName: string,
-  validValues: T[]
+  validValues: T[],
 ): ValidationResult {
-  if (typeof value !== "string" || !validValues.includes(value as T)) {
+  if (typeof value !== 'string' || !validValues.includes(value as T)) {
     return createValidationResult(false, [
-      `${fieldName} must be one of: ${validValues.join(", ")}`,
+      `${fieldName} must be one of: ${validValues.join(', ')}`,
     ]);
   }
   return createValidationResult(true);
@@ -210,23 +210,23 @@ export function validateEnum<T extends string>(
  */
 export function validateSupportedLanguage(value: unknown): ValidationResult {
   const validLanguages: SupportedLanguage[] = [
-    "typescript",
-    "javascript",
-    "python",
-    "java",
-    "cpp",
-    "rust",
-    "go",
+    'typescript',
+    'javascript',
+    'python',
+    'java',
+    'cpp',
+    'rust',
+    'go',
   ];
-  return validateEnum(value, "language", validLanguages);
+  return validateEnum(value, 'language', validLanguages);
 }
 
 /**
  * Validate difficulty
  */
 export function validateDifficulty(value: unknown): ValidationResult {
-  const validDifficulties: Difficulty[] = ["easy", "medium", "hard"];
-  return validateEnum(value, "difficulty", validDifficulties);
+  const validDifficulties: Difficulty[] = ['easy', 'medium', 'hard'];
+  return validateEnum(value, 'difficulty', validDifficulties);
 }
 
 /**
@@ -234,7 +234,7 @@ export function validateDifficulty(value: unknown): ValidationResult {
  */
 export function validateEmail(value: unknown): ValidationResult {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return validateString(value, "email", {
+  return validateString(value, 'email', {
     pattern: emailPattern,
     allowEmpty: false,
   });
@@ -245,7 +245,7 @@ export function validateEmail(value: unknown): ValidationResult {
  */
 export function validateUrl(
   value: unknown,
-  fieldName = "URL"
+  fieldName = 'URL',
 ): ValidationResult {
   const stringResult = validateString(value, fieldName, { allowEmpty: false });
   if (!stringResult.valid) {
@@ -265,7 +265,7 @@ export function validateUrl(
  */
 export function validateFilePath(
   value: unknown,
-  fieldName = "file path"
+  fieldName = 'file path',
 ): ValidationResult {
   const stringResult = validateString(value, fieldName, {
     allowEmpty: false,
@@ -294,44 +294,44 @@ export function validateFilePath(
 export function validateUserPreferences(value: unknown): ValidationResult {
   const errors: string[] = [];
 
-  if (!value || typeof value !== "object") {
-    return createValidationResult(false, ["preferences must be an object"]);
+  if (!value || typeof value !== 'object') {
+    return createValidationResult(false, ['preferences must be an object']);
   }
 
   const prefs = value as Record<string, unknown>;
 
   // Validate theme
-  if ("theme" in prefs) {
-    const themeResult = validateEnum(prefs.theme, "theme", [
-      "light",
-      "dark",
-      "auto",
+  if ('theme' in prefs) {
+    const themeResult = validateEnum(prefs.theme, 'theme', [
+      'light',
+      'dark',
+      'auto',
     ]);
     if (!themeResult.valid) errors.push(...themeResult.errors);
   }
 
   // Validate verbosity
-  if ("verbosity" in prefs) {
-    const verbosityResult = validateEnum(prefs.verbosity, "verbosity", [
-      "quiet",
-      "normal",
-      "verbose",
+  if ('verbosity' in prefs) {
+    const verbosityResult = validateEnum(prefs.verbosity, 'verbosity', [
+      'quiet',
+      'normal',
+      'verbose',
     ]);
     if (!verbosityResult.valid) errors.push(...verbosityResult.errors);
   }
 
   // Validate templateStyle
-  if ("templateStyle" in prefs) {
-    const styleResult = validateEnum(prefs.templateStyle, "templateStyle", [
-      "minimal",
-      "documented",
-      "comprehensive",
+  if ('templateStyle' in prefs) {
+    const styleResult = validateEnum(prefs.templateStyle, 'templateStyle', [
+      'minimal',
+      'documented',
+      'comprehensive',
     ]);
     if (!styleResult.valid) errors.push(...styleResult.errors);
   }
 
   // Validate boolean fields
-  const booleanFields = ["autoSave", "useEmoji", "useColors"];
+  const booleanFields = ['autoSave', 'useEmoji', 'useColors'];
   for (const field of booleanFields) {
     if (field in prefs) {
       const result = validateBoolean(prefs[field], field);
@@ -348,17 +348,17 @@ export function validateUserPreferences(value: unknown): ValidationResult {
 export function validateConfig(value: unknown): ValidationResult {
   const errors: string[] = [];
 
-  if (!value || typeof value !== "object") {
-    return createValidationResult(false, ["config must be an object"]);
+  if (!value || typeof value !== 'object') {
+    return createValidationResult(false, ['config must be an object']);
   }
 
   const config = value as Record<string, unknown>;
 
   // Validate required fields
-  const requiredResult = validateRequired(config.language, "language");
+  const requiredResult = validateRequired(config.language, 'language');
   if (!requiredResult.valid) errors.push(...requiredResult.errors);
 
-  const workspaceResult = validateRequired(config.workspace, "workspace");
+  const workspaceResult = validateRequired(config.workspace, 'workspace');
   if (!workspaceResult.valid) errors.push(...workspaceResult.errors);
 
   // Validate language
@@ -369,36 +369,35 @@ export function validateConfig(value: unknown): ValidationResult {
 
   // Validate workspace path
   if (config.workspace) {
-    const pathResult = validateFilePath(config.workspace, "workspace");
+    const pathResult = validateFilePath(config.workspace, 'workspace');
     if (!pathResult.valid) errors.push(...pathResult.errors);
   }
 
   // Validate aiEnabled
-  if ("aiEnabled" in config) {
-    const aiResult = validateBoolean(config.aiEnabled, "aiEnabled");
+  if ('aiEnabled' in config) {
+    const aiResult = validateBoolean(config.aiEnabled, 'aiEnabled');
     if (!aiResult.valid) errors.push(...aiResult.errors);
   }
 
   // Validate companies array
-  if ("companies" in config) {
+  if ('companies' in config) {
     const companiesResult = validateArray(
       config.companies,
-      "companies",
-      (item, index) =>
-        validateString(item, `companies[${index}]`, { allowEmpty: false })
+      'companies',
+      (item, index) => validateString(item, `companies[${index}]`, { allowEmpty: false }),
     );
     if (!companiesResult.valid) errors.push(...companiesResult.errors);
   }
 
   // Validate preferences
-  if ("preferences" in config) {
+  if ('preferences' in config) {
     const prefsResult = validateUserPreferences(config.preferences);
     if (!prefsResult.valid) errors.push(...prefsResult.errors);
   }
 
   // Validate version
-  if ("version" in config) {
-    const versionResult = validateString(config.version, "version", {
+  if ('version' in config) {
+    const versionResult = validateString(config.version, 'version', {
       allowEmpty: false,
     });
     if (!versionResult.valid) errors.push(...versionResult.errors);
@@ -413,20 +412,20 @@ export function validateConfig(value: unknown): ValidationResult {
 export function validateProblem(value: unknown): ValidationResult {
   const errors: string[] = [];
 
-  if (!value || typeof value !== "object") {
-    return createValidationResult(false, ["problem must be an object"]);
+  if (!value || typeof value !== 'object') {
+    return createValidationResult(false, ['problem must be an object']);
   }
 
   const problem = value as Record<string, unknown>;
 
   // Required fields
   const requiredFields = [
-    "id",
-    "slug",
-    "title",
-    "difficulty",
-    "description",
-    "examples",
+    'id',
+    'slug',
+    'title',
+    'difficulty',
+    'description',
+    'examples',
   ];
   for (const field of requiredFields) {
     const result = validateRequired(problem[field], field);
@@ -434,7 +433,7 @@ export function validateProblem(value: unknown): ValidationResult {
   }
 
   // Validate string fields
-  const stringFields = ["id", "slug", "title", "description"];
+  const stringFields = ['id', 'slug', 'title', 'description'];
   for (const field of stringFields) {
     if (problem[field]) {
       const result = validateString(problem[field], field, {
@@ -451,7 +450,7 @@ export function validateProblem(value: unknown): ValidationResult {
   }
 
   // Validate arrays
-  const arrayFields = ["examples", "constraints", "hints", "tags"];
+  const arrayFields = ['examples', 'constraints', 'hints', 'tags'];
   for (const field of arrayFields) {
     if (problem[field]) {
       const result = validateArray(problem[field], field);
@@ -468,14 +467,12 @@ export function validateProblem(value: unknown): ValidationResult {
 export function validateOrThrow<T>(
   value: T,
   validator: (value: T) => ValidationResult,
-  context?: string
+  context?: string,
 ): T {
   const result = validator(value);
   if (!result.valid) {
     throw new ValidationError(
-      `Validation failed${
-        context ? ` for ${context}` : ""
-      }: ${result.errors.join(", ")}`
+      `Validation failed${context ? ` for ${context}` : ''}: ${result.errors.join(', ')}`,
     );
   }
   return value;

@@ -54,7 +54,7 @@ From the codebase analysis, the main functional areas are:
 ### New Project Structure
 
 ```
-src/
+lib/
 ├── cli/                    # CLI interface and commands
 │   ├── commands/          # Individual command implementations
 │   │   ├── challenge.ts
@@ -130,7 +130,7 @@ export interface Problem {
   id: string;
   slug: string;
   title: string;
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: 'easy' | 'medium' | 'hard';
   description: string;
   examples: Example[];
   constraints: string[];
@@ -155,20 +155,20 @@ export interface Config {
 }
 
 export interface UserPreferences {
-  theme: "light" | "dark" | "auto";
-  verbosity: "quiet" | "normal" | "verbose";
+  theme: 'light' | 'dark' | 'auto';
+  verbosity: 'quiet' | 'normal' | 'verbose';
   autoSave: boolean;
-  templateStyle: "minimal" | "documented" | "comprehensive";
+  templateStyle: 'minimal' | 'documented' | 'comprehensive';
 }
 
 export type SupportedLanguage =
-  | "typescript"
-  | "javascript"
-  | "python"
-  | "java"
-  | "cpp"
-  | "rust"
-  | "go";
+  | 'typescript'
+  | 'javascript'
+  | 'python'
+  | 'java'
+  | 'cpp'
+  | 'rust'
+  | 'go';
 
 export interface WorkspaceStructure {
   root: string;
@@ -221,9 +221,9 @@ export interface WorkspaceStructure {
 
 **Files to Create:**
 
-- `src/utils/` (all files)
-- `src/types/` (all files)
-- `src/core/config/` (all files)
+- `lib/utils/` (all files)
+- `lib/types/` (all files)
+- `lib/config/` (all files)
 - `deno.json`, `mod.ts`
 
 **Estimated Effort:** 20-25 hours
@@ -266,10 +266,10 @@ export interface WorkspaceStructure {
 
 **Files to Create:**
 
-- `src/core/problem/` (all files)
-- `src/core/workspace/` (all files)
-- `src/data/problems/` (converted data)
-- `src/data/templates/` (language templates)
+- `lib/core/problem/` (all files)
+- `lib/core/workspace/` (all files)
+- `lib/data/problems/` (converted data)
+- `lib/data/templates/` (language templates)
 
 **Estimated Effort:** 25-30 hours
 
@@ -314,7 +314,7 @@ export interface WorkspaceStructure {
 
 **Files to Create:**
 
-- `src/cli/` (all files)
+- `lib/cli/` (all files)
 - Shell completion scripts
 - CLI help documentation
 
@@ -358,9 +358,9 @@ export interface WorkspaceStructure {
 
 **Files to Create:**
 
-- `src/core/ai/` (all files)
-- `src/core/testing/` (all files)
-- `src/utils/http.ts`
+- `lib/core/ai/` (all files)
+- `lib/core/testing/` (all files)
+- `lib/utils/http.ts`
 
 **Estimated Effort:** 25-30 hours
 
@@ -486,14 +486,14 @@ export interface WorkspaceStructure {
 // deno.json
 {
   "tasks": {
-    "dev": "deno run --allow-all --watch src/cli/main.ts",
-    "build": "deno compile --allow-all --output=bin/at src/cli/main.ts",
+    "dev": "deno run --allow-all --watch lib/cli/main.ts",
+    "build": "deno compile --allow-all --output=bin/at lib/cli/main.ts",
     "test": "deno test --allow-all",
     "test:watch": "deno test --allow-all --watch",
     "bench": "deno bench --allow-all",
     "lint": "deno lint",
     "fmt": "deno fmt",
-    "check": "deno check src/**/*.ts"
+    "check": "deno check lib/**/*.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.0",
@@ -538,24 +538,24 @@ export interface WorkspaceStructure {
 // Required Deno permissions for different operations
 const PERMISSIONS = {
   // Core operations
-  read: [".", "$HOME/.config", "$HOME/.cache", "$HOME/.local"],
-  write: [".", "$HOME/.config", "$HOME/.cache", "$HOME/.local"],
+  read: ['.', '$HOME/.config', '$HOME/.cache', '$HOME/.local'],
+  write: ['.', '$HOME/.config', '$HOME/.cache', '$HOME/.local'],
 
   // Network for LeetCode API/scraping
-  net: ["leetcode.com", "api.leetcode.com"],
+  net: ['leetcode.com', 'api.leetcode.com'],
 
   // External processes for test runners
-  run: ["python", "java", "javac", "g++", "rustc", "go"],
+  run: ['python', 'java', 'javac', 'g++', 'rustc', 'go'],
 
   // Environment variables for XDG and configuration
   env: [
-    "HOME",
-    "XDG_CONFIG_HOME",
-    "XDG_CACHE_HOME",
-    "XDG_DATA_HOME",
-    "NO_COLOR",
-    "TERM",
-    "AT_NO_EMOJI",
+    'HOME',
+    'XDG_CONFIG_HOME',
+    'XDG_CACHE_HOME',
+    'XDG_DATA_HOME',
+    'NO_COLOR',
+    'TERM',
+    'AT_NO_EMOJI',
   ],
 } as const;
 ```
@@ -572,7 +572,7 @@ interface OutputOptions {
 }
 
 let options: OutputOptions = {
-  useColors: !Deno.env.get("NO_COLOR") && Deno.stdout.isTerminal,
+  useColors: !Deno.env.get('NO_COLOR') && Deno.stdout.isTerminal,
   useEmoji: true,
 };
 
@@ -581,12 +581,12 @@ export function setOutputOptions(opts: Partial<OutputOptions>): void {
 }
 
 export function logSuccess(message: string): void {
-  const prefix = options.useEmoji ? "✅ " : "SUCCESS: ";
+  const prefix = options.useEmoji ? '✅ ' : 'SUCCESS: ';
   console.error(`${prefix}${message}`);
 }
 
 export function logError(message: string, details?: string): void {
-  const prefix = options.useEmoji ? "❌ " : "ERROR: ";
+  const prefix = options.useEmoji ? '❌ ' : 'ERROR: ';
   console.error(`${prefix}${message}`);
   if (details) {
     console.error(`   ${details}`);
@@ -594,12 +594,12 @@ export function logError(message: string, details?: string): void {
 }
 
 export function logWarning(message: string): void {
-  const prefix = options.useEmoji ? "⚠️  " : "WARNING: ";
+  const prefix = options.useEmoji ? '⚠️  ' : 'WARNING: ';
   console.error(`${prefix}${message}`);
 }
 
 export function logInfo(message: string): void {
-  const prefix = options.useEmoji ? "ℹ️  " : "INFO: ";
+  const prefix = options.useEmoji ? 'ℹ️  ' : 'INFO: ';
   console.error(`${prefix}${message}`);
 }
 

@@ -6,24 +6,20 @@
  * @module utils/http
  */
 
-import { NetworkError, createErrorContext } from "./errors.ts";
-import type {
-  ApiResponse,
-  CacheMetadata,
-  RateLimitInfo,
-} from "../types/external.ts";
+import { createErrorContext, NetworkError } from './errors.ts';
+import type { ApiResponse, CacheMetadata, RateLimitInfo } from '../types/external.ts';
 
 /**
  * HTTP method types
  */
 export type HttpMethod =
-  | "GET"
-  | "POST"
-  | "PUT"
-  | "DELETE"
-  | "PATCH"
-  | "HEAD"
-  | "OPTIONS";
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS';
 
 /**
  * HTTP request options
@@ -38,7 +34,7 @@ export interface RequestOptions {
   /** Request timeout in milliseconds */
   timeout?: number;
   /** Whether to follow redirects */
-  redirect?: "follow" | "manual" | "error";
+  redirect?: 'follow' | 'manual' | 'error';
   /** Cache options */
   cache?: RequestCache;
 }
@@ -89,7 +85,7 @@ class RateLimiter {
 
     // Remove old requests outside the window
     this.requests = this.requests.filter(
-      (time) => now - time < this.config.windowMs
+      (time) => now - time < this.config.windowMs,
     );
 
     // Check if we're at the limit
@@ -106,9 +102,7 @@ class RateLimiter {
 
     // Apply request delay if configured
     if (this.config.requestDelay) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, this.config.requestDelay)
-      );
+      await new Promise((resolve) => setTimeout(resolve, this.config.requestDelay));
     }
   }
 }
@@ -128,9 +122,9 @@ export class HttpClient {
       defaultHeaders?: Record<string, string>;
       defaultTimeout?: number;
       rateLimit?: RateLimitConfig;
-    } = {}
+    } = {},
   ) {
-    this.baseUrl = options.baseUrl || "";
+    this.baseUrl = options.baseUrl || '';
     this.defaultHeaders = options.defaultHeaders || {};
     this.defaultTimeout = options.defaultTimeout || 30000; // 30 seconds
 
@@ -144,7 +138,7 @@ export class HttpClient {
    */
   async request<T = unknown>(
     url: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<HttpResponse<T>> {
     try {
       // Apply rate limiting if configured
@@ -152,7 +146,7 @@ export class HttpClient {
         await this.rateLimiter.waitIfNeeded();
       }
 
-      const fullUrl = url.startsWith("http") ? url : `${this.baseUrl}${url}`;
+      const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
       const timeout = options.timeout || this.defaultTimeout;
 
       // Merge headers
@@ -167,10 +161,10 @@ export class HttpClient {
 
       try {
         const response = await fetch(fullUrl, {
-          method: options.method || "GET",
+          method: options.method || 'GET',
           headers,
           body: options.body,
-          redirect: options.redirect || "follow",
+          redirect: options.redirect || 'follow',
           signal: controller.signal,
           cache: options.cache,
         });
@@ -198,10 +192,10 @@ export class HttpClient {
       } catch (error) {
         clearTimeout(timeoutId);
 
-        if (error instanceof Error && error.name === "AbortError") {
+        if (error instanceof Error && error.name === 'AbortError') {
           throw new NetworkError(
             `Request timeout after ${timeout}ms`,
-            createErrorContext("request", { url: fullUrl, timeout })
+            createErrorContext('request', { url: fullUrl, timeout }),
           );
         }
 
@@ -214,7 +208,7 @@ export class HttpClient {
 
       throw new NetworkError(
         `HTTP request failed: ${String(error)}`,
-        createErrorContext("request", { url, error: String(error) })
+        createErrorContext('request', { url, error: String(error) }),
       );
     }
   }
@@ -224,9 +218,9 @@ export class HttpClient {
    */
   async get<T = unknown>(
     url: string,
-    options: Omit<RequestOptions, "method" | "body"> = {}
+    options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...options, method: "GET" });
+    return this.request<T>(url, { ...options, method: 'GET' });
   }
 
   /**
@@ -235,17 +229,17 @@ export class HttpClient {
   async post<T = unknown>(
     url: string,
     body?: string | object,
-    options: Omit<RequestOptions, "method"> = {}
+    options: Omit<RequestOptions, 'method'> = {},
   ): Promise<HttpResponse<T>> {
-    const requestBody = typeof body === "object" ? JSON.stringify(body) : body;
+    const requestBody = typeof body === 'object' ? JSON.stringify(body) : body;
     const headers = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options.headers,
     };
 
     return this.request<T>(url, {
       ...options,
-      method: "POST",
+      method: 'POST',
       headers,
       ...(requestBody && { body: requestBody }),
     });
@@ -257,17 +251,17 @@ export class HttpClient {
   async put<T = unknown>(
     url: string,
     body?: string | object,
-    options: Omit<RequestOptions, "method"> = {}
+    options: Omit<RequestOptions, 'method'> = {},
   ): Promise<HttpResponse<T>> {
-    const requestBody = typeof body === "object" ? JSON.stringify(body) : body;
+    const requestBody = typeof body === 'object' ? JSON.stringify(body) : body;
     const headers = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options.headers,
     };
 
     return this.request<T>(url, {
       ...options,
-      method: "PUT",
+      method: 'PUT',
       headers,
       ...(requestBody && { body: requestBody }),
     });
@@ -278,9 +272,9 @@ export class HttpClient {
    */
   async delete<T = unknown>(
     url: string,
-    options: Omit<RequestOptions, "method" | "body"> = {}
+    options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...options, method: "DELETE" });
+    return this.request<T>(url, { ...options, method: 'DELETE' });
   }
 
   /**
@@ -288,13 +282,13 @@ export class HttpClient {
    */
   async downloadText(
     url: string,
-    options: Omit<RequestOptions, "method" | "body"> = {}
+    options: Omit<RequestOptions, 'method' | 'body'> = {},
   ): Promise<string> {
     const response = await this.get<string>(url, options);
     if (!response.ok) {
       throw new NetworkError(
         `Failed to download file: ${response.status} ${response.statusText}`,
-        createErrorContext("downloadText", { url, status: response.status })
+        createErrorContext('downloadText', { url, status: response.status }),
       );
     }
     return response.text;
@@ -305,7 +299,7 @@ export class HttpClient {
    */
   async isAccessible(url: string): Promise<boolean> {
     try {
-      const response = await this.request(url, { method: "HEAD" });
+      const response = await this.request(url, { method: 'HEAD' });
       return response.ok;
     } catch {
       return false;
@@ -320,7 +314,7 @@ export function createApiResponse<T>(
   success: boolean,
   data?: T,
   error?: string,
-  statusCode = 200
+  statusCode = 200,
 ): ApiResponse<T> {
   const response: ApiResponse<T> = {
     success,
@@ -342,12 +336,9 @@ export function createApiResponse<T>(
  * Extract rate limit information from response headers
  */
 export function extractRateLimitInfo(headers: Headers): RateLimitInfo | null {
-  const limit =
-    headers.get("X-RateLimit-Limit") || headers.get("RateLimit-Limit");
-  const remaining =
-    headers.get("X-RateLimit-Remaining") || headers.get("RateLimit-Remaining");
-  const reset =
-    headers.get("X-RateLimit-Reset") || headers.get("RateLimit-Reset");
+  const limit = headers.get('X-RateLimit-Limit') || headers.get('RateLimit-Limit');
+  const remaining = headers.get('X-RateLimit-Remaining') || headers.get('RateLimit-Remaining');
+  const reset = headers.get('X-RateLimit-Reset') || headers.get('RateLimit-Reset');
 
   if (!limit || !remaining || !reset) {
     return null;
@@ -364,9 +355,9 @@ export function extractRateLimitInfo(headers: Headers): RateLimitInfo | null {
  * Extract cache metadata from response headers
  */
 export function extractCacheMetadata(headers: Headers): CacheMetadata {
-  const cacheControl = headers.get("Cache-Control");
-  const etag = headers.get("ETag");
-  const lastModified = headers.get("Last-Modified");
+  const cacheControl = headers.get('Cache-Control');
+  const etag = headers.get('ETag');
+  const lastModified = headers.get('Last-Modified');
 
   let expiresAt = new Date(Date.now() + 3600000); // Default 1 hour
 
@@ -398,7 +389,7 @@ export function extractCacheMetadata(headers: Headers): CacheMetadata {
  */
 export const httpClient = new HttpClient({
   defaultHeaders: {
-    "User-Agent": "AlgoTrainer/2.0.0",
+    'User-Agent': 'AlgoTrainer/2.0.0',
   },
   defaultTimeout: 30000,
 });
@@ -412,7 +403,7 @@ export function createServiceClient(
     headers?: Record<string, string>;
     timeout?: number;
     rateLimit?: RateLimitConfig;
-  } = {}
+  } = {},
 ): HttpClient {
   const clientOptions: {
     baseUrl: string;
@@ -422,7 +413,7 @@ export function createServiceClient(
   } = {
     baseUrl,
     defaultHeaders: {
-      "User-Agent": "AlgoTrainer/2.0.0",
+      'User-Agent': 'AlgoTrainer/2.0.0',
       ...options.headers,
     },
   };

@@ -3,32 +3,28 @@
  *
  * Specific types for configuration management.
  *
- * @module core/config/types
+ * @module config/types
  */
 
-import type {
-  Config,
-  UserPreferences,
-  SupportedLanguage,
-} from "../../types/global.ts";
+import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
 
 /**
  * Default configuration values
  */
 export const DEFAULT_CONFIG: Config = {
-  language: "typescript",
-  workspace: "",
+  language: 'typescript',
+  workspace: '',
   aiEnabled: true,
   companies: [],
   preferences: {
-    theme: "auto",
-    verbosity: "normal",
+    theme: 'auto',
+    verbosity: 'normal',
     autoSave: true,
-    templateStyle: "documented",
+    templateStyle: 'documented',
     useEmoji: true,
     useColors: true,
   },
-  version: "2.0.0",
+  version: '2.0.0',
 };
 
 /**

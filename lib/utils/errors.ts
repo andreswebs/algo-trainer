@@ -17,7 +17,7 @@ export abstract class AlgoTrainerError extends Error {
   constructor(
     message: string,
     code: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -34,7 +34,7 @@ export abstract class AlgoTrainerError extends Error {
     if (this.context && Object.keys(this.context).length > 0) {
       const contextStr = Object.entries(this.context)
         .map(([key, value]) => `${key}: ${String(value)}`)
-        .join(", ");
+        .join(', ');
       message += ` (${contextStr})`;
     }
 
@@ -47,7 +47,7 @@ export abstract class AlgoTrainerError extends Error {
  */
 export class ConfigError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "CONFIG_ERROR", context);
+    super(message, 'CONFIG_ERROR', context);
   }
 }
 
@@ -56,7 +56,7 @@ export class ConfigError extends AlgoTrainerError {
  */
 export class FileSystemError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "FS_ERROR", context);
+    super(message, 'FS_ERROR', context);
   }
 }
 
@@ -65,7 +65,7 @@ export class FileSystemError extends AlgoTrainerError {
  */
 export class ProblemError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "PROBLEM_ERROR", context);
+    super(message, 'PROBLEM_ERROR', context);
   }
 }
 
@@ -74,7 +74,7 @@ export class ProblemError extends AlgoTrainerError {
  */
 export class WorkspaceError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "WORKSPACE_ERROR", context);
+    super(message, 'WORKSPACE_ERROR', context);
   }
 }
 
@@ -83,7 +83,7 @@ export class WorkspaceError extends AlgoTrainerError {
  */
 export class ValidationError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "VALIDATION_ERROR", context);
+    super(message, 'VALIDATION_ERROR', context);
   }
 }
 
@@ -92,7 +92,7 @@ export class ValidationError extends AlgoTrainerError {
  */
 export class CommandError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "COMMAND_ERROR", context);
+    super(message, 'COMMAND_ERROR', context);
   }
 }
 
@@ -101,7 +101,7 @@ export class CommandError extends AlgoTrainerError {
  */
 export class NetworkError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "NETWORK_ERROR", context);
+    super(message, 'NETWORK_ERROR', context);
   }
 }
 
@@ -110,7 +110,7 @@ export class NetworkError extends AlgoTrainerError {
  */
 export class TemplateError extends AlgoTrainerError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "TEMPLATE_ERROR", context);
+    super(message, 'TEMPLATE_ERROR', context);
   }
 }
 
@@ -132,22 +132,22 @@ export interface ErrorContext extends Record<string, unknown> {
  */
 export function createErrorContext(
   operation: string,
-  additional?: Record<string, unknown>
+  additional?: Record<string, unknown>,
 ): ErrorContext {
-  let platform = "unknown";
+  let platform = 'unknown';
   try {
     // @ts-ignore: Deno may not be available in all environments
     platform = Deno.build.os;
   } catch {
     // Fallback for non-Deno environments
-    platform = "unknown";
+    platform = 'unknown';
   }
 
   return {
     operation,
     timestamp: new Date(),
     platform,
-    version: "2.0.0", // TODO(#1): Get from package.json equivalent
+    version: '2.0.0', // TODO(#1): Get from package.json equivalent
     ...additional,
   };
 }

@@ -11,18 +11,18 @@
  * Supported programming languages for problem solving
  */
 export type SupportedLanguage =
-  | "typescript"
-  | "javascript"
-  | "python"
-  | "java"
-  | "cpp"
-  | "rust"
-  | "go";
+  | 'typescript'
+  | 'javascript'
+  | 'python'
+  | 'java'
+  | 'cpp'
+  | 'rust'
+  | 'go';
 
 /**
  * Problem difficulty levels
  */
-export type Difficulty = "easy" | "medium" | "hard";
+export type Difficulty = 'easy' | 'medium' | 'hard';
 
 /**
  * Example input/output for a problem
@@ -85,13 +85,13 @@ export interface ProblemMetadata {
  */
 export interface UserPreferences {
   /** Color theme preference */
-  theme: "light" | "dark" | "auto";
+  theme: 'light' | 'dark' | 'auto';
   /** Output verbosity level */
-  verbosity: "quiet" | "normal" | "verbose";
+  verbosity: 'quiet' | 'normal' | 'verbose';
   /** Whether to auto-save progress */
   autoSave: boolean;
   /** Code template style preference */
-  templateStyle: "minimal" | "documented" | "comprehensive";
+  templateStyle: 'minimal' | 'documented' | 'comprehensive';
   /** Whether to use emoji in output */
   useEmoji: boolean;
   /** Whether to use colors in output */
@@ -136,10 +136,10 @@ export interface WorkspaceStructure {
  * Problem completion status
  */
 export type ProblemStatus =
-  | "not-started"
-  | "in-progress"
-  | "completed"
-  | "archived";
+  | 'not-started'
+  | 'in-progress'
+  | 'completed'
+  | 'archived';
 
 /**
  * User's progress on a problem
@@ -192,7 +192,7 @@ export interface TemplateConfig {
   /** Programming language */
   language: SupportedLanguage;
   /** Template style */
-  style: UserPreferences["templateStyle"];
+  style: UserPreferences['templateStyle'];
   /** Whether to include imports */
   includeImports: boolean;
   /** Whether to include type annotations */

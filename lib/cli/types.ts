@@ -6,7 +6,7 @@
  * @module cli/types
  */
 
-import type { CommandResult } from "../types/global.ts";
+import type { CommandResult } from '../types/global.ts';
 
 /**
  * CLI command definition
@@ -41,7 +41,7 @@ export interface Flag {
   /** Flag description */
   description: string;
   /** Flag type */
-  type: "boolean" | "string" | "number";
+  type: 'boolean' | 'string' | 'number';
   /** Default value */
   default?: unknown;
   /** Whether the flag is required */

@@ -7,7 +7,7 @@
  */
 
 // Re-export all global types
-export * from "./global.ts";
+export * from './global.ts';
 
 // Re-export external API types
-export * from "./external.ts";
+export * from './external.ts';

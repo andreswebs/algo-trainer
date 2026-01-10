@@ -8,16 +8,16 @@
  */
 
 // Core type exports
-export * from "./src/types/index.ts";
+export * from './lib/types/index.ts';
 
 // Core functionality exports
-export * from "./src/core/config/manager.ts";
-export * from "./src/core/problem/manager.ts";
-export * from "./src/core/workspace/manager.ts";
+export * from './lib/config/manager.ts';
+export * from './lib/core/problem/manager.ts';
+export * from './lib/core/workspace/manager.ts';
 
 // Utility exports
-export * from "./src/utils/output.ts";
-export * from "./src/utils/validation.ts";
+export * from './lib/utils/output.ts';
+export * from './lib/utils/validation.ts';
 
 // CLI exports for programmatic use
-export * from "./src/cli/main.ts";
+export * from './lib/cli/main.ts';

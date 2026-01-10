@@ -8,7 +8,7 @@
  * @module utils/output
  */
 
-import { formatError, isAlgoTrainerError } from "./errors.ts";
+import { formatError, isAlgoTrainerError } from './errors.ts';
 
 /**
  * Output configuration options
@@ -19,7 +19,7 @@ export interface OutputOptions {
   /** Whether to use emoji in output */
   useEmoji: boolean;
   /** Verbosity level */
-  verbosity: "quiet" | "normal" | "verbose";
+  verbosity: 'quiet' | 'normal' | 'verbose';
 }
 
 /**
@@ -28,7 +28,7 @@ export interface OutputOptions {
 let options: OutputOptions = {
   useColors: checkColorsSupport(),
   useEmoji: checkEmojiSupport(),
-  verbosity: "normal",
+  verbosity: 'normal',
 };
 
 /**
@@ -37,7 +37,7 @@ let options: OutputOptions = {
 function checkColorsSupport(): boolean {
   try {
     // @ts-ignore: Deno may not be available
-    return !Deno.env.get("NO_COLOR") && Deno.stdout.isTerminal();
+    return !Deno.env.get('NO_COLOR') && Deno.stdout.isTerminal();
   } catch {
     return false;
   }
@@ -49,7 +49,7 @@ function checkColorsSupport(): boolean {
 function checkEmojiSupport(): boolean {
   try {
     // @ts-ignore: Deno may not be available
-    return !Deno.env.get("AT_NO_EMOJI");
+    return !Deno.env.get('AT_NO_EMOJI');
   } catch {
     return true;
   }
@@ -73,15 +73,15 @@ export function getOutputOptions(): Readonly<OutputOptions> {
  * Color codes for terminal output
  */
 const colors = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  cyan: "\x1b[36m",
-  gray: "\x1b[90m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
+  reset: '\x1b[0m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+  gray: '\x1b[90m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
 };
 
 /**
@@ -98,8 +98,8 @@ function colorize(text: string, color: keyof typeof colors): string {
  * Log success message to stderr
  */
 export function logSuccess(message: string): void {
-  const prefix = options.useEmoji ? "✅ " : "SUCCESS: ";
-  const formatted = colorize(`${prefix}${message}`, "green");
+  const prefix = options.useEmoji ? '✅ ' : 'SUCCESS: ';
+  const formatted = colorize(`${prefix}${message}`, 'green');
   console.error(formatted);
 }
 
@@ -107,12 +107,12 @@ export function logSuccess(message: string): void {
  * Log error message to stderr
  */
 export function logError(message: string, details?: string): void {
-  const prefix = options.useEmoji ? "❌ " : "ERROR: ";
-  const formatted = colorize(`${prefix}${message}`, "red");
+  const prefix = options.useEmoji ? '❌ ' : 'ERROR: ';
+  const formatted = colorize(`${prefix}${message}`, 'red');
   console.error(formatted);
 
   if (details) {
-    console.error(colorize(`   ${details}`, "dim"));
+    console.error(colorize(`   ${details}`, 'dim'));
   }
 }
 
@@ -120,17 +120,15 @@ export function logError(message: string, details?: string): void {
  * Log error object to stderr
  */
 export function logErrorObject(error: unknown): void {
-  const message = isAlgoTrainerError(error)
-    ? error.getFormattedMessage()
-    : formatError(error);
+  const message = isAlgoTrainerError(error) ? error.getFormattedMessage() : formatError(error);
   logError(message);
 
   if (
-    options.verbosity === "verbose" &&
+    options.verbosity === 'verbose' &&
     error instanceof Error &&
     error.stack
   ) {
-    console.error(colorize(error.stack, "dim"));
+    console.error(colorize(error.stack, 'dim'));
   }
 }
 
@@ -138,8 +136,8 @@ export function logErrorObject(error: unknown): void {
  * Log warning message to stderr
  */
 export function logWarning(message: string): void {
-  const prefix = options.useEmoji ? "⚠️  " : "WARNING: ";
-  const formatted = colorize(`${prefix}${message}`, "yellow");
+  const prefix = options.useEmoji ? '⚠️  ' : 'WARNING: ';
+  const formatted = colorize(`${prefix}${message}`, 'yellow');
   console.error(formatted);
 }
 
@@ -147,12 +145,12 @@ export function logWarning(message: string): void {
  * Log info message to stderr
  */
 export function logInfo(message: string): void {
-  if (options.verbosity === "quiet") {
+  if (options.verbosity === 'quiet') {
     return;
   }
 
-  const prefix = options.useEmoji ? "ℹ️  " : "INFO: ";
-  const formatted = colorize(`${prefix}${message}`, "cyan");
+  const prefix = options.useEmoji ? 'ℹ️  ' : 'INFO: ';
+  const formatted = colorize(`${prefix}${message}`, 'cyan');
   console.error(formatted);
 }
 
@@ -160,12 +158,12 @@ export function logInfo(message: string): void {
  * Log debug message to stderr (only in verbose mode)
  */
 export function logDebug(message: string): void {
-  if (options.verbosity !== "verbose") {
+  if (options.verbosity !== 'verbose') {
     return;
   }
 
-  const prefix = options.useEmoji ? "🐛 " : "DEBUG: ";
-  const formatted = colorize(`${prefix}${message}`, "dim");
+  const prefix = options.useEmoji ? '🐛 ' : 'DEBUG: ';
+  const formatted = colorize(`${prefix}${message}`, 'dim');
   console.error(formatted);
 }
 
@@ -173,12 +171,12 @@ export function logDebug(message: string): void {
  * Log progress message to stderr
  */
 export function logProgress(message: string): void {
-  if (options.verbosity === "quiet") {
+  if (options.verbosity === 'quiet') {
     return;
   }
 
-  const prefix = options.useEmoji ? "🔄 " : "PROGRESS: ";
-  const formatted = colorize(`${prefix}${message}`, "blue");
+  const prefix = options.useEmoji ? '🔄 ' : 'PROGRESS: ';
+  const formatted = colorize(`${prefix}${message}`, 'blue');
   console.error(formatted);
 }
 
@@ -215,7 +213,7 @@ export function exitWithErrorObject(error: unknown, code = 1): never {
  * This is the ONLY function that should write to stdout
  */
 export function outputData(data: string | object): void {
-  if (typeof data === "string") {
+  if (typeof data === 'string') {
     console.log(data);
   } else {
     console.log(JSON.stringify(data, null, 2));
@@ -228,7 +226,7 @@ export function outputData(data: string | object): void {
 export class ProgressIndicator {
   private message: string;
   private interval: number | undefined;
-  private frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  private frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   private currentFrame = 0;
 
   constructor(message: string) {
@@ -236,12 +234,12 @@ export class ProgressIndicator {
   }
 
   start(): void {
-    if (options.verbosity === "quiet" || !this.isTerminal()) {
+    if (options.verbosity === 'quiet' || !this.isTerminal()) {
       return;
     }
 
     this.interval = setInterval(() => {
-      const frame = options.useEmoji ? this.frames[this.currentFrame] : "...";
+      const frame = options.useEmoji ? this.frames[this.currentFrame] : '...';
       const text = `${frame} ${this.message}`;
       // Use stderr for progress indicators
       this.writeToStderr(`\r${text}`);
@@ -255,12 +253,12 @@ export class ProgressIndicator {
       this.interval = undefined;
     }
 
-    if (options.verbosity === "quiet" || !this.isTerminal()) {
+    if (options.verbosity === 'quiet' || !this.isTerminal()) {
       return;
     }
 
     // Clear the line and show final message
-    this.writeToStderr("\r\x1b[K");
+    this.writeToStderr('\r\x1b[K');
     if (finalMessage) {
       logSuccess(finalMessage);
     }

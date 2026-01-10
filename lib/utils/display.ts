@@ -6,37 +6,37 @@
  * @module utils/display
  */
 
-import { getOutputOptions } from "./output.ts";
+import { getOutputOptions } from './output.ts';
 
 /**
  * ANSI color codes
  */
 export const COLORS = {
-  reset: "\x1b[0m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
-  underline: "\x1b[4m",
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
+  underline: '\x1b[4m',
 
   // Foreground colors
-  black: "\x1b[30m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  magenta: "\x1b[35m",
-  cyan: "\x1b[36m",
-  white: "\x1b[37m",
-  gray: "\x1b[90m",
+  black: '\x1b[30m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+  white: '\x1b[37m',
+  gray: '\x1b[90m',
 
   // Background colors
-  bgBlack: "\x1b[40m",
-  bgRed: "\x1b[41m",
-  bgGreen: "\x1b[42m",
-  bgYellow: "\x1b[43m",
-  bgBlue: "\x1b[44m",
-  bgMagenta: "\x1b[45m",
-  bgCyan: "\x1b[46m",
-  bgWhite: "\x1b[47m",
+  bgBlack: '\x1b[40m',
+  bgRed: '\x1b[41m',
+  bgGreen: '\x1b[42m',
+  bgYellow: '\x1b[43m',
+  bgBlue: '\x1b[44m',
+  bgMagenta: '\x1b[45m',
+  bgCyan: '\x1b[46m',
+  bgWhite: '\x1b[47m',
 } as const;
 
 /**
@@ -44,7 +44,7 @@ export const COLORS = {
  */
 export function colorize(
   text: string,
-  color: keyof typeof COLORS | string
+  color: keyof typeof COLORS | string,
 ): string {
   const options = getOutputOptions();
   if (!options.useColors) {
@@ -64,7 +64,7 @@ export function styled(text: string, styles: (keyof typeof COLORS)[]): string {
     return text;
   }
 
-  const prefix = styles.map((style) => COLORS[style]).join("");
+  const prefix = styles.map((style) => COLORS[style]).join('');
   return `${prefix}${text}${COLORS.reset}`;
 }
 
@@ -79,7 +79,7 @@ export interface TableColumn {
   /** Column width (optional) */
   width?: number;
   /** Text alignment */
-  align?: "left" | "center" | "right";
+  align?: 'left' | 'center' | 'right';
   /** Custom formatter function */
   formatter?: (value: unknown) => string;
 }
@@ -103,10 +103,10 @@ export interface TableConfig {
  */
 export function createTable(
   data: Record<string, unknown>[],
-  config: TableConfig
+  config: TableConfig,
 ): string {
   if (data.length === 0) {
-    return "";
+    return '';
   }
 
   const { columns, showBorders = true, showHeader = true } = config;
@@ -116,11 +116,9 @@ export function createTable(
     const headerWidth = col.header.length;
     const dataWidth = Math.max(
       ...data.map((row) => {
-        const value = col.formatter
-          ? col.formatter(row[col.key])
-          : String(row[col.key] ?? "");
+        const value = col.formatter ? col.formatter(row[col.key]) : String(row[col.key] ?? '');
         return value.length;
-      })
+      }),
     );
     return col.width || Math.max(headerWidth, dataWidth);
   });
@@ -131,16 +129,16 @@ export function createTable(
   const createRow = (cells: string[], isHeader = false): string => {
     const paddedCells = cells.map((cell, i) => {
       const width = widths[i];
-      const align = columns[i].align || "left";
+      const align = columns[i].align || 'left';
 
       let padded: string;
       switch (align) {
-        case "center":
+        case 'center':
           const leftPad = Math.floor((width - cell.length) / 2);
           const rightPad = width - cell.length - leftPad;
-          padded = " ".repeat(leftPad) + cell + " ".repeat(rightPad);
+          padded = ' '.repeat(leftPad) + cell + ' '.repeat(rightPad);
           break;
-        case "right":
+        case 'right':
           padded = cell.padStart(width);
           break;
         default: // left
@@ -148,25 +146,25 @@ export function createTable(
       }
 
       if (isHeader && getOutputOptions().useColors) {
-        return styled(padded, ["bold"]);
+        return styled(padded, ['bold']);
       }
       return padded;
     });
 
     if (showBorders) {
-      return `│ ${paddedCells.join(" │ ")} │`;
+      return `│ ${paddedCells.join(' │ ')} │`;
     }
-    return paddedCells.join("  ");
+    return paddedCells.join('  ');
   };
 
   // Create border line
-  const createBorder = (type: "top" | "middle" | "bottom"): string => {
-    if (!showBorders) return "";
+  const createBorder = (type: 'top' | 'middle' | 'bottom'): string => {
+    if (!showBorders) return '';
 
     const chars = {
-      top: { left: "┌", mid: "┬", right: "┐", fill: "─" },
-      middle: { left: "├", mid: "┼", right: "┤", fill: "─" },
-      bottom: { left: "└", mid: "┴", right: "┘", fill: "─" },
+      top: { left: '┌', mid: '┬', right: '┐', fill: '─' },
+      middle: { left: '├', mid: '┼', right: '┤', fill: '─' },
+      bottom: { left: '└', mid: '┴', right: '┘', fill: '─' },
     };
 
     const char = chars[type];
@@ -176,7 +174,7 @@ export function createTable(
 
   // Add top border
   if (showBorders) {
-    lines.push(createBorder("top"));
+    lines.push(createBorder('top'));
   }
 
   // Add header
@@ -185,16 +183,14 @@ export function createTable(
     lines.push(createRow(headerCells, true));
 
     if (showBorders) {
-      lines.push(createBorder("middle"));
+      lines.push(createBorder('middle'));
     }
   }
 
   // Add data rows
   for (const row of data) {
     const cells = columns.map((col) => {
-      const value = col.formatter
-        ? col.formatter(row[col.key])
-        : String(row[col.key] ?? "");
+      const value = col.formatter ? col.formatter(row[col.key]) : String(row[col.key] ?? '');
       return value;
     });
     lines.push(createRow(cells));
@@ -202,17 +198,17 @@ export function createTable(
 
   // Add bottom border
   if (showBorders) {
-    lines.push(createBorder("bottom"));
+    lines.push(createBorder('bottom'));
   }
 
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 /**
  * Create a simple box around text
  */
 export function createBox(text: string, title?: string): string {
-  const lines = text.split("\n");
+  const lines = text.split('\n');
   const maxLength = Math.max(...lines.map((line) => line.length));
   const width = Math.max(maxLength, title ? title.length + 2 : 0);
 
@@ -224,10 +220,10 @@ export function createBox(text: string, title?: string): string {
     const leftPad = Math.floor((width - titlePadded.length) / 2);
     const rightPad = width - titlePadded.length - leftPad;
     result.push(
-      `┌${"─".repeat(leftPad)}${titlePadded}${"─".repeat(rightPad)}┐`
+      `┌${'─'.repeat(leftPad)}${titlePadded}${'─'.repeat(rightPad)}┐`,
     );
   } else {
-    result.push(`┌${"─".repeat(width + 2)}┐`);
+    result.push(`┌${'─'.repeat(width + 2)}┐`);
   }
 
   // Content lines
@@ -236,9 +232,9 @@ export function createBox(text: string, title?: string): string {
   }
 
   // Bottom border
-  result.push(`└${"─".repeat(width + 2)}┘`);
+  result.push(`└${'─'.repeat(width + 2)}┘`);
 
-  return result.join("\n");
+  return result.join('\n');
 }
 
 /**
@@ -253,14 +249,14 @@ export function createProgressBar(
     showNumbers?: boolean;
     fillChar?: string;
     emptyChar?: string;
-  } = {}
+  } = {},
 ): string {
   const {
     width = 20,
     showPercentage = true,
     showNumbers = false,
-    fillChar = "█",
-    emptyChar = "░",
+    fillChar = '█',
+    emptyChar = '░',
   } = options;
 
   const percentage = Math.min(100, Math.max(0, (current / total) * 100));
@@ -268,7 +264,7 @@ export function createProgressBar(
   const emptyLength = width - fillLength;
 
   const bar = fillChar.repeat(fillLength) + emptyChar.repeat(emptyLength);
-  const coloredBar = getOutputOptions().useColors ? colorize(bar, "cyan") : bar;
+  const coloredBar = getOutputOptions().useColors ? colorize(bar, 'cyan') : bar;
 
   let result = `[${coloredBar}]`;
 
@@ -287,7 +283,7 @@ export function createProgressBar(
  * Format bytes as human-readable string
  */
 export function formatBytes(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB", "TB"];
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes;
   let unitIndex = 0;
 
@@ -327,7 +323,7 @@ export function formatDuration(ms: number): string {
 export function truncate(
   text: string,
   maxLength: number,
-  suffix = "..."
+  suffix = '...',
 ): string {
   if (text.length <= maxLength) {
     return text;
@@ -345,5 +341,5 @@ export function center(text: string, width: number): string {
 
   const leftPad = Math.floor((width - text.length) / 2);
   const rightPad = width - text.length - leftPad;
-  return " ".repeat(leftPad) + text + " ".repeat(rightPad);
+  return ' '.repeat(leftPad) + text + ' '.repeat(rightPad);
 }
