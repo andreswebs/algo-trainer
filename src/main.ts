@@ -1,8 +1,8 @@
-export { main } from './lib/cli/main.ts';
+export { main } from './cli/main.ts';
 
 try {
   if (import.meta.main) {
-    const { main } = await import('./lib/cli/main.ts');
+    const { main } = await import('./cli/main.ts');
     await main(Deno.args);
   }
 } catch (error) {

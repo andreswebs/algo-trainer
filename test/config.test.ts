@@ -5,9 +5,9 @@
  */
 
 import { assertEquals, assertRejects } from '@std/assert';
-import { ConfigManager } from '../lib/config/manager.ts';
-import { pathExists, remove } from '../lib/utils/fs.ts';
-import { getConfigFilePaths } from '../lib/config/paths.ts';
+import { ConfigManager } from '../src/config/manager.ts';
+import { pathExists, remove } from '../src/utils/fs.ts';
+import { getConfigFilePaths } from '../src/config/paths.ts';
 
 Deno.test(
   'ConfigManager - should create default config when none exists',
@@ -41,7 +41,7 @@ Deno.test('ConfigManager - should update configuration', async () => {
 
 Deno.test('Output utilities - should format messages correctly', async () => {
   const { logSuccess, logError, setOutputOptions } = await import(
-    '../lib/utils/output.ts'
+    '../src/utils/output.ts'
   );
 
   // Test that setting options doesn't throw
