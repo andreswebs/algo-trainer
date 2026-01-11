@@ -99,7 +99,7 @@ From the codebase analysis, the main functional areas are:
 
 ```txt
 # Current Implementation (Phase 1 Complete)
-lib/
+src/
 ├── cli/                    # CLI interface and commands
 │   ├── main.ts            # ✅ Main CLI entry point with arg parsing
 │   └── types.ts           # ✅ CLI-specific types
@@ -128,7 +128,7 @@ tests/                     # Test suite
 └── foundation_test.ts     # ✅ Foundation tests
 
 # Planned for Future Phases
-lib/
+src/
 ├── cli/
 │   └── commands/          # Phase 3: Individual command implementations
 │       ├── challenge.ts
@@ -169,15 +169,15 @@ tests/
 
 **Structural Decisions:**
 
-- `config/` is at `lib/config/` not `lib/core/config/` for simpler imports
+- `config/` is at `src/config/` not `src/core/config/` for simpler imports
 - No `mod.ts` - using `main.ts` as entry point
 - No `router.ts` - routing inline in `main.ts` (will extract if complexity grows)
-- Commands are stubs for now - will be extracted to `lib/cli/commands/` in Phase 3
+- Commands are stubs for now - will be extracted to `src/cli/commands/` in Phase 3
 
 ### Core Type Definitions (Implemented)
 
 ```typescript
-// lib/types/global.ts - Current implementation
+// src/types/global.ts - Current implementation
 
 export type SupportedLanguage =
   | 'typescript'
@@ -276,44 +276,44 @@ export interface WorkspaceStructure {
 
 2. **Core Utilities** ✅
 
-   - `lib/utils/output.ts` - Output utilities with proper stdout/stderr separation following 12-factor principles
-   - `lib/utils/display.ts` - Colors, tables, progress bars, text formatting
-   - `lib/utils/errors.ts` - Standardized error handling with custom error classes (`AlgoTrainerError`, `ConfigError`, `FileSystemError`, etc.)
-   - `lib/utils/fs.ts` - File system utilities with XDG path resolution
-   - `lib/utils/validation.ts` - Comprehensive input validation for configs, problems, and primitives
-   - `lib/utils/http.ts` - HTTP client with rate limiting (moved up from Phase 4)
+   - `src/utils/output.ts` - Output utilities with proper stdout/stderr separation following 12-factor principles
+   - `src/utils/display.ts` - Colors, tables, progress bars, text formatting
+   - `src/utils/errors.ts` - Standardized error handling with custom error classes (`AlgoTrainerError`, `ConfigError`, `FileSystemError`, etc.)
+   - `src/utils/fs.ts` - File system utilities with XDG path resolution
+   - `src/utils/validation.ts` - Comprehensive input validation for configs, problems, and primitives
+   - `src/utils/http.ts` - HTTP client with rate limiting (moved up from Phase 4)
 
 3. **Type System Foundation** ✅
 
-   - `lib/types/global.ts` - Core interfaces: `Problem`, `Config`, `UserPreferences`, `WorkspaceStructure`, `SupportedLanguage`, etc.
-   - `lib/types/external.ts` - External API types: `LeetCodeProblem`, `ApiResponse`, `RateLimitInfo`, `CacheMetadata`
-   - `lib/types/index.ts` - Central re-export point
+   - `src/types/global.ts` - Core interfaces: `Problem`, `Config`, `UserPreferences`, `WorkspaceStructure`, `SupportedLanguage`, etc.
+   - `src/types/external.ts` - External API types: `LeetCodeProblem`, `ApiResponse`, `RateLimitInfo`, `CacheMetadata`
+   - `src/types/index.ts` - Central re-export point
 
 4. **Configuration System** ✅
 
-   - `lib/config/manager.ts` - XDG-compliant ConfigManager class with load/save/update operations
-   - `lib/config/paths.ts` - Application-specific XDG path utilities
-   - `lib/config/types.ts` - Default config values and validation types
+   - `src/config/manager.ts` - XDG-compliant ConfigManager class with load/save/update operations
+   - `src/config/paths.ts` - Application-specific XDG path utilities
+   - `src/config/types.ts` - Default config values and validation types
 
 5. **Basic CLI Skeleton** ✅ (Moved up from Phase 3)
 
-   - `lib/cli/main.ts` - Entry point with argument parsing and command routing skeleton
-   - `lib/cli/types.ts` - CLI-specific types: `Command`, `Flag`, `CommandArgs`, `CliContext`
+   - `src/cli/main.ts` - Entry point with argument parsing and command routing skeleton
+   - `src/cli/types.ts` - CLI-specific types: `Command`, `Flag`, `CommandArgs`, `CliContext`
    - `main.ts` - Application entry point
 
 **Key Implementation Decisions (Deviations from Original Plan):**
 
-- **No `mod.ts`**: Entry point is `main.ts` which imports `lib/cli/main.ts`
-- **No `lib/cli/router.ts`**: Command routing is inline in `lib/cli/main.ts` for simplicity
-- **No `lib/cli/commands/` directory yet**: Commands are stubs in main.ts, to be extracted in Phase 3
-- **HTTP client early**: `lib/utils/http.ts` implemented now to establish patterns for later phases
+- **No `mod.ts`**: Entry point is `main.ts` which imports `src/cli/main.ts`
+- **No `src/cli/router.ts`**: Command routing is inline in `src/cli/main.ts` for simplicity
+- **No `src/cli/commands/` directory yet**: Commands are stubs in main.ts, to be extracted in Phase 3
+- **HTTP client early**: `src/utils/http.ts` implemented now to establish patterns for later phases
 - **Extended `UserPreferences`**: Added `useEmoji` and `useColors` fields
 - **Config versioning**: `Config` type includes a `version` field for schema validation
 
 **Files Created:**
 
 ```txt
-lib/
+src/
 ├── cli/
 │   ├── main.ts          # CLI entry point with arg parsing
 │   └── types.ts         # CLI-specific types
@@ -377,10 +377,10 @@ deno.json               # Deno configuration
 
 **Files to Create:**
 
-- `lib/core/problem/` (all files)
-- `lib/core/workspace/` (all files)
-- `lib/data/problems/` (converted data)
-- `lib/data/templates/` (language templates)
+- `src/core/problem/` (all files)
+- `src/core/workspace/` (all files)
+- `src/data/problems/` (converted data)
+- `src/data/templates/` (language templates)
 
 **Estimated Effort:** 25-30 hours
 
@@ -390,18 +390,18 @@ deno.json               # Deno configuration
 
 **Pre-existing from Phase 1:**
 
-- ✅ Basic argument parser in `lib/cli/main.ts`
+- ✅ Basic argument parser in `src/cli/main.ts`
 - ✅ Command routing skeleton with stubs
 - ✅ Global flags implemented: `--no-color`, `--no-emoji`, `--verbose`, `--quiet`, `--config`
 - ✅ Help system with basic usage information
 - ✅ Version command (`-v`, `--version`)
-- ✅ CLI types defined in `lib/cli/types.ts`
+- ✅ CLI types defined in `src/cli/types.ts`
 
 **Remaining Tasks:**
 
 1. **Command Implementations**
 
-   - Extract command handlers to `lib/cli/commands/` directory
+   - Extract command handlers to `src/cli/commands/` directory
    - `at challenge` - Problem generation with enhanced UX
    - `at complete` - Mark problems as completed/active
    - `at config` - Configuration management (get/set/list/reset)
@@ -412,7 +412,7 @@ deno.json               # Deno configuration
 2. **Interactive Features**
 
    - Add prompts for missing required inputs
-   - Implement table displays for data (using `lib/utils/display.ts`)
+   - Implement table displays for data (using `src/utils/display.ts`)
    - Create progress indicators for long operations (using `ProgressIndicator`)
 
 3. **Shell Integration**
@@ -428,12 +428,12 @@ deno.json               # Deno configuration
 
 **Files to Create:**
 
-- `lib/cli/commands/challenge.ts`
-- `lib/cli/commands/complete.ts`
-- `lib/cli/commands/config.ts`
-- `lib/cli/commands/hint.ts`
-- `lib/cli/commands/init.ts`
-- `lib/cli/commands/progress.ts`
+- `src/cli/commands/challenge.ts`
+- `src/cli/commands/complete.ts`
+- `src/cli/commands/config.ts`
+- `src/cli/commands/hint.ts`
+- `src/cli/commands/init.ts`
+- `src/cli/commands/progress.ts`
 - Shell completion scripts
 
 **Estimated Effort:** 15-20 hours (reduced due to Phase 1 foundations)
@@ -476,10 +476,10 @@ deno.json               # Deno configuration
 
 **Files to Create:**
 
-- `lib/core/ai/` (all files)
-- `lib/core/testing/` (all files)
+- `src/core/ai/` (all files)
+- `src/core/testing/` (all files)
 
-**Note:** `lib/utils/http.ts` was moved to Phase 1 and is already implemented with:
+**Note:** `src/utils/http.ts` was moved to Phase 1 and is already implemented with:
 
 - `HttpClient` class with rate limiting support
 - GET, POST, PUT, DELETE methods
@@ -564,14 +564,14 @@ All implementation is new TypeScript code following the patterns established in 
 // deno.json - Current implementation
 {
   "tasks": {
-    "dev": "deno run --allow-all --watch lib/cli/main.ts",
-    "build": "deno compile --allow-all --output=bin/at lib/cli/main.ts",
+    "dev": "deno run --allow-all --watch src/cli/main.ts",
+    "build": "deno compile --allow-all --output=bin/at src/cli/main.ts",
     "test": "deno test --allow-all",
     "test:watch": "deno test --allow-all --watch",
     "bench": "deno bench --allow-all",
     "lint": "deno lint",
     "fmt": "deno fmt",
-    "check": "deno check lib/**/*.ts"
+    "check": "deno check src/**/*.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.0",
@@ -641,7 +641,7 @@ const PERMISSIONS = {
 
 The error system has two components: typed errors and output utilities.
 
-**1. Custom Error Classes (`lib/utils/errors.ts`):**
+**1. Custom Error Classes (`src/utils/errors.ts`):**
 
 ```typescript
 // Base error class with code and context
@@ -671,7 +671,7 @@ export function createErrorContext(
 ): ErrorContext;
 ```
 
-**2. Output Utilities (`lib/utils/output.ts`):**
+**2. Output Utilities (`src/utils/output.ts`):**
 
 ```typescript
 interface OutputOptions {

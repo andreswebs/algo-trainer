@@ -1,22 +1,34 @@
 {
+  "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
+  "name": "algo-trainer",
+  "version": "0.0.1",
+  "description": "TODO",
+  "license": "GPL3",
+  "author": "Andre Silva <andreswebs@pm.me>",
+  "homepage": "https://github.com/andreswebs/algo-trainer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreswebs/algo-trainer.git"
+  },
   "tasks": {
-    "dev": "deno run --allow-all --watch src/main.ts",
+    "dev": "DENO_ENV=development deno run --allow-all --watch src/main.ts",
     "build": "deno compile --allow-all --output=bin/at src/main.ts",
-    "test": "deno test --allow-write --allow-read --allow-env",
+    "test": "DENO_ENV=test deno test --allow-write --allow-read --allow-env",
     "test:watch": "deno test --watch --allow-write --allow-read --allow-env",
     "bench": "deno bench --allow-all",
     "lint": "deno lint",
+    "lint:fix": "deno lint --fix",
     "fmt": "deno fmt",
     "check": "deno check src/**/*.ts"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@^1.0.0",
-    "@std/testing": "jsr:@std/testing@^1.0.0",
-    "@std/cli": "jsr:@std/cli@^1.0.0",
-    "@std/path": "jsr:@std/path@^1.0.0",
-    "@std/fs": "jsr:@std/fs@^1.0.0",
-    "@std/yaml": "jsr:@std/yaml@^1.0.0",
-    "@std/json": "jsr:@std/json@^1.0.0"
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/testing": "jsr:@std/testing@1",
+    "@std/cli": "jsr:@std/cli@1",
+    "@std/path": "jsr:@std/path@1",
+    "@std/fs": "jsr:@std/fs@1",
+    "@std/yaml": "jsr:@std/yaml@1",
+    "@std/json": "jsr:@std/json@1"
   },
   "compilerOptions": {
     "strict": true,
@@ -40,5 +52,6 @@
       "include": ["ban-untagged-todo"]
     }
   },
-  "exclude": ["_.local-leetcode-trainer.legacy/"]
+  "exclude": ["_.local-leetcode-trainer.legacy/"],
+  "lock": true
 }
