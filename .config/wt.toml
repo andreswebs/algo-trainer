@@ -1,0 +1,2 @@
+[post-create]
+direnv = "[ -f \"{{ main_worktree_path }}/.envrc\" ] && cp {{ main_worktree_path }}/.envrc . && direnv allow"
