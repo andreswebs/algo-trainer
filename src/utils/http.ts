@@ -8,6 +8,7 @@
 
 import { createErrorContext, NetworkError } from './errors.ts';
 import type { ApiResponse, CacheMetadata, RateLimitInfo } from '../types/external.ts';
+import { VERSION } from '../version.ts';
 
 /**
  * HTTP method types
@@ -389,7 +390,7 @@ export function extractCacheMetadata(headers: Headers): CacheMetadata {
  */
 export const httpClient = new HttpClient({
   defaultHeaders: {
-    'User-Agent': 'AlgoTrainer/2.0.0',
+    'User-Agent': `AlgoTrainer/${VERSION}`,
   },
   defaultTimeout: 30000,
 });
@@ -413,7 +414,7 @@ export function createServiceClient(
   } = {
     baseUrl,
     defaultHeaders: {
-      'User-Agent': 'AlgoTrainer/2.0.0',
+      'User-Agent': `AlgoTrainer/${VERSION}`,
       ...options.headers,
     },
   };

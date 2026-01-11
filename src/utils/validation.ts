@@ -8,14 +8,7 @@
  */
 
 import { ValidationError } from './errors.ts';
-import type {
-  Config,
-  Difficulty,
-  Problem,
-  ProblemProgress,
-  SupportedLanguage,
-  UserPreferences,
-} from '../types/global.ts';
+import type { Difficulty, SupportedLanguage } from '../types/global.ts';
 
 /**
  * Validation result
@@ -358,19 +351,20 @@ export function validateConfig(value: unknown): ValidationResult {
   const requiredResult = validateRequired(config.language, 'language');
   if (!requiredResult.valid) errors.push(...requiredResult.errors);
 
-  const workspaceResult = validateRequired(config.workspace, 'workspace');
-  if (!workspaceResult.valid) errors.push(...workspaceResult.errors);
-
   // Validate language
   if (config.language) {
     const languageResult = validateSupportedLanguage(config.language);
     if (!languageResult.valid) errors.push(...languageResult.errors);
   }
 
-  // Validate workspace path
-  if (config.workspace) {
-    const pathResult = validateFilePath(config.workspace, 'workspace');
-    if (!pathResult.valid) errors.push(...pathResult.errors);
+  // Validate workspace - must be a string, can be empty (before init), but if non-empty must be valid path
+  if ('workspace' in config) {
+    if (typeof config.workspace !== 'string') {
+      errors.push('workspace must be a string');
+    } else if (config.workspace.length > 0) {
+      const pathResult = validateFilePath(config.workspace, 'workspace');
+      if (!pathResult.valid) errors.push(...pathResult.errors);
+    }
   }
 
   // Validate aiEnabled

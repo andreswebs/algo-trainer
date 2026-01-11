@@ -59,38 +59,18 @@ export interface XdgPaths {
  * Get XDG Base Directory paths
  */
 export function getXdgPaths(): XdgPaths {
-  try {
-    // @ts-ignore: Deno may not be available
-    const home = Deno.env.get('HOME') || '/tmp';
+  const home = Deno.env.get('HOME') || '/tmp';
 
-    return {
-      // @ts-ignore: Deno may not be available
-      configHome: Deno.env.get('XDG_CONFIG_HOME') || join(home, '.config'),
-      // @ts-ignore: Deno may not be available
-      dataHome: Deno.env.get('XDG_DATA_HOME') || join(home, '.local', 'share'),
-      // @ts-ignore: Deno may not be available
-      cacheHome: Deno.env.get('XDG_CACHE_HOME') || join(home, '.cache'),
-      // @ts-ignore: Deno may not be available
-      stateHome: Deno.env.get('XDG_STATE_HOME') || join(home, '.local', 'state'),
-      // @ts-ignore: Deno may not be available
-      configDirs: (Deno.env.get('XDG_CONFIG_DIRS') || '/etc/xdg').split(':'),
-      // @ts-ignore: Deno may not be available
-      dataDirs: (
-        Deno.env.get('XDG_DATA_DIRS') || '/usr/local/share:/usr/share'
-      ).split(':'),
-    };
-  } catch {
-    // Fallback for non-Deno environments
-    const home = '/tmp';
-    return {
-      configHome: join(home, '.config'),
-      dataHome: join(home, '.local', 'share'),
-      cacheHome: join(home, '.cache'),
-      stateHome: join(home, '.local', 'state'),
-      configDirs: ['/etc/xdg'],
-      dataDirs: ['/usr/local/share', '/usr/share'],
-    };
-  }
+  return {
+    configHome: Deno.env.get('XDG_CONFIG_HOME') || join(home, '.config'),
+    dataHome: Deno.env.get('XDG_DATA_HOME') || join(home, '.local', 'share'),
+    cacheHome: Deno.env.get('XDG_CACHE_HOME') || join(home, '.cache'),
+    stateHome: Deno.env.get('XDG_STATE_HOME') || join(home, '.local', 'state'),
+    configDirs: (Deno.env.get('XDG_CONFIG_DIRS') || '/etc/xdg').split(':'),
+    dataDirs: (
+      Deno.env.get('XDG_DATA_DIRS') || '/usr/local/share:/usr/share'
+    ).split(':'),
+  };
 }
 
 /**
@@ -125,7 +105,6 @@ export async function pathExists(path: string): Promise<boolean> {
  */
 export async function readTextFile(path: string): Promise<string> {
   try {
-    // @ts-ignore: Deno may not be available
     return await Deno.readTextFile(path);
   } catch (error) {
     throw new FileSystemError(
@@ -156,8 +135,8 @@ export async function writeTextFile(
       );
     }
 
-    // @ts-ignore: Deno may not be available
-    await Deno.writeTextFile(path, content, { mode: options.mode });
+    const writeOptions = options.mode !== undefined ? { mode: options.mode } : undefined;
+    await Deno.writeTextFile(path, content, writeOptions);
 
     return {
       success: true,
@@ -244,8 +223,10 @@ export async function remove(
   options: { recursive?: boolean } = {},
 ): Promise<FileOperationResult> {
   try {
-    // @ts-ignore: Deno may not be available
-    await Deno.remove(path, { recursive: options.recursive });
+    const removeOptions = options.recursive !== undefined
+      ? { recursive: options.recursive }
+      : undefined;
+    await Deno.remove(path, removeOptions);
     return {
       success: true,
       path,
@@ -306,7 +287,6 @@ export async function listDirectory(
   try {
     const result: Array<{ name: string; path: string; isDirectory: boolean }> = [];
 
-    // @ts-ignore: Deno may not be available
     for await (const entry of Deno.readDir(path)) {
       const { includeHidden = false } = options;
 
@@ -352,7 +332,6 @@ export async function getStats(path: string): Promise<{
   birthtime: Date | null;
 }> {
   try {
-    // @ts-ignore: Deno may not be available
     const stats = await Deno.stat(path);
     return {
       size: stats.size,

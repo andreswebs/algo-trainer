@@ -1,11 +1,12 @@
-export { main } from './cli/main.ts';
+import { main } from './cli/main.ts';
 
-try {
-  if (import.meta.main) {
-    const { main } = await import('./cli/main.ts');
+export { main };
+
+if (import.meta.main) {
+  try {
     await main(Deno.args);
+  } catch (error) {
+    console.error(error);
+    Deno.exit(1);
   }
-} catch (error) {
-  console.error(error);
-  Deno.exit(1);
 }

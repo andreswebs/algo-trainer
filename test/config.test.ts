@@ -74,17 +74,54 @@ Deno.test('ConfigManager - should update configuration', async () => {
   }
 });
 
-Deno.test('Output utilities - should format messages correctly', async () => {
-  const { logSuccess, logError, setOutputOptions } = await import(
+Deno.test('Output utilities - setOutputOptions should update options', async () => {
+  const { setOutputOptions, getOutputOptions, resetOutputOptions } = await import(
     '../src/utils/output.ts'
   );
 
-  setOutputOptions({
-    useColors: false,
-    useEmoji: false,
-    verbosity: 'normal',
-  });
+  try {
+    setOutputOptions({
+      useColors: false,
+      useEmoji: false,
+      verbosity: 'quiet',
+    });
 
-  logSuccess('Test success message');
-  logError('Test error message');
+    const options = getOutputOptions();
+    assertEquals(options.useColors, false);
+    assertEquals(options.useEmoji, false);
+    assertEquals(options.verbosity, 'quiet');
+  } finally {
+    resetOutputOptions();
+  }
+});
+
+Deno.test('Output utilities - log functions should not throw', async () => {
+  const {
+    logSuccess,
+    logError,
+    logWarning,
+    logInfo,
+    logDebug,
+    setOutputOptions,
+    resetOutputOptions,
+  } = await import(
+    '../src/utils/output.ts'
+  );
+
+  try {
+    setOutputOptions({
+      useColors: false,
+      useEmoji: false,
+      verbosity: 'verbose',
+    });
+
+    // These should complete without throwing
+    logSuccess('Test success message');
+    logError('Test error message', 'with details');
+    logWarning('Test warning message');
+    logInfo('Test info message');
+    logDebug('Test debug message');
+  } finally {
+    resetOutputOptions();
+  }
 });

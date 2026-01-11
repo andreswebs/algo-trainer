@@ -23,37 +23,34 @@ export interface OutputOptions {
 }
 
 /**
- * Global output options
- */
-let options: OutputOptions = {
-  useColors: checkColorsSupport(),
-  useEmoji: checkEmojiSupport(),
-  verbosity: 'normal',
-};
-
-/**
  * Check if colors are supported
  */
 function checkColorsSupport(): boolean {
-  try {
-    // @ts-ignore: Deno may not be available
-    return !Deno.env.get('NO_COLOR') && Deno.stdout.isTerminal();
-  } catch {
-    return false;
-  }
+  return !Deno.env.get('NO_COLOR') && Deno.stdout.isTerminal();
 }
 
 /**
  * Check if emoji is supported
  */
 function checkEmojiSupport(): boolean {
-  try {
-    // @ts-ignore: Deno may not be available
-    return !Deno.env.get('AT_NO_EMOJI');
-  } catch {
-    return true;
-  }
+  return !Deno.env.get('AT_NO_EMOJI');
 }
+
+/**
+ * Create default output options by detecting environment capabilities
+ */
+function createDefaultOptions(): OutputOptions {
+  return {
+    useColors: checkColorsSupport(),
+    useEmoji: checkEmojiSupport(),
+    verbosity: 'normal',
+  };
+}
+
+/**
+ * Global output options - managed via setter/getter for reset-safe testing
+ */
+let options: OutputOptions = createDefaultOptions();
 
 /**
  * Update output options
@@ -67,6 +64,14 @@ export function setOutputOptions(newOptions: Partial<OutputOptions>): void {
  */
 export function getOutputOptions(): Readonly<OutputOptions> {
   return options;
+}
+
+/**
+ * Reset output options to defaults (re-detects environment capabilities)
+ * Useful for testing to prevent state leaks between tests
+ */
+export function resetOutputOptions(): void {
+  options = createDefaultOptions();
 }
 
 /**
@@ -185,13 +190,7 @@ export function logProgress(message: string): void {
  */
 export function exitWithError(message: string, code = 1): never {
   logError(message);
-  try {
-    // @ts-ignore: Deno may not be available
-    Deno.exit(code);
-  } catch {
-    // Fallback for non-Deno environments
-    throw new Error(`Exit with code ${code}: ${message}`);
-  }
+  Deno.exit(code);
 }
 
 /**
@@ -199,13 +198,7 @@ export function exitWithError(message: string, code = 1): never {
  */
 export function exitWithErrorObject(error: unknown, code = 1): never {
   logErrorObject(error);
-  try {
-    // @ts-ignore: Deno may not be available
-    Deno.exit(code);
-  } catch {
-    // Fallback for non-Deno environments
-    throw error instanceof Error ? error : new Error(String(error));
-  }
+  Deno.exit(code);
 }
 
 /**
@@ -265,21 +258,10 @@ export class ProgressIndicator {
   }
 
   private isTerminal(): boolean {
-    try {
-      // @ts-ignore: Deno may not be available
-      return Deno.stdout.isTerminal();
-    } catch {
-      return false;
-    }
+    return Deno.stderr.isTerminal();
   }
 
   private writeToStderr(text: string): void {
-    try {
-      // @ts-ignore: Deno may not be available
-      Deno.stderr.writeSync(new TextEncoder().encode(text));
-    } catch {
-      // Fallback for non-Deno environments
-      console.error(text);
-    }
+    Deno.stderr.writeSync(new TextEncoder().encode(text));
   }
 }

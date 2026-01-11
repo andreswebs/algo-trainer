@@ -37,8 +37,7 @@
   "lint": {
     "rules": {
       "tags": ["recommended"],
-      "include": ["ban-untagged-todo"],
-      "exclude": ["no-unused-vars"]
+      "include": ["ban-untagged-todo"]
     }
   },
   "exclude": ["_.local-leetcode-trainer.legacy/"]

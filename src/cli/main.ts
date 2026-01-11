@@ -12,8 +12,7 @@ import { formatError } from '../utils/errors.ts';
 import { initializeConfig } from '../config/manager.ts';
 import { dispatch, getAvailableCommands } from './commands/mod.ts';
 import { extractGlobalFlags } from './types.ts';
-
-const VERSION = '2.0.0';
+import { VERSION } from '../version.ts';
 
 const PARSE_OPTIONS = {
   alias: {
@@ -32,6 +31,12 @@ const PARSE_OPTIONS = {
   },
 } as const;
 
+function formatCommandList(): string {
+  return getAvailableCommands()
+    .map((cmd) => `    ${cmd.name.padEnd(12)} ${cmd.description}`)
+    .join('\n');
+}
+
 function showHelp(): void {
   const help = `
 Algo Trainer v${VERSION} - Practice algorithmic problem solving
@@ -40,11 +45,7 @@ USAGE:
     at <command> [subcommand] [options] [args]
 
 COMMANDS:
-    challenge    Start a new coding challenge
-    complete     Mark a problem as completed
-    hint         Get a hint for the current problem
-    config       Manage configuration settings
-    init         Initialize a new workspace
+${formatCommandList()}
 
 GLOBAL OPTIONS:
     -h, --help        Show this help message

@@ -7,6 +7,8 @@
  * @module utils/errors
  */
 
+import { VERSION } from '../version.ts';
+
 /**
  * Base error class for all application errors
  */
@@ -134,20 +136,11 @@ export function createErrorContext(
   operation: string,
   additional?: Record<string, unknown>,
 ): ErrorContext {
-  let platform = 'unknown';
-  try {
-    // @ts-ignore: Deno may not be available in all environments
-    platform = Deno.build.os;
-  } catch {
-    // Fallback for non-Deno environments
-    platform = 'unknown';
-  }
-
   return {
     operation,
     timestamp: new Date(),
-    platform,
-    version: '2.0.0', // TODO(#1): Get from package.json equivalent
+    platform: Deno.build.os,
+    version: VERSION,
     ...additional,
   };
 }

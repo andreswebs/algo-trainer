@@ -133,8 +133,17 @@ export class ConfigManager {
       );
     }
 
-    // Merge updates
-    this.config = { ...this.config, ...updates };
+    // Deep merge for nested objects (preferences)
+    const mergedPreferences = updates.preferences
+      ? { ...this.config.preferences, ...updates.preferences }
+      : this.config.preferences;
+
+    // Merge updates with deep-merged preferences
+    this.config = {
+      ...this.config,
+      ...updates,
+      preferences: mergedPreferences,
+    };
 
     // Save updated config
     await this.save();

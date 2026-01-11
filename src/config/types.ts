@@ -6,7 +6,8 @@
  * @module config/types
  */
 
-import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
+import type { Config } from '../types/global.ts';
+import { VERSION } from '../version.ts';
 
 /**
  * Default configuration values
@@ -24,7 +25,7 @@ export const DEFAULT_CONFIG: Config = {
     useEmoji: true,
     useColors: true,
   },
-  version: '2.0.0',
+  version: VERSION,
 };
 
 /**
