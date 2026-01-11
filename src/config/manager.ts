@@ -90,6 +90,7 @@ export class ConfigManager {
       // Save to file
       await writeJsonFile(this.configPath, this.config, {
         ensureParents: true,
+        overwrite: true,
         indent: 2,
       });
 
