@@ -1,0 +1,42 @@
+{
+  "id": "3",
+  "slug": "longest-substring-without-repeating-characters",
+  "title": "Longest Substring Without Repeating Characters",
+  "difficulty": "medium",
+  "description": "Given a string `s`, find the length of the **longest substring** without repeating characters.",
+  "examples": [
+    {
+      "input": { "s": "abcabcbb" },
+      "output": 3,
+      "explanation": "The answer is \"abc\", with the length of 3."
+    },
+    {
+      "input": { "s": "bbbbb" },
+      "output": 1,
+      "explanation": "The answer is \"b\", with the length of 1."
+    },
+    {
+      "input": { "s": "pwwkew" },
+      "output": 3,
+      "explanation": "The answer is \"wke\", with the length of 3. Notice that the answer must be a substring, \"pwke\" is a subsequence and not a substring."
+    }
+  ],
+  "constraints": [
+    "0 <= s.length <= 5 * 10^4",
+    "s consists of English letters, digits, symbols and spaces."
+  ],
+  "hints": [
+    "Use the sliding window technique with two pointers.",
+    "A hash map or set can help you track characters in the current window.",
+    "When you find a duplicate, shrink the window from the left until the duplicate is removed."
+  ],
+  "tags": ["string", "hash-table", "sliding-window"],
+  "companies": ["Amazon", "Google", "Facebook", "Microsoft", "Bloomberg"],
+  "leetcodeUrl": "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "3"
+  }
+}

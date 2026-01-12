@@ -1,0 +1,47 @@
+{
+  "id": "20",
+  "slug": "valid-parentheses",
+  "title": "Valid Parentheses",
+  "difficulty": "easy",
+  "description": "Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if:\n\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.",
+  "examples": [
+    {
+      "input": { "s": "()" },
+      "output": true
+    },
+    {
+      "input": { "s": "()[]{}" },
+      "output": true
+    },
+    {
+      "input": { "s": "(]" },
+      "output": false
+    },
+    {
+      "input": { "s": "([)]" },
+      "output": false
+    },
+    {
+      "input": { "s": "{[]}" },
+      "output": true
+    }
+  ],
+  "constraints": [
+    "1 <= s.length <= 10^4",
+    "s consists of parentheses only '()[]{}'."
+  ],
+  "hints": [
+    "Think about using a stack data structure. What should you do when you encounter an opening bracket vs a closing bracket?",
+    "When you see an opening bracket, push it onto the stack. When you see a closing bracket, check if it matches the top of the stack.",
+    "Don't forget to handle edge cases: what if the stack is empty when you need to pop? What should the stack look like at the end?"
+  ],
+  "tags": ["string", "stack"],
+  "companies": ["Amazon", "Google", "Facebook", "Microsoft", "Bloomberg"],
+  "leetcodeUrl": "https://leetcode.com/problems/valid-parentheses/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "20"
+  }
+}
