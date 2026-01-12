@@ -1,28 +1,31 @@
 /**
-<<<<<<< HEAD
- * Problem-related types for parsing and storage
+ * Problem and Template type definitions for the Problem Management System.
  *
- * This module defines the raw JSON format for problems as stored on disk,
- * and the related TypeScript types for parse results.
-=======
- * Template type definitions for the Problem Management System.
- *
- * This module defines the template format, placeholders, and related types
- * used for generating problem files in the workspace.
->>>>>>> 7a27124 (pms-009 add template format)
+ * This module defines:
+ * - Raw JSON format for problems as stored on disk
+ * - Parse result types
+ * - Template format, placeholders, and rendering types
  *
  * @module core/problem/types
  */
 
-<<<<<<< HEAD
-import type { Difficulty, Example, Problem } from '../../types/global.ts';
+import type {
+  Difficulty,
+  Example,
+  Problem,
+  SupportedLanguage,
+  UserPreferences,
+} from '../../types/global.ts';
+import type { EscapingContext } from './escaping.ts';
+
+// ============================================================================
+// Problem Parsing Types (PMS-003)
+// ============================================================================
 
 /**
- * Raw metadata as stored in JSON files (dates are strings)
+ * Raw metadata as stored in JSON files
  */
 export interface RawProblemMetadata {
-  createdAt?: string;
-  updatedAt?: string;
   source?: string;
   sourceId?: string;
 }
@@ -32,7 +35,7 @@ export interface RawProblemMetadata {
  *
  * This represents the on-disk format where:
  * - Optional array fields may be missing (will be normalized to [])
- * - Metadata date fields are ISO-8601 strings (will be converted to Date)
+ * - Date fields are ISO-8601 strings (will be converted to Date)
  */
 export interface RawProblemJson {
   id: string;
@@ -46,6 +49,8 @@ export interface RawProblemJson {
   tags?: string[];
   companies?: string[];
   leetcodeUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
   metadata?: RawProblemMetadata;
 }
 
@@ -70,9 +75,10 @@ export interface ParseError {
  * Union type for parse results
  */
 export type ParseOutcome = ParseResult | ParseError;
-=======
-import type { Problem, SupportedLanguage, UserPreferences } from '../../types/global.ts';
-import type { EscapingContext } from './escaping.ts';
+
+// ============================================================================
+// Template Types (PMS-009)
+// ============================================================================
 
 /**
  * Template file kinds available for generation
@@ -377,4 +383,3 @@ export interface TemplateRenderResult {
   /** Unknown placeholders found (if strictPlaceholders is false) */
   unknownPlaceholders?: string[];
 }
->>>>>>> 7a27124 (pms-009 add template format)
