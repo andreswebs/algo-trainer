@@ -61,7 +61,9 @@ $XDG_DATA_HOME/algo-trainer/problems/
 | `tags` | `string[]` | `[]` | Category tags (e.g., `["array", "hash-table"]`) |
 | `companies` | `string[]` | `[]` | Companies known to ask this problem |
 | `leetcodeUrl` | `string` | `undefined` | LeetCode problem URL if applicable |
-| `metadata` | `ProblemMetadata` | `undefined` | Additional metadata |
+| `createdAt` | `string` | `undefined` | When the problem was created (ISO-8601 format) |
+| `updatedAt` | `string` | `undefined` | When the problem was last updated (ISO-8601 format) |
+| `metadata` | `ProblemMetadata` | `undefined` | Source metadata (origin information) |
 
 ### Example Object Schema
 
@@ -85,10 +87,10 @@ interface Example {
 
 ### Metadata Object Schema
 
+The `metadata` field contains source-related information about where the problem originated:
+
 ```typescript
 interface ProblemMetadata {
-  createdAt?: string;   // ISO-8601 format in JSON
-  updatedAt?: string;   // ISO-8601 format in JSON
   source?: string;      // Problem source (e.g., "leetcode", "original")
   sourceId?: string;    // ID from original source
 }
@@ -100,14 +102,12 @@ interface ProblemMetadata {
 
 **In-memory format**: `Date` object
 
-**Parsing expectation**: When loading a problem, date strings in `metadata.createdAt` and `metadata.updatedAt` must be converted to `Date` objects. Missing dates remain `undefined`.
+**Parsing expectation**: When loading a problem, date strings in `createdAt` and `updatedAt` must be converted to `Date` objects. Missing dates remain `undefined`.
 
 ```json
 {
-  "metadata": {
-    "createdAt": "2024-01-15T10:30:00.000Z",
-    "updatedAt": "2024-06-20T14:45:00.000Z"
-  }
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z"
 }
 ```
 
@@ -212,9 +212,9 @@ When loading a problem, missing array fields are normalized to empty arrays:
   "tags": ["array", "hash-table"],
   "companies": ["Amazon", "Google", "Facebook", "Microsoft", "Apple"],
   "leetcodeUrl": "https://leetcode.com/problems/two-sum/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
   "metadata": {
-    "createdAt": "2024-01-15T10:30:00.000Z",
-    "updatedAt": "2024-06-20T14:45:00.000Z",
     "source": "leetcode",
     "sourceId": "1"
   }
@@ -238,8 +238,10 @@ When loading a problem, missing array fields are normalized to empty arrays:
 | `tags` | Array of non-empty strings (if present) |
 | `companies` | Array of non-empty strings (if present) |
 | `leetcodeUrl` | Valid URL string (if present) |
-| `metadata.createdAt` | ISO-8601 date string (if present) |
-| `metadata.updatedAt` | ISO-8601 date string (if present) |
+| `createdAt` | ISO-8601 date string (if present) |
+| `updatedAt` | ISO-8601 date string (if present) |
+| `metadata.source` | Non-empty string (if present) |
+| `metadata.sourceId` | Non-empty string (if present) |
 
 ## Error Handling
 
