@@ -627,8 +627,7 @@ export function validateProblem(value: unknown): ValidationResult {
       const result = validateArray(
         problem[field],
         field,
-        (item, index) =>
-          validateString(item, `${field}[${index}]`, { allowEmpty: false }),
+        (item) => validateString(item, field, { allowEmpty: false }),
       );
       if (!result.valid) errors.push(...result.errors);
     }
