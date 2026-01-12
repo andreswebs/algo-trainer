@@ -33,9 +33,9 @@
   "tags": ["array", "hash-table"],
   "companies": ["Amazon", "Google", "Facebook", "Microsoft", "Apple"],
   "leetcodeUrl": "https://leetcode.com/problems/two-sum/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
   "metadata": {
-    "createdAt": "2024-01-15T10:30:00.000Z",
-    "updatedAt": "2024-06-20T14:45:00.000Z",
     "source": "leetcode",
     "sourceId": "1"
   }

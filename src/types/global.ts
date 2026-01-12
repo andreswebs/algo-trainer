@@ -62,18 +62,18 @@ export interface Problem {
   companies?: string[];
   /** LeetCode URL if available */
   leetcodeUrl?: string;
-  /** Metadata about the problem */
-  metadata?: ProblemMetadata;
-}
-
-/**
- * Additional metadata for problems
- */
-export interface ProblemMetadata {
   /** When the problem was created */
   createdAt?: Date;
   /** When the problem was last updated */
   updatedAt?: Date;
+  /** Metadata about the problem source */
+  metadata?: ProblemMetadata;
+}
+
+/**
+ * Source metadata for problems
+ */
+export interface ProblemMetadata {
   /** Source of the problem (leetcode, original, etc.) */
   source?: string;
   /** Problem ID from original source */
