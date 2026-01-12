@@ -5,7 +5,7 @@
  * @date {{DATE}}
  */
 
-import { assertEquals, assertThrows } from '@std/assert';
+import { assertEquals } from '@std/assert';
 import { describe, it } from '@std/testing/bdd';
 import { {{FUNCTION_NAME}}, {{FUNCTION_NAME}}Alternative } from './solution{{FILE_EXTENSION}}';
 
