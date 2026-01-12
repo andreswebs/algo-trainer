@@ -69,7 +69,7 @@ throw new ConfigError(
 - **stdout**: Only machine-readable data for piping/consumption
 
 ```typescript
-import { logInfo, logError, outputData } from '../utils/output.ts';
+import { logError, logInfo, outputData } from '../utils/output.ts';
 
 // Human messages go to stderr
 logInfo('Processing file...');

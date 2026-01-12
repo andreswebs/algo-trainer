@@ -33,7 +33,7 @@ Use this checklist before considering any task complete.
 ## Before Committing
 
 - [ ] `deno task check` passes
-- [ ] `deno task lint` passes  
+- [ ] `deno task lint` passes
 - [ ] `deno task test` passes
 - [ ] No debug code or console.log statements left
 - [ ] No secrets or sensitive data in code
