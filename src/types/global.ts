@@ -228,3 +228,126 @@ export interface FileOperationResult {
   /** Additional metadata */
   metadata?: Record<string, unknown>;
 }
+
+// ============================================================================
+// Problem Query/Filter/Search API Types (PMS-002)
+// ============================================================================
+
+/**
+ * Sort field options for problem queries
+ */
+export type ProblemSortField = 'title' | 'difficulty' | 'createdAt' | 'updatedAt';
+
+/**
+ * Sort direction
+ */
+export type SortDirection = 'asc' | 'desc';
+
+/**
+ * Sorting configuration for problem queries
+ */
+export interface ProblemSortConfig {
+  /** Field to sort by */
+  field: ProblemSortField;
+  /** Sort direction (default: 'asc') */
+  direction: SortDirection;
+}
+
+/**
+ * Filter match mode for array fields (tags, companies)
+ *
+ * - 'any': Match if the problem has at least one of the specified values
+ * - 'all': Match only if the problem has all of the specified values
+ */
+export type ArrayMatchMode = 'any' | 'all';
+
+/**
+ * Query parameters for filtering and searching problems
+ *
+ * ## Matching Semantics
+ *
+ * - **difficulty**: Matches if problem difficulty equals any of the specified values.
+ *   When an array is provided, uses OR logic (match-any).
+ *
+ * - **tags**: Matching behavior controlled by `tagMatchMode` (default: 'any').
+ *   - 'any': Problem matches if it has at least one of the specified tags.
+ *   - 'all': Problem matches only if it has all specified tags.
+ *   Matching is case-insensitive.
+ *
+ * - **companies**: Matching behavior controlled by `companyMatchMode` (default: 'any').
+ *   - 'any': Problem matches if it has at least one of the specified companies.
+ *   - 'all': Problem matches only if it has all specified companies.
+ *   Matching is case-insensitive.
+ *
+ * - **text**: Case-insensitive substring search across title, description, and tags.
+ *   Matches if any of these fields contain the search text.
+ *
+ * ## Combining Criteria
+ *
+ * Multiple filter criteria are combined with AND logic. A problem must match
+ * all specified criteria to be included in the results.
+ *
+ * ## Ordering
+ *
+ * Results are sorted by the `sort` configuration. If not specified, defaults to
+ * title ascending for stable, deterministic ordering.
+ *
+ * ## Pagination
+ *
+ * Use `limit` and `offset` for pagination. `offset` specifies how many results
+ * to skip, and `limit` specifies the maximum number of results to return.
+ */
+export interface ProblemQuery {
+  /** Filter by difficulty level(s). When array, matches any of the difficulties. */
+  difficulty?: Difficulty | Difficulty[];
+
+  /** Filter by tags. Matching behavior controlled by `tagMatchMode`. */
+  tags?: string[];
+
+  /** Match mode for tags filter (default: 'any') */
+  tagMatchMode?: ArrayMatchMode;
+
+  /** Filter by companies. Matching behavior controlled by `companyMatchMode`. */
+  companies?: string[];
+
+  /** Match mode for companies filter (default: 'any') */
+  companyMatchMode?: ArrayMatchMode;
+
+  /** Free-text search (case-insensitive, searches title, description, and tags) */
+  text?: string;
+
+  /** Maximum number of results to return */
+  limit?: number;
+
+  /** Number of results to skip (for pagination) */
+  offset?: number;
+
+  /** Sort configuration (defaults to title ascending if not specified) */
+  sort?: ProblemSortConfig;
+}
+
+/**
+ * Result of a paginated problem query
+ */
+export interface ProblemQueryResult {
+  /** Problems matching the query */
+  problems: Problem[];
+
+  /** Total number of matching problems (before pagination) */
+  total: number;
+
+  /** Whether there are more results beyond the current page */
+  hasMore: boolean;
+
+  /** Query that was executed */
+  query: ProblemQuery;
+}
+
+/**
+ * Result of looking up a single problem
+ *
+ * Lookup methods (getById, getBySlug) return `null` if the problem is not found,
+ * rather than throwing an error. This allows consumers to handle missing problems
+ * gracefully without exception handling.
+ */
+export type ProblemLookupResult = Problem | null;
