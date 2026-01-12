@@ -100,7 +100,7 @@ export function parseProblemFromJson(content: string, sourcePath?: string): Prob
  * Normalize a raw problem JSON to a full Problem object
  *
  * - Missing array fields become empty arrays
- * - Date strings in metadata are converted to Date objects
+ * - Date strings in metadata are converted to Date objects at the Problem level
  */
 export function normalizeProblem(raw: RawProblemJson): Problem {
   const problem: Problem = {
@@ -124,27 +124,35 @@ export function normalizeProblem(raw: RawProblemJson): Problem {
   }
 
   if (raw.metadata !== undefined) {
-    problem.metadata = normalizeMetadata(raw.metadata);
+    const { createdAt, updatedAt, metadata } = normalizeMetadata(raw.metadata);
+    if (createdAt !== undefined) {
+      problem.createdAt = createdAt;
+    }
+    if (updatedAt !== undefined) {
+      problem.updatedAt = updatedAt;
+    }
+    if (metadata.source !== undefined || metadata.sourceId !== undefined) {
+      problem.metadata = metadata;
+    }
   }
 
   return problem;
 }
 
 /**
- * Normalize metadata, converting date strings to Date objects
+ * Normalize metadata, extracting date strings to Date objects
+ *
+ * @returns Object containing createdAt, updatedAt as Date objects, and remaining metadata
  */
-export function normalizeMetadata(raw: RawProblemMetadata): ProblemMetadata {
-  const metadata: ProblemMetadata = {};
-
+export function normalizeMetadata(raw: RawProblemMetadata): {
+  createdAt: Date | undefined;
+  updatedAt: Date | undefined;
+  metadata: ProblemMetadata;
+} {
   const createdAt = raw.createdAt ? parseIsoDate(raw.createdAt) : undefined;
-  if (createdAt !== undefined) {
-    metadata.createdAt = createdAt;
-  }
-
   const updatedAt = raw.updatedAt ? parseIsoDate(raw.updatedAt) : undefined;
-  if (updatedAt !== undefined) {
-    metadata.updatedAt = updatedAt;
-  }
+
+  const metadata: ProblemMetadata = {};
 
   if (raw.source !== undefined) {
     metadata.source = raw.source;
@@ -154,7 +162,7 @@ export function normalizeMetadata(raw: RawProblemMetadata): ProblemMetadata {
     metadata.sourceId = raw.sourceId;
   }
 
-  return metadata;
+  return { createdAt, updatedAt, metadata };
 }
 
 /**

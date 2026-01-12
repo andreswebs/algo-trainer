@@ -88,16 +88,18 @@ Deno.test('parseProblemFromJson - converts date strings to Date objects', () => 
   const json = JSON.stringify(VALID_PROBLEM_JSON);
   const problem = parseProblemFromJson(json);
 
-  assertEquals(problem.metadata?.createdAt instanceof Date, true);
-  assertEquals(problem.metadata?.updatedAt instanceof Date, true);
+  assertEquals(problem.createdAt instanceof Date, true);
+  assertEquals(problem.updatedAt instanceof Date, true);
   assertEquals(
-    problem.metadata?.createdAt?.toISOString(),
+    problem.createdAt?.toISOString(),
     '2024-01-15T10:30:00.000Z',
   );
   assertEquals(
-    problem.metadata?.updatedAt?.toISOString(),
+    problem.updatedAt?.toISOString(),
     '2024-06-20T14:45:00.000Z',
   );
+  assertEquals(problem.metadata?.source, 'leetcode');
+  assertEquals(problem.metadata?.sourceId, '1');
 });
 
 Deno.test('parseProblemFromJson - throws on invalid JSON', () => {
@@ -178,7 +180,7 @@ Deno.test('normalizeProblem - handles invalid date strings gracefully', () => {
 
   const problem = normalizeProblem(raw);
 
-  assertEquals(problem.metadata?.createdAt, undefined);
+  assertEquals(problem.createdAt, undefined);
   assertEquals(problem.metadata?.source, 'test');
 });
 
