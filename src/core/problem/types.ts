@@ -2,7 +2,7 @@
  * Problem-related types for parsing and storage
  *
  * This module defines the raw JSON format for problems as stored on disk,
- * and provides type guards and conversion utilities.
+ * and the related TypeScript types for parse results.
  *
  * @module core/problem/types
  */
