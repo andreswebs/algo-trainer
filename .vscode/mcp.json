@@ -1,5 +1,5 @@
 {
-	"servers": {
+  "servers": {
     "serena": {
       "command": "uvx",
       "args": [
@@ -15,5 +15,5 @@
         "${workspaceFolder}"
       ]
     }
-	}
+  }
 }

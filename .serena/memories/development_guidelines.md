@@ -61,10 +61,10 @@ describe('ConfigManager', () => {
   it('should load default config when no file exists', async () => {
     // Arrange
     // ...
-    
+
     // Act
     const config = await manager.load();
-    
+
     // Assert
     assertEquals(config.language, 'typescript');
   });
@@ -163,7 +163,7 @@ try {
 } catch (error) {
   throw new ConfigError(
     'Descriptive message',
-    createErrorContext('operationName', { 
+    createErrorContext('operationName', {
       relevantData: value,
       originalError: String(error),
     }),

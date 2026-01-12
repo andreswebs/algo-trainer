@@ -7,6 +7,7 @@ This document defines the standardized on-disk representation for problems in Al
 **Format**: JSON
 
 All problem files use JSON format for:
+
 - Easy validation and parsing
 - Human readability and editability
 - Native TypeScript/Deno support via `JSON.parse()`
@@ -43,35 +44,33 @@ $XDG_DATA_HOME/algo-trainer/problems/
 
 ### Required Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique identifier (e.g., `"1"`, `"two-sum"`, `"custom-abc123"`) |
-| `slug` | `string` | URL-friendly identifier, must be kebab-case (e.g., `"two-sum"`) |
-| `title` | `string` | Human-readable title (e.g., `"Two Sum"`) |
-| `difficulty` | `"easy" \| "medium" \| "hard"` | Problem difficulty level |
-| `description` | `string` | Full problem description (Markdown supported) |
-| `examples` | `Example[]` | At least one example required |
+| Field         | Type                           | Description                                                     |
+| ------------- | ------------------------------ | --------------------------------------------------------------- |
+| `id`          | `string`                       | Unique identifier (e.g., `"1"`, `"two-sum"`, `"custom-abc123"`) |
+| `slug`        | `string`                       | URL-friendly identifier, must be kebab-case (e.g., `"two-sum"`) |
+| `title`       | `string`                       | Human-readable title (e.g., `"Two Sum"`)                        |
+| `difficulty`  | `"easy" \| "medium" \| "hard"` | Problem difficulty level                                        |
+| `description` | `string`                       | Full problem description (Markdown supported)                   |
+| `examples`    | `Example[]`                    | At least one example required                                   |
 
 ### Optional Fields
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `constraints` | `string[]` | `[]` | Problem constraints (e.g., `"2 <= nums.length <= 10^4"`) |
-| `hints` | `string[]` | `[]` | Progressive hints for solving |
-| `tags` | `string[]` | `[]` | Category tags (e.g., `["array", "hash-table"]`) |
-| `companies` | `string[]` | `[]` | Companies known to ask this problem |
-| `leetcodeUrl` | `string` | `undefined` | LeetCode problem URL if applicable |
-| `createdAt` | `string` | `undefined` | When the problem was created (ISO-8601 format) |
-| `updatedAt` | `string` | `undefined` | When the problem was last updated (ISO-8601 format) |
-| `metadata` | `ProblemMetadata` | `undefined` | Source metadata (origin information) |
+| Field         | Type              | Default     | Description                                              |
+| ------------- | ----------------- | ----------- | -------------------------------------------------------- |
+| `constraints` | `string[]`        | `[]`        | Problem constraints (e.g., `"2 <= nums.length <= 10^4"`) |
+| `hints`       | `string[]`        | `[]`        | Progressive hints for solving                            |
+| `tags`        | `string[]`        | `[]`        | Category tags (e.g., `["array", "hash-table"]`)          |
+| `companies`   | `string[]`        | `[]`        | Companies known to ask this problem                      |
+| `leetcodeUrl` | `string`          | `undefined` | LeetCode problem URL if applicable                       |
+| `metadata`    | `ProblemMetadata` | `undefined` | Additional metadata                                      |
 
 ### Example Object Schema
 
 ```typescript
 interface Example {
-  input: Record<string, unknown>;  // Named input parameters
-  output: unknown;                  // Expected output
-  explanation?: string;             // Optional explanation
+  input: Record<string, unknown>; // Named input parameters
+  output: unknown; // Expected output
+  explanation?: string; // Optional explanation
 }
 ```
 
@@ -91,8 +90,10 @@ The `metadata` field contains source-related information about where the problem
 
 ```typescript
 interface ProblemMetadata {
-  source?: string;      // Problem source (e.g., "leetcode", "original")
-  sourceId?: string;    // ID from original source
+  createdAt?: string; // ISO-8601 format in JSON
+  updatedAt?: string; // ISO-8601 format in JSON
+  source?: string; // Problem source (e.g., "leetcode", "original")
+  sourceId?: string; // ID from original source
 }
 ```
 
@@ -223,25 +224,23 @@ When loading a problem, missing array fields are normalized to empty arrays:
 
 ## Validation Rules Summary
 
-| Rule | Validation |
-|------|------------|
-| `id` | Non-empty string |
-| `slug` | Non-empty, kebab-case, matches filename |
-| `title` | Non-empty string |
-| `difficulty` | One of: `"easy"`, `"medium"`, `"hard"` |
-| `description` | Non-empty string |
-| `examples` | Non-empty array with valid `Example` objects |
-| `examples[].input` | Object (not null, not array) |
-| `examples[].output` | Any value (including null) |
-| `constraints` | Array of non-empty strings (if present) |
-| `hints` | Array of non-empty strings (if present) |
-| `tags` | Array of non-empty strings (if present) |
-| `companies` | Array of non-empty strings (if present) |
-| `leetcodeUrl` | Valid URL string (if present) |
-| `createdAt` | ISO-8601 date string (if present) |
-| `updatedAt` | ISO-8601 date string (if present) |
-| `metadata.source` | Non-empty string (if present) |
-| `metadata.sourceId` | Non-empty string (if present) |
+| Rule                 | Validation                                   |
+| -------------------- | -------------------------------------------- |
+| `id`                 | Non-empty string                             |
+| `slug`               | Non-empty, kebab-case, matches filename      |
+| `title`              | Non-empty string                             |
+| `difficulty`         | One of: `"easy"`, `"medium"`, `"hard"`       |
+| `description`        | Non-empty string                             |
+| `examples`           | Non-empty array with valid `Example` objects |
+| `examples[].input`   | Object (not null, not array)                 |
+| `examples[].output`  | Any value (including null)                   |
+| `constraints`        | Array of non-empty strings (if present)      |
+| `hints`              | Array of non-empty strings (if present)      |
+| `tags`               | Array of non-empty strings (if present)      |
+| `companies`          | Array of non-empty strings (if present)      |
+| `leetcodeUrl`        | Valid URL string (if present)                |
+| `metadata.createdAt` | ISO-8601 date string (if present)            |
+| `metadata.updatedAt` | ISO-8601 date string (if present)            |
 
 ## Error Handling
 
