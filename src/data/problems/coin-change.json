@@ -1,0 +1,41 @@
+{
+  "id": "322",
+  "slug": "coin-change",
+  "title": "Coin Change",
+  "difficulty": "medium",
+  "description": "You are given an integer array `coins` representing coins of different denominations and an integer `amount` representing a total amount of money.\n\nReturn the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up by any combination of the coins, return `-1`.\n\nYou may assume that you have an infinite number of each kind of coin.",
+  "examples": [
+    {
+      "input": { "coins": [1, 2, 5], "amount": 11 },
+      "output": 3,
+      "explanation": "11 = 5 + 5 + 1"
+    },
+    {
+      "input": { "coins": [2], "amount": 3 },
+      "output": -1
+    },
+    {
+      "input": { "coins": [1], "amount": 0 },
+      "output": 0
+    }
+  ],
+  "constraints": [
+    "1 <= coins.length <= 12",
+    "1 <= coins[i] <= 2^31 - 1",
+    "0 <= amount <= 10^4"
+  ],
+  "hints": [
+    "This is a classic dynamic programming problem. Think about what subproblems you need to solve.",
+    "For each amount from 1 to target, compute the minimum coins needed using smaller amounts.",
+    "dp[i] = min(dp[i], dp[i - coin] + 1) for each coin denomination."
+  ],
+  "tags": ["array", "dynamic-programming", "breadth-first-search"],
+  "companies": ["Amazon", "Microsoft", "Apple", "Goldman Sachs"],
+  "leetcodeUrl": "https://leetcode.com/problems/coin-change/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "322"
+  }
+}

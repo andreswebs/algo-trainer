@@ -1,0 +1,37 @@
+{
+  "id": "11",
+  "slug": "container-with-most-water",
+  "title": "Container With Most Water",
+  "difficulty": "medium",
+  "description": "You are given an integer array `height` of length `n`. There are `n` vertical lines drawn such that the two endpoints of the `i`th line are `(i, 0)` and `(i, height[i])`.\n\nFind two lines that together with the x-axis form a container, such that the container contains the most water.\n\nReturn the maximum amount of water a container can store.\n\n**Notice** that you may not slant the container.",
+  "examples": [
+    {
+      "input": { "height": [1, 8, 6, 2, 5, 4, 8, 3, 7] },
+      "output": 49,
+      "explanation": "The vertical lines are represented by array [1,8,6,2,5,4,8,3,7]. In this case, the max area of water the container can contain is 49 (between index 1 and 8)."
+    },
+    {
+      "input": { "height": [1, 1] },
+      "output": 1
+    }
+  ],
+  "constraints": [
+    "n == height.length",
+    "2 <= n <= 10^5",
+    "0 <= height[i] <= 10^4"
+  ],
+  "hints": [
+    "Start with the widest container (pointers at both ends) and work inward.",
+    "The area is limited by the shorter line. Moving the shorter line inward might find a taller one.",
+    "Moving the taller line inward can only decrease or maintain the area, never increase it."
+  ],
+  "tags": ["array", "two-pointers", "greedy"],
+  "companies": ["Amazon", "Facebook", "Google", "Apple", "Bloomberg"],
+  "leetcodeUrl": "https://leetcode.com/problems/container-with-most-water/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "11"
+  }
+}

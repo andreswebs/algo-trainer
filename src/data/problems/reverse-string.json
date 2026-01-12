@@ -1,0 +1,35 @@
+{
+  "id": "344",
+  "slug": "reverse-string",
+  "title": "Reverse String",
+  "difficulty": "easy",
+  "description": "Write a function that reverses a string. The input string is given as an array of characters `s`.\n\nYou must do this by modifying the input array in-place with O(1) extra memory.",
+  "examples": [
+    {
+      "input": { "s": ["h", "e", "l", "l", "o"] },
+      "output": ["o", "l", "l", "e", "h"]
+    },
+    {
+      "input": { "s": ["H", "a", "n", "n", "a", "h"] },
+      "output": ["h", "a", "n", "n", "a", "H"]
+    }
+  ],
+  "constraints": [
+    "1 <= s.length <= 10^5",
+    "s[i] is a printable ASCII character."
+  ],
+  "hints": [
+    "Think about using two pointers - one at the start and one at the end.",
+    "Swap the characters at the two pointers, then move them towards each other.",
+    "Continue until the pointers meet or cross."
+  ],
+  "tags": ["string", "two-pointers"],
+  "companies": ["Amazon", "Apple", "Microsoft"],
+  "leetcodeUrl": "https://leetcode.com/problems/reverse-string/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "344"
+  }
+}

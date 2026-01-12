@@ -1,0 +1,39 @@
+{
+  "id": "102",
+  "slug": "binary-tree-level-order-traversal",
+  "title": "Binary Tree Level Order Traversal",
+  "difficulty": "medium",
+  "description": "Given the `root` of a binary tree, return the level order traversal of its nodes' values. (i.e., from left to right, level by level).",
+  "examples": [
+    {
+      "input": { "root": [3, 9, 20, null, null, 15, 7] },
+      "output": [[3], [9, 20], [15, 7]]
+    },
+    {
+      "input": { "root": [1] },
+      "output": [[1]]
+    },
+    {
+      "input": { "root": [] },
+      "output": []
+    }
+  ],
+  "constraints": [
+    "The number of nodes in the tree is in the range [0, 2000].",
+    "-1000 <= Node.val <= 1000"
+  ],
+  "hints": [
+    "Use a queue (BFS) to process nodes level by level.",
+    "For each level, process all nodes currently in the queue before moving to the next level.",
+    "Track the number of nodes at the current level to know when a level is complete."
+  ],
+  "tags": ["tree", "breadth-first-search", "binary-tree"],
+  "companies": ["Amazon", "Microsoft", "Facebook", "Apple", "Bloomberg"],
+  "leetcodeUrl": "https://leetcode.com/problems/binary-tree-level-order-traversal/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "102"
+  }
+}

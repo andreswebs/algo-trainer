@@ -1,0 +1,40 @@
+{
+  "id": "15",
+  "slug": "3sum",
+  "title": "3Sum",
+  "difficulty": "medium",
+  "description": "Given an integer array `nums`, return all the triplets `[nums[i], nums[j], nums[k]]` such that `i != j`, `i != k`, and `j != k`, and `nums[i] + nums[j] + nums[k] == 0`.\n\nNotice that the solution set must not contain duplicate triplets.",
+  "examples": [
+    {
+      "input": { "nums": [-1, 0, 1, 2, -1, -4] },
+      "output": [[-1, -1, 2], [-1, 0, 1]],
+      "explanation": "nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0. nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0. nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0. The distinct triplets are [-1,0,1] and [-1,-1,2]."
+    },
+    {
+      "input": { "nums": [0, 1, 1] },
+      "output": []
+    },
+    {
+      "input": { "nums": [0, 0, 0] },
+      "output": [[0, 0, 0]]
+    }
+  ],
+  "constraints": [
+    "3 <= nums.length <= 3000",
+    "-10^5 <= nums[i] <= 10^5"
+  ],
+  "hints": [
+    "Sort the array first. This makes it easier to skip duplicates and use two pointers.",
+    "For each element, use two pointers to find pairs that sum to the negative of that element.",
+    "Skip duplicate values to avoid duplicate triplets in the result."
+  ],
+  "tags": ["array", "two-pointers", "sorting"],
+  "companies": ["Amazon", "Facebook", "Microsoft", "Google", "Apple"],
+  "leetcodeUrl": "https://leetcode.com/problems/3sum/",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-06-20T14:45:00.000Z",
+  "metadata": {
+    "source": "leetcode",
+    "sourceId": "15"
+  }
+}
