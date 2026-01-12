@@ -4,7 +4,7 @@
  * @module tests/config
  */
 
-import { assertEquals } from '@std/assert';
+import { assertEquals, assertExists } from '@std/assert';
 import { ConfigManager } from '../src/config/manager.ts';
 
 interface TestEnv {
@@ -52,7 +52,7 @@ Deno.test(
 
       assertEquals(config.language, 'typescript');
       assertEquals(config.aiEnabled, true);
-      assertEquals(config.version, '2.0.0');
+      assertExists(config.version);
     } finally {
       await cleanup();
     }

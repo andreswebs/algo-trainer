@@ -7,3 +7,4 @@
  */
 
 export * from './types.ts';
+export * from './escaping.ts';

@@ -72,6 +72,7 @@ export interface ParseError {
 export type ParseOutcome = ParseResult | ParseError;
 =======
 import type { Problem, SupportedLanguage, UserPreferences } from '../../types/global.ts';
+import type { EscapingContext } from './escaping.ts';
 
 /**
  * Template file kinds available for generation
@@ -162,6 +163,53 @@ export const TEMPLATE_PLACEHOLDERS = {
 } as const;
 
 export type TemplatePlaceholder = keyof typeof TEMPLATE_PLACEHOLDERS;
+
+/**
+ * Escaping contexts for placeholders that appear in code templates.
+ *
+ * This mapping specifies which escaping contexts each placeholder may appear in
+ * within template files. When a placeholder is rendered, the appropriate escaping
+ * function must be applied based on the syntactic context.
+ *
+ * ## Security Note
+ *
+ * Placeholders rendered without proper escaping can lead to code injection.
+ * For example, `{{PROBLEM_TITLE}}` appears in both block comments and string
+ * literals in test templates. A malicious title could break out of either context.
+ *
+ * The renderer must apply escaping for ALL contexts listed for a placeholder,
+ * or use template-aware rendering that detects the context at each occurrence.
+ */
+export const PLACEHOLDER_ESCAPING_CONTEXTS: Record<TemplatePlaceholder, EscapingContext[]> = {
+  // Problem data - may appear in comments and strings
+  PROBLEM_TITLE: ['block-comment', 'single-line-comment', 'single-quoted-string'],
+  PROBLEM_SLUG: ['none'],
+  PROBLEM_ID: ['none'],
+  PROBLEM_DIFFICULTY: ['none'],
+  PROBLEM_DESCRIPTION: ['markdown', 'block-comment'],
+
+  // Problem content - formatted output in various contexts
+  EXAMPLES: ['block-comment', 'markdown'],
+  CONSTRAINTS: ['markdown'],
+  HINTS: ['markdown'],
+  TAGS: ['none'],
+  COMPANIES: ['none'],
+
+  // Template context - safe values
+  LANGUAGE: ['none'],
+  LANGUAGE_DISPLAY: ['none'],
+  TEMPLATE_STYLE: ['none'],
+  FILE_EXTENSION: ['none'],
+
+  // Code generation - safe values (derived from slug)
+  FUNCTION_NAME: ['none'],
+  CLASS_NAME: ['none'],
+  DATE: ['none'],
+  YEAR: ['none'],
+
+  // URLs - safe values
+  LEETCODE_URL: ['none'],
+};
 
 /**
  * Language-specific configuration for template rendering
@@ -306,6 +354,16 @@ export interface TemplateRenderOptions {
   strictPlaceholders?: boolean;
   /** Custom placeholder values to override computed values */
   overrides?: Partial<PlaceholderValues>;
+  /**
+   * If true, apply context-appropriate escaping to placeholder values. Default: true
+   *
+   * When enabled, the renderer will escape placeholder values based on the syntactic
+   * context where they appear (block comments, string literals, etc.) to prevent
+   * code injection vulnerabilities.
+   *
+   * @security This should only be disabled for testing purposes.
+   */
+  enableEscaping?: boolean;
 }
 
 /**

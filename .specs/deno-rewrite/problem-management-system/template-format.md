@@ -71,7 +71,8 @@ Templates use double curly braces for placeholders:
 - **Close delimiter**: `}}`
 - **Placeholder names**: UPPER_SNAKE_CASE
 
-Placeholders are replaced verbatim with their computed values. Unknown placeholders
+Placeholders are replaced with their computed values after applying context-appropriate
+escaping (see [Placeholder Escaping](#placeholder-escaping) below). Unknown placeholders
 cause an error by default (configurable via `strictPlaceholders` option).
 
 ## Placeholder Reference
@@ -119,6 +120,85 @@ cause an error by default (configurable via `strictPlaceholders` option).
 | Placeholder        | Description          | Note                          |
 | ------------------ | -------------------- | ----------------------------- |
 | `{{LEETCODE_URL}}` | LeetCode problem URL | Empty string if not available |
+
+## Placeholder Escaping
+
+### Security Rationale
+
+Template placeholders can appear in multiple syntactic contexts within a single file:
+
+- Block comments (`/** ... */`)
+- Single-line comments (`// ...`)
+- String literals (`'...'` or `"..."`)
+- Template literals (`` `...` ``)
+- Markdown content
+
+Without proper escaping, user-controlled values (like problem titles) could break out of
+these contexts and inject arbitrary code. For example:
+
+```
+Malicious title: "Two Sum */ alert('hacked'); /*"
+```
+
+When rendered verbatim into a block comment, this breaks out of the comment and injects
+JavaScript code that executes when the file is parsed.
+
+### Escaping Contexts
+
+The renderer applies context-appropriate escaping based on where each placeholder appears:
+
+| Context                | Characters Escaped                           | Example                     |
+| ---------------------- | -------------------------------------------- | --------------------------- |
+| `block-comment`        | `*/` → `* /`                                 | Prevents comment breakout   |
+| `single-line-comment`  | `\r\n` → ``                                  | Prevents newline injection  |
+| `single-quoted-string` | `\` → `\\`, `'` → `\'`                       | Prevents string breakout    |
+| `double-quoted-string` | `\` → `\\`, `"` → `\"`                       | Prevents string breakout    |
+| `template-literal`     | `\` → `\\`, `` ` `` → `` \` ``, `${` → `\${` | Prevents template injection |
+| `markdown`             | (none currently)                             | Safe rendering context      |
+| `none`                 | (no escaping)                                | For safe/derived values     |
+
+### Placeholder Escaping Rules
+
+Each placeholder has defined escaping contexts based on how it's used in templates:
+
+| Placeholder               | Escaping Contexts                                              |
+| ------------------------- | -------------------------------------------------------------- |
+| `{{PROBLEM_TITLE}}`       | `block-comment`, `single-line-comment`, `single-quoted-string` |
+| `{{PROBLEM_DESCRIPTION}}` | `markdown`, `block-comment`                                    |
+| `{{EXAMPLES}}`            | `block-comment`, `markdown`                                    |
+| `{{CONSTRAINTS}}`         | `markdown`                                                     |
+| `{{HINTS}}`               | `markdown`                                                     |
+| Other placeholders        | `none` (safe values derived from slugs, constants, etc.)       |
+
+### Implementation
+
+Escaping functions are provided in `src/core/problem/escaping.ts`:
+
+```typescript
+import {
+  escapeForBlockComment,
+  escapeForContext,
+  escapeForSingleQuotedString,
+  EscapingContext,
+} from './escaping.ts';
+
+// Escape for specific context
+const safeTitle = escapeForSingleQuotedString(problem.title);
+
+// Or use the generic function
+const safeTitle = escapeForContext(problem.title, 'single-quoted-string');
+```
+
+### Renderer Behavior
+
+The template renderer:
+
+1. Detects the syntactic context at each placeholder occurrence
+2. Applies the appropriate escaping function for that context
+3. Replaces the placeholder with the escaped value
+
+Escaping is enabled by default and can be disabled via `TemplateRenderOptions.enableEscaping`
+(for testing purposes only).
 
 ## Placeholder Formatting Details
 
