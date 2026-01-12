@@ -254,6 +254,61 @@ export function validateUrl(
 }
 
 /**
+ * Kebab-case pattern: lowercase letters and numbers, separated by single hyphens
+ * No leading/trailing hyphens, no consecutive hyphens
+ */
+const KEBAB_CASE_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/**
+ * Validate slug is kebab-case format
+ */
+export function validateSlug(
+  value: unknown,
+  fieldName = 'slug',
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (typeof value !== 'string') {
+    return createValidationResult(false, [`${fieldName} must be a string`]);
+  }
+
+  if (value.length === 0) {
+    errors.push(`${fieldName} cannot be empty`);
+  } else if (value.length > 100) {
+    errors.push(`${fieldName} must be no more than 100 characters`);
+  }
+
+  if (value.length > 0 && !KEBAB_CASE_PATTERN.test(value)) {
+    errors.push(
+      `${fieldName} must be kebab-case (lowercase letters, numbers, and hyphens only, no leading/trailing/consecutive hyphens)`,
+    );
+  }
+
+  return createValidationResult(errors.length === 0, errors);
+}
+
+/**
+ * Validate ISO-8601 date string
+ */
+export function validateISODateString(
+  value: unknown,
+  fieldName: string,
+): ValidationResult {
+  if (typeof value !== 'string') {
+    return createValidationResult(false, [`${fieldName} must be a string`]);
+  }
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    return createValidationResult(false, [
+      `${fieldName} must be a valid ISO-8601 date string`,
+    ]);
+  }
+
+  return createValidationResult(true);
+}
+
+/**
  * Validate file path format
  */
 export function validateFilePath(
@@ -401,7 +456,99 @@ export function validateConfig(value: unknown): ValidationResult {
 }
 
 /**
+ * Validate a single Example object
+ */
+function validateExample(
+  value: unknown,
+  index: number,
+): ValidationResult {
+  const errors: string[] = [];
+  const prefix = `examples[${index}]`;
+
+  if (!value || typeof value !== 'object') {
+    return createValidationResult(false, [`${prefix} must be an object`]);
+  }
+
+  const example = value as Record<string, unknown>;
+
+  // Validate input: must be an object (not null, not array)
+  if (!('input' in example)) {
+    errors.push(`${prefix}.input is required`);
+  } else if (
+    example.input === null ||
+    typeof example.input !== 'object' ||
+    Array.isArray(example.input)
+  ) {
+    errors.push(`${prefix}.input must be an object with named parameters`);
+  }
+
+  // Validate output: must exist (any value including null is allowed)
+  if (!('output' in example)) {
+    errors.push(`${prefix}.output is required`);
+  }
+
+  // Validate explanation if present: must be a non-empty string
+  if ('explanation' in example && example.explanation !== undefined) {
+    const explanationResult = validateString(
+      example.explanation,
+      `${prefix}.explanation`,
+      { allowEmpty: false },
+    );
+    if (!explanationResult.valid) errors.push(...explanationResult.errors);
+  }
+
+  return createValidationResult(errors.length === 0, errors);
+}
+
+/**
+ * Validate problem metadata object
+ */
+function validateProblemMetadata(
+  value: unknown,
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (!value || typeof value !== 'object') {
+    return createValidationResult(false, ['metadata must be an object']);
+  }
+
+  const metadata = value as Record<string, unknown>;
+
+  // Validate date fields if present
+  if ('createdAt' in metadata && metadata.createdAt !== undefined) {
+    const result = validateISODateString(metadata.createdAt, 'metadata.createdAt');
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if ('updatedAt' in metadata && metadata.updatedAt !== undefined) {
+    const result = validateISODateString(metadata.updatedAt, 'metadata.updatedAt');
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  // Validate string fields if present
+  if ('source' in metadata && metadata.source !== undefined) {
+    const result = validateString(metadata.source, 'metadata.source', {
+      allowEmpty: false,
+    });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if ('sourceId' in metadata && metadata.sourceId !== undefined) {
+    const result = validateString(metadata.sourceId, 'metadata.sourceId', {
+      allowEmpty: false,
+    });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  return createValidationResult(errors.length === 0, errors);
+}
+
+/**
  * Validate problem object
+ *
+ * Validates all required and optional fields according to PMS-001 specification:
+ * - Required: id, slug, title, difficulty, description, examples
+ * - Optional: constraints, hints, tags, companies, leetcodeUrl, metadata
  */
 export function validateProblem(value: unknown): ValidationResult {
   const errors: string[] = [];
@@ -426,30 +573,77 @@ export function validateProblem(value: unknown): ValidationResult {
     if (!result.valid) errors.push(...result.errors);
   }
 
-  // Validate string fields
-  const stringFields = ['id', 'slug', 'title', 'description'];
-  for (const field of stringFields) {
-    if (problem[field]) {
-      const result = validateString(problem[field], field, {
-        allowEmpty: false,
-      });
-      if (!result.valid) errors.push(...result.errors);
-    }
+  // Validate id: non-empty string
+  if (problem.id !== undefined) {
+    const result = validateString(problem.id, 'id', { allowEmpty: false });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  // Validate slug: kebab-case, 1-100 chars
+  if (problem.slug !== undefined) {
+    const result = validateSlug(problem.slug, 'slug');
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  // Validate title: non-empty string
+  if (problem.title !== undefined) {
+    const result = validateString(problem.title, 'title', { allowEmpty: false });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  // Validate description: non-empty string
+  if (problem.description !== undefined) {
+    const result = validateString(problem.description, 'description', {
+      allowEmpty: false,
+    });
+    if (!result.valid) errors.push(...result.errors);
   }
 
   // Validate difficulty
-  if (problem.difficulty) {
+  if (problem.difficulty !== undefined) {
     const difficultyResult = validateDifficulty(problem.difficulty);
     if (!difficultyResult.valid) errors.push(...difficultyResult.errors);
   }
 
-  // Validate arrays
-  const arrayFields = ['examples', 'constraints', 'hints', 'tags'];
-  for (const field of arrayFields) {
-    if (problem[field]) {
-      const result = validateArray(problem[field], field);
+  // Validate examples: non-empty array of valid Example objects
+  if (problem.examples !== undefined) {
+    if (!Array.isArray(problem.examples)) {
+      errors.push('examples must be an array');
+    } else if (problem.examples.length === 0) {
+      errors.push('examples must have at least 1 item');
+    } else {
+      for (let i = 0; i < problem.examples.length; i++) {
+        const result = validateExample(problem.examples[i], i);
+        if (!result.valid) errors.push(...result.errors);
+      }
+    }
+  }
+
+  // Validate optional string arrays: constraints, hints, tags, companies
+  // All must be arrays of non-empty strings
+  const stringArrayFields = ['constraints', 'hints', 'tags', 'companies'];
+  for (const field of stringArrayFields) {
+    if (field in problem && problem[field] !== undefined) {
+      const result = validateArray(
+        problem[field],
+        field,
+        (item, index) =>
+          validateString(item, `${field}[${index}]`, { allowEmpty: false }),
+      );
       if (!result.valid) errors.push(...result.errors);
     }
+  }
+
+  // Validate leetcodeUrl if present: must be a valid URL
+  if ('leetcodeUrl' in problem && problem.leetcodeUrl !== undefined) {
+    const result = validateUrl(problem.leetcodeUrl, 'leetcodeUrl');
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  // Validate metadata if present
+  if ('metadata' in problem && problem.metadata !== undefined) {
+    const result = validateProblemMetadata(problem.metadata);
+    if (!result.valid) errors.push(...result.errors);
   }
 
   return createValidationResult(errors.length === 0, errors);
