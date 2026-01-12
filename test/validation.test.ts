@@ -5,11 +5,7 @@
  */
 
 import { assertEquals } from '@std/assert';
-import {
-  validateProblem,
-  validateSlug,
-  validateISODateString,
-} from '../src/utils/validation.ts';
+import { validateISODateString, validateProblem, validateSlug } from '../src/utils/validation.ts';
 
 // -----------------------------------------------------------------------------
 // validateSlug tests

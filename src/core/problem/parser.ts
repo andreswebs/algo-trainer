@@ -100,7 +100,7 @@ export function parseProblemFromJson(content: string, sourcePath?: string): Prob
  * Normalize a raw problem JSON to a full Problem object
  *
  * - Missing array fields become empty arrays
- * - Date strings in metadata are converted to Date objects
+ * - Date strings are converted to Date objects
  */
 export function normalizeProblem(raw: RawProblemJson): Problem {
   const problem: Problem = {
@@ -123,6 +123,20 @@ export function normalizeProblem(raw: RawProblemJson): Problem {
     problem.leetcodeUrl = raw.leetcodeUrl;
   }
 
+  if (raw.createdAt !== undefined) {
+    const createdAt = parseIsoDate(raw.createdAt);
+    if (createdAt !== undefined) {
+      problem.createdAt = createdAt;
+    }
+  }
+
+  if (raw.updatedAt !== undefined) {
+    const updatedAt = parseIsoDate(raw.updatedAt);
+    if (updatedAt !== undefined) {
+      problem.updatedAt = updatedAt;
+    }
+  }
+
   if (raw.metadata !== undefined) {
     problem.metadata = normalizeMetadata(raw.metadata);
   }
@@ -131,20 +145,10 @@ export function normalizeProblem(raw: RawProblemJson): Problem {
 }
 
 /**
- * Normalize metadata, converting date strings to Date objects
+ * Normalize metadata
  */
 export function normalizeMetadata(raw: RawProblemMetadata): ProblemMetadata {
   const metadata: ProblemMetadata = {};
-
-  const createdAt = raw.createdAt ? parseIsoDate(raw.createdAt) : undefined;
-  if (createdAt !== undefined) {
-    metadata.createdAt = createdAt;
-  }
-
-  const updatedAt = raw.updatedAt ? parseIsoDate(raw.updatedAt) : undefined;
-  if (updatedAt !== undefined) {
-    metadata.updatedAt = updatedAt;
-  }
 
   if (raw.source !== undefined) {
     metadata.source = raw.source;
