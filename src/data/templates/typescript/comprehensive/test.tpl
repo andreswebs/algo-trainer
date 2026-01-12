@@ -6,7 +6,7 @@
  */
 
 import { assertEquals, assertThrows } from '@std/assert';
-import { describe, it, beforeEach } from '@std/testing/bdd';
+import { describe, it } from '@std/testing/bdd';
 import { {{FUNCTION_NAME}}, {{FUNCTION_NAME}}Alternative } from './solution{{FILE_EXTENSION}}';
 
 describe('{{PROBLEM_TITLE}}', () => {
