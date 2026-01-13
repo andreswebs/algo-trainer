@@ -33,11 +33,11 @@
  * ```
  */
 
-import { join, normalize, resolve } from '@std/path';
+import { join, resolve } from '@std/path';
 import type { SupportedLanguage } from '../../types/global.ts';
 import type { ProblemWorkspacePaths, WorkspacePathConfig, WorkspacePaths } from './types.ts';
 import { WORKSPACE_RULES } from './types.ts';
-import { createErrorContext, ValidationError, WorkspaceError } from '../../utils/errors.ts';
+import { createErrorContext, ValidationError } from '../../utils/errors.ts';
 
 /**
  * Simple cache for resolved workspace paths to improve performance.

@@ -17,11 +17,9 @@ import {
   getWorkspacePaths,
   isPathInWorkspace,
   WORKSPACE_RULES,
-  type ProblemWorkspacePaths,
   type WorkspacePathConfig,
-  type WorkspacePaths,
 } from '../src/core/workspace/mod.ts';
-import { ValidationError, WorkspaceError } from '../src/utils/errors.ts';
+import { ValidationError } from '../src/utils/errors.ts';
 
 // =============================================================================
 // Test Setup and Cleanup
