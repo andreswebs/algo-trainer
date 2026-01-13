@@ -737,6 +737,8 @@ Deno.test('ProblemManager.add - validates problem data', async () => {
       description: 'Test',
       tags: [],
       examples: [],
+      constraints: [],
+      hints: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
