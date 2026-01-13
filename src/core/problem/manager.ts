@@ -1,57 +1,33 @@
 /**
- * Problem Manager read API
+ * Problem Manager
  *
- * Provides a high-level API for querying problems from the database.
- * Supports filtering, searching, and random selection.
- * This is the primary interface for CLI commands to interact with problems.
+ * Central entry point for problem management operations.
+ * Handles reading, searching, and managing problems (both built-in and custom).
+ * Provides both read-only operations (querying, filtering, searching) and
+ * write operations (adding, updating, removing custom problems).
  *
- * @module core/problem/manager-read
+ * @module core/problem/manager
  */
 
-import { ProblemDatabase, type ProblemDatabaseOptions } from './database.ts';
-import type { Difficulty, Problem } from '../../types/global.ts';
+import { join } from '@std/path';
+import type {
+  Difficulty,
+  Problem,
+  ProblemQuery,
+  ProblemQueryResult,
+  ProblemSortConfig,
+} from '../../types/global.ts';
+import { getCustomProblemsPath, ProblemDatabase, type ProblemDatabaseOptions } from './database.ts';
+import { createErrorContext, ProblemError } from '../../utils/errors.ts';
+import { pathExists, remove as removeFile, writeTextFile } from '../../utils/fs.ts';
+import { validateProblem } from '../../utils/validation.ts';
 
 /**
- * Criteria for filtering problems
- */
-export interface ProblemQuery {
-  /** Filter by difficulty level(s) */
-  difficulty?: Difficulty | Difficulty[];
-  /** Filter by tags (all tags must match) */
-  tags?: string[];
-  /** Filter by companies (any company matches) */
-  companies?: string[];
-  /** Search text in title, slug, or description */
-  text?: string;
-  /** Maximum number of results to return */
-  limit?: number;
-  /** Number of results to skip (for pagination) */
-  offset?: number;
-  /** Field to sort by (default: title) */
-  sortBy?: 'title' | 'difficulty' | 'id' | 'slug';
-  /** Sort direction (default: asc) */
-  sortOrder?: 'asc' | 'desc';
-}
-
-/**
- * Result of a problem search/list operation
- */
-export interface ProblemListResult {
-  /** Matching problems */
-  problems: Problem[];
-  /** Total number of matches (ignoring limit/offset) */
-  total: number;
-}
-
-/**
- * Problem Manager (Read-Only)
- *
- * Provides read-only access to the problem database with advanced filtering
- * and search capabilities.
+ * Problem Manager class
  */
 export class ProblemManager {
   private db: ProblemDatabase | null = null;
-  private readonly options: ProblemDatabaseOptions;
+  private options: ProblemDatabaseOptions;
 
   constructor(options: ProblemDatabaseOptions = {}) {
     this.options = options;
@@ -61,16 +37,26 @@ export class ProblemManager {
    * Initialize the manager by loading the database
    */
   async init(): Promise<void> {
+    this.db = await ProblemDatabase.load(this.options);
+  }
+
+  /**
+   * Ensure the database is initialized
+   */
+  private ensureInitialized(): void {
     if (!this.db) {
-      this.db = await ProblemDatabase.load(this.options);
+      throw new ProblemError(
+        'ProblemManager not initialized',
+        createErrorContext('ProblemManager', { reason: 'not_initialized' }),
+      );
     }
   }
 
   /**
-   * Get the underlying database instance
-   * (Initializes if not already loaded)
+   * Get the underlying database instance (for direct access if needed)
+   * Ensures the database is initialized first
    */
-  protected async getDb(): Promise<ProblemDatabase> {
+  async getDatabase(): Promise<ProblemDatabase> {
     if (!this.db) {
       await this.init();
     }
@@ -78,166 +64,499 @@ export class ProblemManager {
   }
 
   /**
-   * Get a problem by its unique ID
-   *
-   * @param id - Problem ID
-   * @returns Problem or null if not found
+   * Get the underlying database instance (sync version)
+   * Throws if not initialized - use init() first
    */
-  async getById(id: string): Promise<Problem | null> {
-    const db = await this.getDb();
-    return db.getById(id);
+  getDatabaseSync(): ProblemDatabase {
+    this.ensureInitialized();
+    return this.db!;
   }
 
   /**
-   * Get a problem by its slug
-   *
-   * @param slug - Problem slug
-   * @returns Problem or null if not found
+   * Get a problem by ID
    */
-  async getBySlug(slug: string): Promise<Problem | null> {
-    const db = await this.getDb();
-    return db.getBySlug(slug);
+  getById(id: string): Problem | null {
+    this.ensureInitialized();
+    return this.db!.getById(id);
   }
 
   /**
-   * List problems matching the given query
-   *
-   * @param query - Filter and sort criteria
-   * @returns List of matching problems and total count
+   * Get a problem by slug
    */
-  async list(query: ProblemQuery = {}): Promise<ProblemListResult> {
-    const db = await this.getDb();
-    let problems = db.getAll();
+  getBySlug(slug: string): Problem | null {
+    this.ensureInitialized();
+    return this.db!.getBySlug(slug);
+  }
+
+  /**
+   * List problems matching a query
+   */
+  list(query: ProblemQuery = {}): ProblemQueryResult {
+    this.ensureInitialized();
+    let problems = this.db!.getAll();
 
     // 1. Filter by difficulty
     if (query.difficulty) {
-      const difficulties = Array.isArray(query.difficulty)
-        ? new Set(query.difficulty)
-        : new Set([query.difficulty]);
-      problems = problems.filter((p) => difficulties.has(p.difficulty));
-    }
+      const difficulties = Array.isArray(query.difficulty) ? query.difficulty : [query.difficulty];
 
-    // 2. Filter by tags (match ALL)
-    if (query.tags && query.tags.length > 0) {
-      const queryTags = query.tags.map((t) => t.toLowerCase());
-      problems = problems.filter((p) => {
-        const problemTags = new Set(p.tags.map((t) => t.toLowerCase()));
-        return queryTags.every((qt) => problemTags.has(qt));
-      });
-    }
-
-    // 3. Filter by companies (match ANY)
-    if (query.companies && query.companies.length > 0) {
-      const queryCompanies = new Set(query.companies.map((c) => c.toLowerCase()));
-      problems = problems.filter((p) => {
-        if (!p.companies || p.companies.length === 0) return false;
-        return p.companies.some((c) => queryCompanies.has(c.toLowerCase()));
-      });
-    }
-
-    // 4. Text search
-    if (query.text) {
-      const text = query.text.toLowerCase();
-      problems = problems.filter((p) =>
-        p.title.toLowerCase().includes(text) ||
-        p.slug.toLowerCase().includes(text) ||
-        p.description.toLowerCase().includes(text)
-      );
-    }
-
-    const total = problems.length;
-
-    // 5. Sorting
-    const sortBy = query.sortBy || 'title';
-    const sortOrder = query.sortOrder || 'asc';
-
-    problems.sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case 'title':
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case 'slug':
-          comparison = a.slug.localeCompare(b.slug);
-          break;
-        case 'id':
-          comparison = a.id.localeCompare(b.id);
-          break;
-        case 'difficulty': {
-          const difficultyRank: Record<Difficulty, number> = { easy: 1, medium: 2, hard: 3 };
-          comparison = difficultyRank[a.difficulty] - difficultyRank[b.difficulty];
-          break;
-        }
+      if (difficulties.length > 0) {
+        problems = problems.filter((p) => difficulties.includes(p.difficulty));
       }
-      return sortOrder === 'desc' ? -comparison : comparison;
-    });
+    }
+
+    // 2. Filter by tags
+    if (query.tags && query.tags.length > 0) {
+      const searchTags = query.tags.map((t) => t.toLowerCase());
+      const mode = query.tagMatchMode || 'any';
+
+      problems = problems.filter((p) => {
+        const problemTags = p.tags.map((t) => t.toLowerCase());
+        if (mode === 'all') {
+          return searchTags.every((t) => problemTags.includes(t));
+        } else {
+          return searchTags.some((t) => problemTags.includes(t));
+        }
+      });
+    }
+
+    // 3. Filter by companies
+    if (query.companies && query.companies.length > 0) {
+      const searchCompanies = query.companies.map((c) => c.toLowerCase());
+      const mode = query.companyMatchMode || 'any';
+
+      problems = problems.filter((p) => {
+        if (!p.companies) return false;
+        const problemCompanies = p.companies.map((c) => c.toLowerCase());
+        if (mode === 'all') {
+          return searchCompanies.every((c) => problemCompanies.includes(c));
+        } else {
+          return searchCompanies.some((c) => problemCompanies.includes(c));
+        }
+      });
+    }
+
+    // 4. Filter by text (search)
+    if (query.text) {
+      const searchText = query.text.toLowerCase();
+      problems = problems.filter((p) => {
+        return (
+          p.title.toLowerCase().includes(searchText) ||
+          p.description.toLowerCase().includes(searchText) ||
+          p.tags.some((t) => t.toLowerCase().includes(searchText))
+        );
+      });
+    }
+
+    // 5. Sort
+    const sortConfig = query.sort || { field: 'title', direction: 'asc' };
+    problems.sort((a, b) => this.compareProblems(a, b, sortConfig));
 
     // 6. Pagination
-    if (query.offset !== undefined || query.limit !== undefined) {
-      const offset = query.offset || 0;
-      const limit = query.limit || problems.length;
-      problems = problems.slice(offset, offset + limit);
+    const total = problems.length;
+    const offset = query.offset || 0;
+    const limit = query.limit || total; // Default to all if not specified
+
+    const paginatedProblems = problems.slice(offset, offset + limit);
+
+    return {
+      problems: paginatedProblems,
+      total,
+      hasMore: offset + limit < total,
+      query,
+    };
+  }
+
+  /**
+   * Search problems by text (shorthand for list with text query)
+   */
+  search(text: string): Problem[] {
+    return this.list({ text }).problems;
+  }
+
+  /**
+   * Get a random problem matching criteria
+   */
+  getRandom(query: Omit<ProblemQuery, 'limit' | 'offset' | 'sort'> = {}): Problem | null {
+    // Get all matching problems without pagination
+    const result = this.list({ ...query, offset: 0 });
+    if (result.problems.length === 0) {
+      return null;
     }
-
-    return { problems, total };
-  }
-
-  /**
-   * Search for problems (simplified alias for list with text query)
-   *
-   * @param text - Search text
-   * @returns Matching problems
-   */
-  async search(text: string): Promise<Problem[]> {
-    const result = await this.list({ text });
-    return result.problems;
-  }
-
-  /**
-   * Get a random problem matching the query
-   *
-   * @param query - Filter criteria (limit/offset/sort ignored)
-   * @returns Random problem or null if no matches
-   */
-  async getRandom(
-    query: Omit<ProblemQuery, 'limit' | 'offset' | 'sortBy' | 'sortOrder'> = {},
-  ): Promise<Problem | null> {
-    // Construct a query without pagination/sorting to ensure we get all matches
-    const listQuery: ProblemQuery = {};
-    if (query.difficulty) listQuery.difficulty = query.difficulty;
-    if (query.tags) listQuery.tags = query.tags;
-    if (query.companies) listQuery.companies = query.companies;
-    if (query.text) listQuery.text = query.text;
-
-    // Pagination and sorting are omitted from listQuery by default
-    const fullResult = await this.list(listQuery);
-
-    if (fullResult.total === 0) return null;
-    const index = Math.floor(Math.random() * fullResult.total);
-    return fullResult.problems[index];
+    const randomIndex = Math.floor(Math.random() * result.problems.length);
+    return result.problems[randomIndex];
   }
 
   /**
    * Get all available tags
    */
-  async getAllTags(): Promise<string[]> {
-    const db = await this.getDb();
-    return db.getAllTags();
+  getAllTags(): string[] {
+    this.ensureInitialized();
+    return this.db!.getAllTags();
   }
 
   /**
    * Get all available companies
    */
-  async getAllCompanies(): Promise<string[]> {
-    const db = await this.getDb();
-    return db.getAllCompanies();
+  getAllCompanies(): string[] {
+    this.ensureInitialized();
+    return this.db!.getAllCompanies();
   }
 
   /**
    * Get difficulty distribution stats
    */
-  async getStats(): Promise<Record<Difficulty, number>> {
-    const db = await this.getDb();
-    return db.getDifficultyDistribution();
+  getStats(): Record<Difficulty, number> {
+    this.ensureInitialized();
+    return this.db!.getDifficultyDistribution();
+  }
+
+  /**
+   * Add a new custom problem
+   */
+  async add(problem: Problem): Promise<void> {
+    this.ensureInitialized();
+
+    // 1. Validate
+    const validation = validateProblem(problem);
+    if (!validation.valid) {
+      throw new ProblemError(
+        `Invalid problem data: ${validation.errors.join('; ')}`,
+        createErrorContext('addProblem', { errors: validation.errors }),
+      );
+    }
+
+    // 2. Check for uniqueness
+    if (this.db!.hasId(problem.id)) {
+      throw new ProblemError(
+        `Problem with ID '${problem.id}' already exists`,
+        createErrorContext('addProblem', { id: problem.id, reason: 'duplicate_id' }),
+      );
+    }
+    if (this.db!.hasSlug(problem.slug)) {
+      throw new ProblemError(
+        `Problem with slug '${problem.slug}' already exists`,
+        createErrorContext('addProblem', { slug: problem.slug, reason: 'duplicate_slug' }),
+      );
+    }
+
+    // 3. Prepare data
+    const newProblem = { ...problem };
+    if (!newProblem.createdAt) {
+      newProblem.createdAt = new Date();
+    }
+    newProblem.updatedAt = new Date();
+
+    // 4. Write to file
+    const customPath = this.options.customPath || getCustomProblemsPath();
+    const filePath = join(customPath, `${newProblem.slug}.json`);
+
+    // Ensure we don't overwrite an existing file (redundant with db check, but safe)
+    if (await pathExists(filePath)) {
+      throw new ProblemError(
+        `File already exists at ${filePath}`,
+        createErrorContext('addProblem', { path: filePath, reason: 'file_exists' }),
+      );
+    }
+
+    await this.writeProblemFile(filePath, newProblem);
+
+    // 5. Reload database to ensure consistency between in-memory data and file system
+    // Note: For adding multiple problems, use addMany() to avoid multiple reloads
+    await this.init();
+  }
+
+  /**
+   * Add multiple custom problems in a single batch operation.
+   *
+   * This performs validation and uniqueness checks for all problems first,
+   * writes all problem files, and then reloads the database once at the end.
+   * This is more efficient than calling add() multiple times when adding
+   * multiple problems.
+   */
+  async addMany(problems: Problem[]): Promise<void> {
+    this.ensureInitialized();
+
+    if (problems.length === 0) {
+      return;
+    }
+
+    // Track IDs and slugs within this batch to prevent collisions
+    const batchIds = new Set<string>();
+    const batchSlugs = new Set<string>();
+
+    const customPath = this.options.customPath || getCustomProblemsPath();
+
+    // First pass: validate and check for uniqueness and file existence
+    const preparedProblems: Array<{ problem: Problem; filePath: string }> = [];
+
+    for (const problem of problems) {
+      const validation = validateProblem(problem);
+      if (!validation.valid) {
+        throw new ProblemError(
+          `Invalid problem data: ${validation.errors.join('; ')}`,
+          createErrorContext('addProblemBatch', { errors: validation.errors }),
+        );
+      }
+
+      // Check uniqueness against existing DB
+      if (this.db!.hasId(problem.id)) {
+        throw new ProblemError(
+          `Problem with ID '${problem.id}' already exists`,
+          createErrorContext('addProblemBatch', { id: problem.id, reason: 'duplicate_id' }),
+        );
+      }
+      if (this.db!.hasSlug(problem.slug)) {
+        throw new ProblemError(
+          `Problem with slug '${problem.slug}' already exists`,
+          createErrorContext('addProblemBatch', { slug: problem.slug, reason: 'duplicate_slug' }),
+        );
+      }
+
+      // Check uniqueness within the batch
+      if (batchIds.has(problem.id)) {
+        throw new ProblemError(
+          `Duplicate problem ID '${problem.id}' in batch`,
+          createErrorContext('addProblemBatch', {
+            id: problem.id,
+            reason: 'duplicate_id_in_batch',
+          }),
+        );
+      }
+      if (batchSlugs.has(problem.slug)) {
+        throw new ProblemError(
+          `Duplicate problem slug '${problem.slug}' in batch`,
+          createErrorContext('addProblemBatch', {
+            slug: problem.slug,
+            reason: 'duplicate_slug_in_batch',
+          }),
+        );
+      }
+
+      batchIds.add(problem.id);
+      batchSlugs.add(problem.slug);
+
+      const newProblem = { ...problem };
+      if (!newProblem.createdAt) {
+        newProblem.createdAt = new Date();
+      }
+      newProblem.updatedAt = new Date();
+
+      const filePath = join(customPath, `${newProblem.slug}.json`);
+
+      if (await pathExists(filePath)) {
+        throw new ProblemError(
+          `File already exists at ${filePath}`,
+          createErrorContext('addProblemBatch', { path: filePath, reason: 'file_exists' }),
+        );
+      }
+
+      preparedProblems.push({ problem: newProblem, filePath });
+    }
+
+    // Second pass: write all files
+    for (const { problem, filePath } of preparedProblems) {
+      await this.writeProblemFile(filePath, problem);
+    }
+
+    // Reload database once after all additions
+    await this.init();
+  }
+
+  /**
+   * Update an existing custom problem
+   */
+  async update(idOrSlug: string, updates: Partial<Problem>): Promise<void> {
+    this.ensureInitialized();
+
+    // 1. Find existing
+    const existing = this.db!.getById(idOrSlug) || this.db!.getBySlug(idOrSlug);
+    if (!existing) {
+      throw new ProblemError(
+        `Problem not found: ${idOrSlug}`,
+        createErrorContext('updateProblem', { idOrSlug, reason: 'not_found' }),
+      );
+    }
+
+    // 2. Check if custom (cannot update built-ins)
+    // We determine this by checking the file location or relying on DB metadata if we had it.
+    // Since we don't store source path in Problem, we can re-derive it or assume
+    // based on whether it exists in custom path.
+    const customPath = this.options.customPath || getCustomProblemsPath();
+    const expectedOldPath = join(customPath, `${existing.slug}.json`);
+
+    if (!(await pathExists(expectedOldPath))) {
+      throw new ProblemError(
+        `Cannot update built-in problem: ${existing.slug}`,
+        createErrorContext('updateProblem', { slug: existing.slug, reason: 'readonly_builtin' }),
+      );
+    }
+
+    // 3. Merge updates
+    const updatedProblem = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date(),
+    };
+
+    // 4. Validate
+    const validation = validateProblem(updatedProblem);
+    if (!validation.valid) {
+      throw new ProblemError(
+        `Invalid problem data after update: ${validation.errors.join('; ')}`,
+        createErrorContext('updateProblem', { errors: validation.errors }),
+      );
+    }
+
+    // 5. Check ID uniqueness if changed
+    if (updatedProblem.id !== existing.id && this.db!.hasId(updatedProblem.id)) {
+      throw new ProblemError(
+        `New ID '${updatedProblem.id}' is already in use`,
+        createErrorContext('updateProblem', { id: updatedProblem.id, reason: 'duplicate_id' }),
+      );
+    }
+
+    // 6. Check Slug uniqueness if changed
+    const slugChanged = updatedProblem.slug !== existing.slug;
+    if (slugChanged && this.db!.hasSlug(updatedProblem.slug)) {
+      throw new ProblemError(
+        `New slug '${updatedProblem.slug}' is already in use`,
+        createErrorContext('updateProblem', {
+          slug: updatedProblem.slug,
+          reason: 'duplicate_slug',
+        }),
+      );
+    }
+
+    // 7. Write new file
+    const newPath = join(customPath, `${updatedProblem.slug}.json`);
+
+    // If slug changed, we are writing to a new file. Check existence just in case.
+    if (slugChanged && (await pathExists(newPath))) {
+      // Should be caught by hasSlug check, but file system might be out of sync
+      throw new ProblemError(
+        `File already exists: ${newPath}`,
+        createErrorContext('updateProblem', { path: newPath, reason: 'file_exists' }),
+      );
+    }
+
+    await this.writeProblemFile(newPath, updatedProblem);
+
+    // 8. Remove old file if slug changed
+    if (slugChanged) {
+      await removeFile(expectedOldPath);
+    }
+
+    // 9. Reload database to ensure consistency between in-memory data and file system
+    await this.init();
+  }
+
+  /**
+   * Remove a custom problem
+   */
+  async remove(idOrSlug: string): Promise<void> {
+    this.ensureInitialized();
+
+    const problem = this.db!.getById(idOrSlug) || this.db!.getBySlug(idOrSlug);
+    if (!problem) {
+      throw new ProblemError(
+        `Problem not found: ${idOrSlug}`,
+        createErrorContext('removeProblem', { idOrSlug, reason: 'not_found' }),
+      );
+    }
+
+    const customPath = this.options.customPath || getCustomProblemsPath();
+    const filePath = join(customPath, `${problem.slug}.json`);
+
+    if (!(await pathExists(filePath))) {
+      throw new ProblemError(
+        `Cannot remove built-in problem: ${problem.slug}`,
+        createErrorContext('removeProblem', { slug: problem.slug, reason: 'readonly_builtin' }),
+      );
+    }
+
+    await removeFile(filePath);
+    // Reload database to ensure consistency between in-memory data and file system
+    await this.init();
+  }
+
+  /**
+   * Helper to write problem to file safely
+   *
+   * Note: JSON.stringify automatically converts Date objects (createdAt, updatedAt)
+   * to ISO 8601 strings, which are properly validated by parseProblemFromJson when
+   * the file is read back.
+   */
+  private async writeProblemFile(path: string, problem: Problem): Promise<void> {
+    const tempPath = `${path}.tmp`;
+    const content = JSON.stringify(problem, null, 2);
+
+    try {
+      await writeTextFile(tempPath, content, { ensureParents: true, overwrite: true });
+      await Deno.rename(tempPath, path);
+    } catch (error) {
+      // Clean up temp file if write or rename fails
+      try {
+        if (await pathExists(tempPath)) {
+          await removeFile(tempPath);
+        }
+      } catch (cleanupError) {
+        // Log cleanup failure for debugging, but do not mask the original error
+        try {
+          console.error(
+            'Failed to clean up temporary problem file',
+            { tempPath, cleanupError: String(cleanupError) },
+          );
+        } catch {
+          // If logging fails, swallow to avoid interfering with the original error
+        }
+      }
+
+      throw new ProblemError(
+        `Failed to write problem file: ${path}`,
+        createErrorContext('writeProblemFile', { path, error: String(error) }),
+      );
+    }
+  }
+
+  /**
+   * Compare two problems for sorting
+   */
+  private compareProblems(a: Problem, b: Problem, config: ProblemSortConfig): number {
+    const { field, direction } = config;
+    const modifier = direction === 'desc' ? -1 : 1;
+
+    let valueA: string | number | Date | undefined;
+    let valueB: string | number | Date | undefined;
+
+    switch (field) {
+      case 'title':
+        valueA = a.title.toLowerCase();
+        valueB = b.title.toLowerCase();
+        break;
+      case 'difficulty': {
+        const difficultyRank: Record<Difficulty, number> = {
+          easy: 1,
+          medium: 2,
+          hard: 3,
+        };
+        valueA = difficultyRank[a.difficulty];
+        valueB = difficultyRank[b.difficulty];
+        break;
+      }
+      case 'createdAt':
+        valueA = a.createdAt;
+        valueB = b.createdAt;
+        break;
+      case 'updatedAt':
+        valueA = a.updatedAt;
+        valueB = b.updatedAt;
+        break;
+    }
+
+    if (valueA === valueB) return 0;
+    if (valueA === undefined) return 1; // undefined last
+    if (valueB === undefined) return -1;
+
+    return (valueA < valueB ? -1 : 1) * modifier;
   }
 }
