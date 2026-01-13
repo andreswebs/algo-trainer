@@ -179,10 +179,10 @@ export class ProblemManager {
   getRandom(query: Omit<ProblemQuery, 'limit' | 'offset' | 'sort'> = {}): Problem | null {
     // Get all matching problems without pagination
     const result = this.list({ ...query, offset: 0 });
-    if (result.total === 0) {
+    if (result.problems.length === 0) {
       return null;
     }
-    const randomIndex = Math.floor(Math.random() * result.total);
+    const randomIndex = Math.floor(Math.random() * result.problems.length);
     return result.problems[randomIndex];
   }
 
@@ -382,6 +382,10 @@ export class ProblemManager {
 
   /**
    * Helper to write problem to file safely
+   *
+   * Note: JSON.stringify automatically converts Date objects (createdAt, updatedAt)
+   * to ISO 8601 strings, which are properly validated by parseProblemFromJson when
+   * the file is read back.
    */
   private async writeProblemFile(path: string, problem: Problem): Promise<void> {
     const tempPath = `${path}.tmp`;
@@ -391,10 +395,22 @@ export class ProblemManager {
       await writeTextFile(tempPath, content, { ensureParents: true, overwrite: true });
       await Deno.rename(tempPath, path);
     } catch (error) {
-      // Clean up temp file if rename fails
+      // Clean up temp file if write or rename fails
       try {
-        await removeFile(tempPath);
-      } catch { /* ignore */ }
+        if (await pathExists(tempPath)) {
+          await removeFile(tempPath);
+        }
+      } catch (cleanupError) {
+        // Log cleanup failure for debugging, but do not mask the original error
+        try {
+          console.error(
+            'Failed to clean up temporary problem file',
+            { tempPath, cleanupError: String(cleanupError) },
+          );
+        } catch {
+          // If logging fails, swallow to avoid interfering with the original error
+        }
+      }
 
       throw new ProblemError(
         `Failed to write problem file: ${path}`,
