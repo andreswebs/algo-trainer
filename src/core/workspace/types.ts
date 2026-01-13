@@ -5,6 +5,14 @@
  * are solved, templates are stored, and configuration is kept.
  * 
  * @module core/workspace/types
+ * 
+ * @example
+ * ```ts
+ * import { getWorkspacePaths, type WorkspacePaths } from './workspace/mod.ts';
+ * 
+ * const paths = getWorkspacePaths('/home/user/algo-workspace');
+ * console.log(paths.problems); // /home/user/algo-workspace/problems
+ * ```
  */
 
 import type { SupportedLanguage } from '../../types/global.ts';
@@ -14,79 +22,115 @@ import type { SupportedLanguage } from '../../types/global.ts';
  * 
  * This interface maps the high-level `WorkspaceStructure` from global types
  * to concrete file system paths and naming conventions.
+ * 
+ * All paths are absolute and resolved from the root directory.
+ * 
+ * @example
+ * ```ts
+ * const paths: WorkspacePaths = {
+ *   root: '/home/user/workspace',
+ *   problems: '/home/user/workspace/problems',
+ *   completed: '/home/user/workspace/completed',
+ *   templates: '/home/user/workspace/templates',
+ *   config: '/home/user/workspace/config',
+ * };
+ * ```
  */
 export interface WorkspacePaths {
-  /** Root directory of the workspace */
-  root: string;
+  /** Root directory of the workspace (absolute path) */
+  readonly root: string;
   
   /** 
    * Directory for active problems being solved 
    * Path: `<root>/problems`
    */
-  problems: string;
+  readonly problems: string;
   
   /** 
    * Directory for completed/archived problems
    * Path: `<root>/completed`
    */
-  completed: string;
+  readonly completed: string;
   
   /** 
    * Directory for user templates
    * Path: `<root>/templates`
    */
-  templates: string;
+  readonly templates: string;
   
   /** 
    * Directory for workspace configuration
    * Path: `<root>/config`
    */
-  config: string;
+  readonly config: string;
 }
 
 /**
  * File paths for a specific problem within the workspace
+ * 
+ * All paths are absolute and language-specific where applicable.
+ * 
+ * @example
+ * ```ts
+ * const problemPaths: ProblemWorkspacePaths = {
+ *   dir: '/home/user/workspace/problems/two-sum',
+ *   solutionFile: '/home/user/workspace/problems/two-sum/solution.ts',
+ *   testFile: '/home/user/workspace/problems/two-sum/solution_test.ts',
+ *   readmeFile: '/home/user/workspace/problems/two-sum/README.md',
+ *   metadataFile: '/home/user/workspace/problems/two-sum/.problem.json',
+ * };
+ * ```
  */
 export interface ProblemWorkspacePaths {
   /**
-   * Root directory for the specific problem
+   * Root directory for the specific problem (absolute path)
    * Path: `<root>/problems/<slug>`
    */
-  dir: string;
+  readonly dir: string;
   
   /**
-   * Path to the solution file
+   * Path to the solution file (absolute path)
    * Path: `<dir>/solution.<ext>`
    */
-  solutionFile: string;
+  readonly solutionFile: string;
   
   /**
-   * Path to the test file
+   * Path to the test file (absolute path)
    * Path: `<dir>/solution_test.<ext>` (or language specific)
    */
-  testFile: string;
+  readonly testFile: string;
   
   /**
-   * Path to the problem README
+   * Path to the problem README (absolute path)
    * Path: `<dir>/README.md`
    */
-  readmeFile: string;
+  readonly readmeFile: string;
   
   /**
-   * Path to the problem metadata/tracking file (hidden)
+   * Path to the problem metadata/tracking file (hidden, absolute path)
    * Path: `<dir>/.problem.json`
    */
-  metadataFile: string;
+  readonly metadataFile: string;
 }
 
 /**
  * Configuration for workspace path resolution
+ * 
+ * @example
+ * ```ts
+ * const config: WorkspacePathConfig = {
+ *   rootDir: '/home/user/workspace',
+ *   language: 'typescript',
+ * };
+ * 
+ * const paths = getProblemPaths(config, 'two-sum');
+ * ```
  */
 export interface WorkspacePathConfig {
-  /** The workspace root directory */
-  rootDir: string;
-  /** The programming language (affects file extensions) */
-  language: SupportedLanguage;
+  /** The workspace root directory (can be relative or absolute) */
+  readonly rootDir: string;
+  /** The programming language (affects file extensions and naming) */
+  readonly language: SupportedLanguage;
 }
 
 /**

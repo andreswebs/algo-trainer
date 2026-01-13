@@ -4,7 +4,7 @@
  * @module tests/manager
  */
 
-import { assertEquals, assertRejects } from '@std/assert';
+import { assertEquals, assertRejects, assertThrows } from '@std/assert';
 import { join } from '@std/path';
 import { ProblemManager } from '../src/core/problem/manager.ts';
 import { ProblemError } from '../src/utils/errors.ts';
@@ -497,14 +497,14 @@ Deno.test('ProblemManager.remove - prevents removing built-in problems', async (
   }
 });
 
-Deno.test('ProblemManager - throws error when not initialized', async () => {
+Deno.test('ProblemManager - throws error when not initialized', () => {
   const manager = new ProblemManager({
     loadCustomProblems: false,
   });
 
   // Should throw when calling methods before init()
-  assertRejects(
-    async () => {
+  assertThrows(
+    () => {
       manager.getById('1');
     },
     ProblemError,
