@@ -619,9 +619,9 @@ Deno.test('ProblemManager.list - pagination edge cases', async () => {
     assertEquals(beyondEnd.hasMore, false);
 
     // Test limit larger than total
-    const largLimit = manager.list({ limit: 100 });
-    assertEquals(largLimit.problems.length, 3);
-    assertEquals(largLimit.hasMore, false);
+    const largeLimit = manager.list({ limit: 100 });
+    assertEquals(largeLimit.problems.length, 3);
+    assertEquals(largeLimit.hasMore, false);
 
     // Test offset at exact end
     const atEnd = manager.list({ limit: 2, offset: 3 });
