@@ -89,7 +89,8 @@ Deno.test('getWorkspacePaths - throws ValidationError for whitespace-only string
 Deno.test('getWorkspacePaths - throws ValidationError for non-string input', () => {
   setupTest();
   assertThrows(
-    () => getWorkspacePaths(123 as any),
+    // Type assertion is intentional to test runtime error handling for invalid input type
+    () => getWorkspacePaths(123 as unknown as string),
     ValidationError,
     'Root directory must be a string',
   );
@@ -129,14 +130,16 @@ Deno.test('getFileExtension - returns correct extensions', () => {
   ];
 
   for (const [language, expectedExt] of testCases) {
-    const ext = getFileExtension(language as any);
+    // Type assertion is intentional to test runtime behavior with valid strings
+    const ext = getFileExtension(language as SupportedLanguage);
     assertEquals(ext, expectedExt, `Language ${language} should have extension ${expectedExt}`);
   }
 });
 
 Deno.test('getFileExtension - throws ValidationError for unsupported language', () => {
   assertThrows(
-    () => getFileExtension('ruby' as any),
+    // Type assertion is intentional to test runtime error handling for invalid input
+    () => getFileExtension('ruby' as SupportedLanguage),
     ValidationError,
     'Unsupported language',
   );
@@ -158,7 +161,8 @@ Deno.test('getTestFileName - returns correct names for each language', () => {
   ];
 
   for (const [language, expectedName] of testCases) {
-    const fileName = getTestFileName(language as any);
+    // Type assertion is intentional to test runtime behavior with valid strings
+    const fileName = getTestFileName(language as SupportedLanguage);
     assertEquals(
       fileName,
       expectedName,
@@ -169,7 +173,8 @@ Deno.test('getTestFileName - returns correct names for each language', () => {
 
 Deno.test('getTestFileName - throws ValidationError for unsupported language', () => {
   assertThrows(
-    () => getTestFileName('ruby' as any),
+    // Type assertion is intentional to test runtime error handling for invalid input
+    () => getTestFileName('ruby' as SupportedLanguage),
     ValidationError,
     'Unsupported language',
   );
@@ -191,7 +196,8 @@ Deno.test('getSolutionFileName - returns correct names for each language', () =>
   ];
 
   for (const [language, expectedName] of testCases) {
-    const fileName = getSolutionFileName(language as any);
+    // Type assertion is intentional to test runtime behavior with valid strings
+    const fileName = getSolutionFileName(language as SupportedLanguage);
     assertEquals(
       fileName,
       expectedName,
@@ -202,7 +208,8 @@ Deno.test('getSolutionFileName - returns correct names for each language', () =>
 
 Deno.test('getSolutionFileName - throws ValidationError for unsupported language', () => {
   assertThrows(
-    () => getSolutionFileName('ruby' as any),
+    // Type assertion is intentional to test runtime error handling for invalid input
+    () => getSolutionFileName('ruby' as SupportedLanguage),
     ValidationError,
     'Unsupported language',
   );
@@ -247,7 +254,8 @@ Deno.test('getProblemPaths - works with different languages', () => {
 Deno.test('getProblemPaths - throws ValidationError for invalid config', () => {
   setupTest();
   assertThrows(
-    () => getProblemPaths(null as any, 'two-sum'),
+    // Type assertion is intentional to test runtime error handling for invalid input type
+    () => getProblemPaths(null as unknown as WorkspacePathConfig, 'two-sum'),
     ValidationError,
     'Config must be a valid WorkspacePathConfig object',
   );

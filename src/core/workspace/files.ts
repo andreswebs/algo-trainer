@@ -154,7 +154,7 @@ function validateSlug(slug: string): void {
  * @throws {ValidationError} If the language is not supported
  */
 function validateLanguage(language: SupportedLanguage): void {
-  const validLanguages: SupportedLanguage[] = [
+  const validLanguages: readonly SupportedLanguage[] = [
     'typescript',
     'javascript',
     'python',
@@ -162,12 +162,12 @@ function validateLanguage(language: SupportedLanguage): void {
     'cpp',
     'rust',
     'go',
-  ];
+  ] as const;
 
   if (!validLanguages.includes(language)) {
     throw new ValidationError(
       `Unsupported language: ${language}. Must be one of: ${validLanguages.join(', ')}`,
-      createErrorContext('validateLanguage', { language, validLanguages })
+      createErrorContext('validateLanguage', { language, validLanguages: Array.from(validLanguages) })
     );
   }
 }
@@ -222,9 +222,9 @@ export function getWorkspacePaths(rootDir: string): WorkspacePaths {
     config: join(absRoot, WORKSPACE_RULES.dirs.config),
   };
   
-  // Cache the result (with size limit)
+  // Cache the result (with size limit to prevent unbounded growth)
   if (workspacePathCache.size >= MAX_CACHE_SIZE) {
-    // Simple LRU: clear oldest half when cache is full
+    // Simple eviction: clear oldest half by insertion order when cache is full
     const keysToDelete = Array.from(workspacePathCache.keys()).slice(0, MAX_CACHE_SIZE / 2);
     keysToDelete.forEach(key => workspacePathCache.delete(key));
   }
@@ -260,8 +260,9 @@ export function getFileExtension(language: SupportedLanguage): string {
     case 'rust': return '.rs';
     case 'go': return '.go';
     default:
-      // This should be unreachable if typed correctly, but good for runtime safety
-      throw new WorkspaceError(
+      // This should be unreachable if typed correctly and validation is called
+      // Using ValidationError for consistency with validation function
+      throw new ValidationError(
         `Unsupported language: ${language}`,
         createErrorContext('getFileExtension', { language })
       );
@@ -306,11 +307,20 @@ export function getTestFileName(language: SupportedLanguage): string {
       // Rust tests are often in the same file, but if separate:
       return `tests${ext}`;
     case 'typescript':
-    case 'javascript':
-    case 'cpp':
-    default:
-      // Default convention
+      // TypeScript uses default convention
       return `${WORKSPACE_RULES.files.testBase}${ext}`;
+    case 'javascript':
+      // JavaScript uses default convention
+      return `${WORKSPACE_RULES.files.testBase}${ext}`;
+    case 'cpp':
+      // C++ uses default convention
+      return `${WORKSPACE_RULES.files.testBase}${ext}`;
+    default:
+      // This should be unreachable if typed correctly and validation is called
+      throw new ValidationError(
+        `Unsupported language: ${language}`,
+        createErrorContext('getTestFileName', { language })
+      );
   }
 }
 
