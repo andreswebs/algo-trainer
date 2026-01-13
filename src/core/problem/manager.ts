@@ -179,10 +179,10 @@ export class ProblemManager {
   getRandom(query: Omit<ProblemQuery, 'limit' | 'offset' | 'sort'> = {}): Problem | null {
     // Get all matching problems without pagination
     const result = this.list({ ...query, offset: 0 });
-    if (result.total === 0) {
+    if (result.problems.length === 0) {
       return null;
     }
-    const randomIndex = Math.floor(Math.random() * result.total);
+    const randomIndex = Math.floor(Math.random() * result.problems.length);
     return result.problems[randomIndex];
   }
 
@@ -260,7 +260,105 @@ export class ProblemManager {
 
     await this.writeProblemFile(filePath, newProblem);
 
-    // 5. Reload database
+    // 5. Reload database to ensure consistency between in-memory data and file system
+    // Note: For adding multiple problems, use addMany() to avoid multiple reloads
+    await this.init();
+  }
+
+  /**
+   * Add multiple custom problems in a single batch operation.
+   *
+   * This performs validation and uniqueness checks for all problems first,
+   * writes all problem files, and then reloads the database once at the end.
+   * This is more efficient than calling add() multiple times when adding
+   * multiple problems.
+   */
+  async addMany(problems: Problem[]): Promise<void> {
+    this.ensureInitialized();
+
+    if (problems.length === 0) {
+      return;
+    }
+
+    // Track IDs and slugs within this batch to prevent collisions
+    const batchIds = new Set<string>();
+    const batchSlugs = new Set<string>();
+
+    const customPath = this.options.customPath || getCustomProblemsPath();
+
+    // First pass: validate and check for uniqueness and file existence
+    const preparedProblems: Array<{ problem: Problem; filePath: string }> = [];
+
+    for (const problem of problems) {
+      const validation = validateProblem(problem);
+      if (!validation.valid) {
+        throw new ProblemError(
+          `Invalid problem data: ${validation.errors.join('; ')}`,
+          createErrorContext('addProblemBatch', { errors: validation.errors }),
+        );
+      }
+
+      // Check uniqueness against existing DB
+      if (this.db!.hasId(problem.id)) {
+        throw new ProblemError(
+          `Problem with ID '${problem.id}' already exists`,
+          createErrorContext('addProblemBatch', { id: problem.id, reason: 'duplicate_id' }),
+        );
+      }
+      if (this.db!.hasSlug(problem.slug)) {
+        throw new ProblemError(
+          `Problem with slug '${problem.slug}' already exists`,
+          createErrorContext('addProblemBatch', { slug: problem.slug, reason: 'duplicate_slug' }),
+        );
+      }
+
+      // Check uniqueness within the batch
+      if (batchIds.has(problem.id)) {
+        throw new ProblemError(
+          `Duplicate problem ID '${problem.id}' in batch`,
+          createErrorContext('addProblemBatch', {
+            id: problem.id,
+            reason: 'duplicate_id_in_batch',
+          }),
+        );
+      }
+      if (batchSlugs.has(problem.slug)) {
+        throw new ProblemError(
+          `Duplicate problem slug '${problem.slug}' in batch`,
+          createErrorContext('addProblemBatch', {
+            slug: problem.slug,
+            reason: 'duplicate_slug_in_batch',
+          }),
+        );
+      }
+
+      batchIds.add(problem.id);
+      batchSlugs.add(problem.slug);
+
+      const newProblem = { ...problem };
+      if (!newProblem.createdAt) {
+        newProblem.createdAt = new Date();
+      }
+      newProblem.updatedAt = new Date();
+
+      const filePath = join(customPath, `${newProblem.slug}.json`);
+
+      if (await pathExists(filePath)) {
+        throw new ProblemError(
+          `File already exists at ${filePath}`,
+          createErrorContext('addProblemBatch', { path: filePath, reason: 'file_exists' }),
+        );
+      }
+
+      preparedProblems.push({ problem: newProblem, filePath });
+    }
+
+    // Second pass: write all files
+    for (const { problem, filePath } of preparedProblems) {
+      await this.writeProblemFile(filePath, problem);
+    }
+
+    // Reload database once after all additions
     await this.init();
   }
 
@@ -348,7 +446,7 @@ export class ProblemManager {
       await removeFile(expectedOldPath);
     }
 
-    // 9. Reload DB
+    // 9. Reload database to ensure consistency between in-memory data and file system
     await this.init();
   }
 
@@ -377,11 +475,16 @@ export class ProblemManager {
     }
 
     await removeFile(filePath);
+    // Reload database to ensure consistency between in-memory data and file system
     await this.init();
   }
 
   /**
    * Helper to write problem to file safely
+   *
+   * Note: JSON.stringify automatically converts Date objects (createdAt, updatedAt)
+   * to ISO 8601 strings, which are properly validated by parseProblemFromJson when
+   * the file is read back.
    */
   private async writeProblemFile(path: string, problem: Problem): Promise<void> {
     const tempPath = `${path}.tmp`;
@@ -391,10 +494,22 @@ export class ProblemManager {
       await writeTextFile(tempPath, content, { ensureParents: true, overwrite: true });
       await Deno.rename(tempPath, path);
     } catch (error) {
-      // Clean up temp file if rename fails
+      // Clean up temp file if write or rename fails
       try {
-        await removeFile(tempPath);
-      } catch { /* ignore */ }
+        if (await pathExists(tempPath)) {
+          await removeFile(tempPath);
+        }
+      } catch (cleanupError) {
+        // Log cleanup failure for debugging, but do not mask the original error
+        try {
+          console.error(
+            'Failed to clean up temporary problem file',
+            { tempPath, cleanupError: String(cleanupError) },
+          );
+        } catch {
+          // If logging fails, swallow to avoid interfering with the original error
+        }
+      }
 
       throw new ProblemError(
         `Failed to write problem file: ${path}`,

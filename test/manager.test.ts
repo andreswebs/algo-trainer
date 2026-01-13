@@ -496,3 +496,402 @@ Deno.test('ProblemManager.remove - prevents removing built-in problems', async (
     await Deno.remove(customDir, { recursive: true });
   }
 });
+
+Deno.test('ProblemManager - throws error when not initialized', async () => {
+  const manager = new ProblemManager({
+    loadCustomProblems: false,
+  });
+
+  // Should throw when calling methods before init()
+  assertRejects(
+    async () => {
+      manager.getById('1');
+    },
+    ProblemError,
+    'not initialized',
+  );
+});
+
+Deno.test('ProblemManager.list - company filtering with "all" match mode', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3]);
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      loadCustomProblems: false,
+    });
+    await manager.init();
+
+    // Test 'all' mode - should only match problems with both companies
+    const resultAll = manager.list({
+      companies: ['Amazon', 'Google'],
+      companyMatchMode: 'all',
+    });
+    assertEquals(resultAll.total, 1);
+    assertEquals(resultAll.problems[0].slug, 'two-sum');
+
+    // Test 'any' mode (default)
+    const resultAny = manager.list({
+      companies: ['Amazon', 'Google'],
+    });
+    // Should match PROBLEM_1 (has both) and PROBLEM_3 (has Google)
+    assertEquals(resultAny.total, 2);
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.add - prevents duplicate slugs', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    // Try to add a problem with a different ID but same slug as built-in
+    const duplicateSlug = {
+      ...PROBLEM_1,
+      id: 'different-id',
+    };
+
+    await assertRejects(
+      async () => {
+        await manager.add(normalizeProblem(duplicateSlug));
+      },
+      ProblemError,
+      'slug',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.getRandom - with various filters', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3]);
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      loadCustomProblems: false,
+    });
+    await manager.init();
+
+    // Test with difficulty filter
+    const easyProblem = manager.getRandom({ difficulty: 'easy' });
+    assertEquals(easyProblem?.difficulty, 'easy');
+
+    // Test with tags filter
+    const graphProblem = manager.getRandom({ tags: ['graph'] });
+    assertEquals(graphProblem?.slug, 'hard-problem');
+
+    // Test with empty results
+    const noMatch = manager.getRandom({ difficulty: 'easy', tags: ['non-existent'] });
+    assertEquals(noMatch, null);
+
+    // Test with multiple filters
+    const filtered = manager.getRandom({ difficulty: 'easy', companies: ['Google'] });
+    assertEquals(filtered?.slug, 'two-sum');
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.list - pagination edge cases', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3]);
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      loadCustomProblems: false,
+    });
+    await manager.init();
+
+    // Test offset beyond total results
+    const beyondEnd = manager.list({ limit: 5, offset: 10 });
+    assertEquals(beyondEnd.problems.length, 0);
+    assertEquals(beyondEnd.total, 3);
+    assertEquals(beyondEnd.hasMore, false);
+
+    // Test limit larger than total
+    const largeLimit = manager.list({ limit: 100 });
+    assertEquals(largeLimit.problems.length, 3);
+    assertEquals(largeLimit.hasMore, false);
+
+    // Test offset at exact end
+    const atEnd = manager.list({ limit: 2, offset: 3 });
+    assertEquals(atEnd.problems.length, 0);
+    assertEquals(atEnd.hasMore, false);
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.list - sorting by different fields', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3]);
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      loadCustomProblems: false,
+    });
+    await manager.init();
+
+    // Sort by title ascending
+    const byTitleAsc = manager.list({
+      sort: { field: 'title', direction: 'asc' },
+    });
+    assertEquals(byTitleAsc.problems[0].title, 'Hard Problem');
+    assertEquals(byTitleAsc.problems[2].title, 'Two Sum');
+
+    // Sort by title descending
+    const byTitleDesc = manager.list({
+      sort: { field: 'title', direction: 'desc' },
+    });
+    assertEquals(byTitleDesc.problems[0].title, 'Two Sum');
+    assertEquals(byTitleDesc.problems[2].title, 'Hard Problem');
+
+    // Sort by difficulty descending
+    const byDiffDesc = manager.list({
+      sort: { field: 'difficulty', direction: 'desc' },
+    });
+    assertEquals(byDiffDesc.problems[0].difficulty, 'hard');
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.update - rejects non-existent problem', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    await assertRejects(
+      async () => {
+        await manager.update('non-existent-id', { title: 'New Title' });
+      },
+      ProblemError,
+      'not found',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.remove - rejects non-existent problem', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    await assertRejects(
+      async () => {
+        await manager.remove('non-existent-id');
+      },
+      ProblemError,
+      'not found',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.add - validates problem data', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    // Missing required fields should fail validation
+    const invalidProblem: Problem = {
+      id: 'test-id',
+      slug: 'test-slug',
+      title: '', // Empty title should be invalid
+      difficulty: 'easy',
+      description: 'Test',
+      tags: [],
+      examples: [],
+      constraints: [],
+      hints: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await assertRejects(
+      async () => {
+        await manager.add(invalidProblem);
+      },
+      ProblemError,
+      'Invalid problem data',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.update - validates problem data', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+
+    const original = { ...PROBLEM_2, id: 'custom-1' };
+    const filePath = join(customDir, `${original.slug}.json`);
+    await Deno.writeTextFile(filePath, JSON.stringify(original));
+
+    await manager.init();
+
+    // Update with invalid data should fail
+    await assertRejects(
+      async () => {
+        await manager.update('custom-1', { title: '' }); // Empty title
+      },
+      ProblemError,
+      'Invalid problem data',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - adds multiple problems efficiently', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    const problem1 = normalizeProblem({ ...PROBLEM_2, id: 'custom-1', slug: 'custom-1' });
+    const problem2 = normalizeProblem({ ...PROBLEM_3, id: 'custom-2', slug: 'custom-2' });
+
+    await manager.addMany([problem1, problem2]);
+
+    // Verify both problems were added
+    assertEquals(manager.getById('custom-1')?.title, 'Reverse String');
+    assertEquals(manager.getById('custom-2')?.title, 'Hard Problem');
+
+    // Verify files exist
+    assertEquals(await pathExists(join(customDir, 'custom-1.json')), true);
+    assertEquals(await pathExists(join(customDir, 'custom-2.json')), true);
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - detects duplicate IDs in batch', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    const problem1 = normalizeProblem({ ...PROBLEM_2, id: 'duplicate', slug: 'slug-1' });
+    const problem2 = normalizeProblem({ ...PROBLEM_3, id: 'duplicate', slug: 'slug-2' });
+
+    await assertRejects(
+      async () => {
+        await manager.addMany([problem1, problem2]);
+      },
+      ProblemError,
+      'Duplicate problem ID',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - detects duplicate slugs in batch', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    const problem1 = normalizeProblem({ ...PROBLEM_2, id: 'id-1', slug: 'duplicate' });
+    const problem2 = normalizeProblem({ ...PROBLEM_3, id: 'id-2', slug: 'duplicate' });
+
+    await assertRejects(
+      async () => {
+        await manager.addMany([problem1, problem2]);
+      },
+      ProblemError,
+      'Duplicate problem slug',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - handles empty array', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    // Should not throw
+    await manager.addMany([]);
+
+    // DB should remain unchanged
+    assertEquals(manager.getById('1')?.slug, 'two-sum');
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
