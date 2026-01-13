@@ -784,3 +784,112 @@ Deno.test('ProblemManager.update - validates problem data', async () => {
     await Deno.remove(customDir, { recursive: true });
   }
 });
+
+Deno.test('ProblemManager.addMany - adds multiple problems efficiently', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    const problem1 = normalizeProblem({ ...PROBLEM_2, id: 'custom-1', slug: 'custom-1' });
+    const problem2 = normalizeProblem({ ...PROBLEM_3, id: 'custom-2', slug: 'custom-2' });
+
+    await manager.addMany([problem1, problem2]);
+
+    // Verify both problems were added
+    assertEquals(manager.getById('custom-1')?.title, 'Reverse String');
+    assertEquals(manager.getById('custom-2')?.title, 'Hard Problem');
+
+    // Verify files exist
+    assertEquals(await pathExists(join(customDir, 'custom-1.json')), true);
+    assertEquals(await pathExists(join(customDir, 'custom-2.json')), true);
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - detects duplicate IDs in batch', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    const problem1 = normalizeProblem({ ...PROBLEM_2, id: 'duplicate', slug: 'slug-1' });
+    const problem2 = normalizeProblem({ ...PROBLEM_3, id: 'duplicate', slug: 'slug-2' });
+
+    await assertRejects(
+      async () => {
+        await manager.addMany([problem1, problem2]);
+      },
+      ProblemError,
+      'Duplicate problem ID',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - detects duplicate slugs in batch', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    const problem1 = normalizeProblem({ ...PROBLEM_2, id: 'id-1', slug: 'duplicate' });
+    const problem2 = normalizeProblem({ ...PROBLEM_3, id: 'id-2', slug: 'duplicate' });
+
+    await assertRejects(
+      async () => {
+        await manager.addMany([problem1, problem2]);
+      },
+      ProblemError,
+      'Duplicate problem slug',
+    );
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});
+
+Deno.test('ProblemManager.addMany - handles empty array', async () => {
+  const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
+  const customDir = await Deno.makeTempDir({ prefix: 'manager-test-custom-' });
+
+  try {
+    const manager = new ProblemManager({
+      builtInPath: builtInDir,
+      customPath: customDir,
+      loadCustomProblems: true,
+    });
+    await manager.init();
+
+    // Should not throw
+    await manager.addMany([]);
+
+    // DB should remain unchanged
+    assertEquals(manager.getById('1')?.slug, 'two-sum');
+  } finally {
+    await Deno.remove(builtInDir, { recursive: true });
+    await Deno.remove(customDir, { recursive: true });
+  }
+});

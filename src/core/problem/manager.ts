@@ -260,7 +260,105 @@ export class ProblemManager {
 
     await this.writeProblemFile(filePath, newProblem);
 
-    // 5. Reload database
+    // 5. Reload database to ensure consistency between in-memory data and file system
+    // Note: For adding multiple problems, use addMany() to avoid multiple reloads
+    await this.init();
+  }
+
+  /**
+   * Add multiple custom problems in a single batch operation.
+   *
+   * This performs validation and uniqueness checks for all problems first,
+   * writes all problem files, and then reloads the database once at the end.
+   * This is more efficient than calling add() multiple times when adding
+   * multiple problems.
+   */
+  async addMany(problems: Problem[]): Promise<void> {
+    this.ensureInitialized();
+
+    if (problems.length === 0) {
+      return;
+    }
+
+    // Track IDs and slugs within this batch to prevent collisions
+    const batchIds = new Set<string>();
+    const batchSlugs = new Set<string>();
+
+    const customPath = this.options.customPath || getCustomProblemsPath();
+
+    // First pass: validate and check for uniqueness and file existence
+    const preparedProblems: Array<{ problem: Problem; filePath: string }> = [];
+
+    for (const problem of problems) {
+      const validation = validateProblem(problem);
+      if (!validation.valid) {
+        throw new ProblemError(
+          `Invalid problem data: ${validation.errors.join('; ')}`,
+          createErrorContext('addProblemBatch', { errors: validation.errors }),
+        );
+      }
+
+      // Check uniqueness against existing DB
+      if (this.db!.hasId(problem.id)) {
+        throw new ProblemError(
+          `Problem with ID '${problem.id}' already exists`,
+          createErrorContext('addProblemBatch', { id: problem.id, reason: 'duplicate_id' }),
+        );
+      }
+      if (this.db!.hasSlug(problem.slug)) {
+        throw new ProblemError(
+          `Problem with slug '${problem.slug}' already exists`,
+          createErrorContext('addProblemBatch', { slug: problem.slug, reason: 'duplicate_slug' }),
+        );
+      }
+
+      // Check uniqueness within the batch
+      if (batchIds.has(problem.id)) {
+        throw new ProblemError(
+          `Duplicate problem ID '${problem.id}' in batch`,
+          createErrorContext('addProblemBatch', {
+            id: problem.id,
+            reason: 'duplicate_id_in_batch',
+          }),
+        );
+      }
+      if (batchSlugs.has(problem.slug)) {
+        throw new ProblemError(
+          `Duplicate problem slug '${problem.slug}' in batch`,
+          createErrorContext('addProblemBatch', {
+            slug: problem.slug,
+            reason: 'duplicate_slug_in_batch',
+          }),
+        );
+      }
+
+      batchIds.add(problem.id);
+      batchSlugs.add(problem.slug);
+
+      const newProblem = { ...problem };
+      if (!newProblem.createdAt) {
+        newProblem.createdAt = new Date();
+      }
+      newProblem.updatedAt = new Date();
+
+      const filePath = join(customPath, `${newProblem.slug}.json`);
+
+      if (await pathExists(filePath)) {
+        throw new ProblemError(
+          `File already exists at ${filePath}`,
+          createErrorContext('addProblemBatch', { path: filePath, reason: 'file_exists' }),
+        );
+      }
+
+      preparedProblems.push({ problem: newProblem, filePath });
+    }
+
+    // Second pass: write all files
+    for (const { problem, filePath } of preparedProblems) {
+      await this.writeProblemFile(filePath, problem);
+    }
+
+    // Reload database once after all additions
     await this.init();
   }
 
@@ -348,7 +446,7 @@ export class ProblemManager {
       await removeFile(expectedOldPath);
     }
 
-    // 9. Reload DB
+    // 9. Reload database to ensure consistency between in-memory data and file system
     await this.init();
   }
 
@@ -377,6 +475,7 @@ export class ProblemManager {
     }
 
     await removeFile(filePath);
+    // Reload database to ensure consistency between in-memory data and file system
     await this.init();
   }
 
