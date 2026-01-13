@@ -6,6 +6,7 @@
 
 import { assertEquals, assertExists, assertThrows } from '@std/assert';
 import { join, resolve } from '@std/path';
+import type { SupportedLanguage } from '../src/types/global.ts';
 import {
   clearWorkspacePathCache,
   getArchivedProblemPaths,
