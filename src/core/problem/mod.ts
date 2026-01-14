@@ -11,3 +11,4 @@ export * from './escaping.ts';
 export * from './parser.ts';
 export * from './database.ts';
 export * from './manager.ts';
+export * from './templates.ts';
