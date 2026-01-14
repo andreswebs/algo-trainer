@@ -4,17 +4,12 @@
  * @module test/core/workspace/generation
  */
 
-import {
-  assertEquals,
-  assertExists,
-  assertRejects,
-  assertStringIncludes,
-} from '@std/assert';
+import { assertEquals, assertExists, assertRejects, assertStringIncludes } from '@std/assert';
 import {
   generateProblemFiles,
+  type GenerateProblemFilesOptions,
   getProblemMetadata,
   problemExists,
-  type GenerateProblemFilesOptions,
   type ProblemWorkspaceMetadata,
 } from '../../../src/core/workspace/generation.ts';
 import { getProblemPaths } from '../../../src/core/workspace/files.ts';
@@ -118,7 +113,7 @@ Deno.test('generateProblemFiles - solution file contains problem title', async (
       templateStyle: 'documented',
     };
 
-    const result = await generateProblemFiles(options);
+    await generateProblemFiles(options);
     const paths = getProblemPaths(
       { rootDir: workspaceRoot, language: 'typescript' },
       'two-sum',
@@ -143,7 +138,7 @@ Deno.test('generateProblemFiles - test file contains problem examples', async ()
       templateStyle: 'documented',
     };
 
-    const result = await generateProblemFiles(options);
+    await generateProblemFiles(options);
     const paths = getProblemPaths(
       { rootDir: workspaceRoot, language: 'typescript' },
       'two-sum',
@@ -169,7 +164,7 @@ Deno.test('generateProblemFiles - README contains problem description', async ()
       templateStyle: 'documented',
     };
 
-    const result = await generateProblemFiles(options);
+    await generateProblemFiles(options);
     const paths = getProblemPaths(
       { rootDir: workspaceRoot, language: 'typescript' },
       'two-sum',
@@ -195,7 +190,7 @@ Deno.test('generateProblemFiles - metadata file contains correct data', async ()
       templateStyle: 'documented',
     };
 
-    const result = await generateProblemFiles(options);
+    await generateProblemFiles(options);
     const paths = getProblemPaths(
       { rootDir: workspaceRoot, language: 'typescript' },
       'two-sum',

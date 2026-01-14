@@ -39,8 +39,12 @@
  * ```
  */
 
-import { join } from '@std/path';
-import type { Problem, SupportedLanguage, TemplateConfig, UserPreferences } from '../../types/global.ts';
+import type {
+  Problem,
+  SupportedLanguage,
+  TemplateConfig,
+  UserPreferences,
+} from '../../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
 import { createDirectory, pathExists, writeTextFile } from '../../utils/fs.ts';
 import { renderAllTemplates, type TemplateContext } from '../problem/templates.ts';
@@ -321,7 +325,7 @@ export async function problemExists(
     // Check if at least the solution file exists
     // (could also check for all files, but solution is the minimum)
     return await pathExists(paths.solutionFile);
-  } catch (error) {
+  } catch (_error) {
     // If there's an error checking, assume it doesn't exist
     return false;
   }
@@ -363,7 +367,7 @@ export async function getProblemMetadata(
 
     const content = await Deno.readTextFile(paths.metadataFile);
     return JSON.parse(content) as ProblemWorkspaceMetadata;
-  } catch (error) {
+  } catch (_error) {
     // If there's an error reading/parsing, return null
     return null;
   }
