@@ -15,7 +15,7 @@ This document tracks the completion status of all tasks in the Problem Managemen
 | PMS-007 | Implement `ProblemManager` write API (CRUD) for user/custom problems | ✅ Done |
 | PMS-008 | Create initial problem set + conversion approach                     | ✅ Done |
 | PMS-009 | Define template format + placeholders                                | ✅ Done |
-| PMS-010 | Implement template renderer + config mapping                         | 📋 Todo |
+| PMS-010 | Implement template renderer + config mapping                         | ✅ Done |
 | PMS-011 | Add language template packs (parallelizable)                         | ✅ Done |
 | PMS-012 | Template tests (renderer + fixtures)                                 | 📋 Todo |
 | PMS-013 | Define workspace layout + path resolution rules                      | ✅ Done |
@@ -29,9 +29,9 @@ This document tracks the completion status of all tasks in the Problem Managemen
 
 ## Summary
 
-- ✅ **Completed**: 11 tasks
-- 📋 **Remaining**: 9 tasks
-- **Progress**: 55% complete
+- ✅ **Completed**: 12 tasks
+- 📋 **Remaining**: 8 tasks
+- **Progress**: 60% complete
 
 ## Parallel Execution Lanes Status
 
@@ -39,9 +39,9 @@ This document tracks the completion status of all tasks in the Problem Managemen
 
 - ✅ PMS-001 → ✅ PMS-002 → ✅ PMS-003 + ✅ PMS-004 → ✅ PMS-005 → ✅ PMS-006 → ✅ PMS-007 → 📋 PMS-018
 
-### Lane B (Templates): 2/4 completed
+### Lane B (Templates): 3/4 completed
 
-- ✅ PMS-009 → 📋 PMS-010 → ✅ PMS-011 → 📋 PMS-012
+- ✅ PMS-009 → ✅ PMS-010 → ✅ PMS-011 → 📋 PMS-012
 
 ### Lane C (Workspace): 1/6 completed
 
