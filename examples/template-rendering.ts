@@ -8,7 +8,11 @@
  *   deno run --allow-read examples/template-rendering.ts
  */
 
-import { renderAllTemplates, renderTemplate, type TemplateContext } from '../src/core/problem/templates.ts';
+import {
+  renderAllTemplates,
+  renderTemplate,
+  type TemplateContext,
+} from '../src/core/problem/templates.ts';
 import type { Problem } from '../src/types/global.ts';
 
 // Example problem data
@@ -17,7 +21,8 @@ const exampleProblem: Problem = {
   slug: 'two-sum',
   title: 'Two Sum',
   difficulty: 'easy',
-  description: `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+  description:
+    `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
 
 You may assume that each input would have exactly one solution, and you may not use the same element twice.
 
@@ -44,7 +49,7 @@ You can return the answer in any order.`,
     'Only one valid answer exists.',
   ],
   hints: [
-    'A really brute force way would be to search for all possible pairs of numbers but that would be too slow. Again, it\'s best to try out brute force solutions for just for completeness. It is from these brute force solutions that you can come up with optimizations.',
+    "A really brute force way would be to search for all possible pairs of numbers but that would be too slow. Again, it's best to try out brute force solutions for just for completeness. It is from these brute force solutions that you can come up with optimizations.",
     'So, if we fix one of the numbers, say x, we have to scan the entire array to find the next number y which is value - x where value is the input parameter. Can we change our array somehow so that this search becomes faster?',
     'The second train of thought is, without changing the array, can we use additional space somehow? Like maybe a hash map to speed up the search?',
   ],

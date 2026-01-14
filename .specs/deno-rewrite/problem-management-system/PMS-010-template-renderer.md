@@ -3,6 +3,7 @@
 **Status**: ✅ Complete
 **Depends on**: PMS-009
 **Related files**:
+
 - `src/core/problem/templates.ts` (main implementation)
 - `test/core/problem/templates.test.ts` (unit tests)
 - `test/core/problem/templates.integration.test.ts` (integration tests)
@@ -25,6 +26,7 @@ const path = await resolveTemplatePath('typescript', 'minimal', 'solution');
 ```
 
 **Features**:
+
 - Validates template file existence
 - Throws `TemplateError` if template not found
 - Supports all languages: `typescript`, `javascript`, `python`, `java`, `cpp`, `rust`, `go`
@@ -35,26 +37,27 @@ const path = await resolveTemplatePath('typescript', 'minimal', 'solution');
 
 **Supported Placeholders**:
 
-| Placeholder | Description | Example |
-|------------|-------------|---------|
-| `{{PROBLEM_TITLE}}` | Problem title | "Two Sum" |
-| `{{PROBLEM_SLUG}}` | URL-friendly slug | "two-sum" |
-| `{{PROBLEM_ID}}` | Unique identifier | "test-001" |
-| `{{PROBLEM_DIFFICULTY}}` | Capitalized difficulty | "Easy" |
-| `{{PROBLEM_DESCRIPTION}}` | Full problem description | "Given an array..." |
-| `{{EXAMPLES}}` | Formatted examples | "Example 1:\nInput:..." |
-| `{{CONSTRAINTS}}` | Bulleted constraint list | "- 2 <= nums.length..." |
-| `{{HINTS}}` | Numbered hint list | "1. Use a hash map..." |
-| `{{TAGS}}` | Comma-separated tags | "array, hash-table" |
-| `{{COMPANIES}}` | Comma-separated companies | "Amazon, Google" |
-| `{{LANGUAGE}}` | Programming language | "typescript" |
-| `{{TEMPLATE_STYLE}}` | Template style | "minimal" |
-| `{{LEETCODE_URL}}` | LeetCode URL or "N/A" | "https://leetcode.com/..." |
-| `{{DATE}}` | Current date (YYYY-MM-DD) | "2025-01-14" |
-| `{{FUNCTION_NAME}}` | Camelized slug | "twoSum" |
-| `{{CLASS_NAME}}` | PascalCased class name derived from the problem slug/title | "TwoSum" |
+| Placeholder               | Description                                                | Example                    |
+| ------------------------- | ---------------------------------------------------------- | -------------------------- |
+| `{{PROBLEM_TITLE}}`       | Problem title                                              | "Two Sum"                  |
+| `{{PROBLEM_SLUG}}`        | URL-friendly slug                                          | "two-sum"                  |
+| `{{PROBLEM_ID}}`          | Unique identifier                                          | "test-001"                 |
+| `{{PROBLEM_DIFFICULTY}}`  | Capitalized difficulty                                     | "Easy"                     |
+| `{{PROBLEM_DESCRIPTION}}` | Full problem description                                   | "Given an array..."        |
+| `{{EXAMPLES}}`            | Formatted examples                                         | "Example 1:\nInput:..."    |
+| `{{CONSTRAINTS}}`         | Bulleted constraint list                                   | "- 2 <= nums.length..."    |
+| `{{HINTS}}`               | Numbered hint list                                         | "1. Use a hash map..."     |
+| `{{TAGS}}`                | Comma-separated tags                                       | "array, hash-table"        |
+| `{{COMPANIES}}`           | Comma-separated companies                                  | "Amazon, Google"           |
+| `{{LANGUAGE}}`            | Programming language                                       | "typescript"               |
+| `{{TEMPLATE_STYLE}}`      | Template style                                             | "minimal"                  |
+| `{{LEETCODE_URL}}`        | LeetCode URL or "N/A"                                      | "https://leetcode.com/..." |
+| `{{DATE}}`                | Current date (YYYY-MM-DD)                                  | "2025-01-14"               |
+| `{{FUNCTION_NAME}}`       | Camelized slug                                             | "twoSum"                   |
+| `{{CLASS_NAME}}`          | PascalCased class name derived from the problem slug/title | "TwoSum"                   |
 
 **Placeholder Replacement**:
+
 - Unknown placeholders throw `TemplateError` by default
 - Can optionally allow unknown placeholders with `allowUnknown` flag
 - All placeholders use `{{UPPERCASE_NAME}}` format
@@ -63,6 +66,7 @@ const path = await resolveTemplatePath('typescript', 'minimal', 'solution');
 #### 3. Formatting Helpers
 
 **`formatExamples(problem)`**:
+
 ```
 Example 1:
 Input: nums = [2,7,11,15], target = 9
@@ -75,6 +79,7 @@ Output: [1,2]
 ```
 
 **`formatConstraints(constraints)`**:
+
 ```
 - 2 <= nums.length <= 10^4
 - -10^9 <= nums[i] <= 10^9
@@ -82,17 +87,20 @@ Output: [1,2]
 ```
 
 **`formatHints(hints)`**:
+
 ```
 1. Use a hash map to store values you have seen.
 2. For each element, check if target - element exists in the map.
 ```
 
 **`formatTags(tags)`**:
+
 ```
 array, hash-table, two-pointers
 ```
 
 **`formatCompanies(companies)`**:
+
 ```
 Amazon, Google, Microsoft
 ```
@@ -104,13 +112,14 @@ All formatters handle empty/missing data gracefully with appropriate fallback me
 Converts kebab-case slugs to camelCase function names:
 
 ```typescript
-slugToFunctionName('two-sum')           // 'twoSum'
-slugToFunctionName('reverse-linked-list') // 'reverseLinkedList'
-slugToFunctionName('3sum')              // 'threeSum'
-slugToFunctionName('4sum-ii')           // 'fourSumIi'
+slugToFunctionName('two-sum'); // 'twoSum'
+slugToFunctionName('reverse-linked-list'); // 'reverseLinkedList'
+slugToFunctionName('3sum'); // 'threeSum'
+slugToFunctionName('4sum-ii'); // 'fourSumIi'
 ```
 
 **Features**:
+
 - Converts leading digits to words (3 → "three")
 - Properly camelCases multi-word slugs
 - Handles single-word slugs
@@ -162,6 +171,7 @@ throw new TemplateError(
 ```
 
 **Error Scenarios**:
+
 - Template file not found
 - Unknown placeholders in template
 - File read errors
@@ -189,6 +199,7 @@ Custom placeholders override default values if there's a conflict.
 ### Unit Tests (`templates.test.ts`)
 
 **Coverage**:
+
 - ✅ `slugToFunctionName` - various slug formats, edge cases
 - ✅ `formatExamples` - single/multiple examples, with/without explanations
 - ✅ `formatConstraints` - normal and empty cases
@@ -202,6 +213,7 @@ Custom placeholders override default values if there's a conflict.
 ### Integration Tests (`templates.integration.test.ts`)
 
 **Coverage**:
+
 - ✅ Template path resolution for actual template files
 - ✅ Rendering with real TypeScript/Python/etc. templates
 - ✅ All three template kinds (solution, test, readme)
@@ -211,6 +223,7 @@ Custom placeholders override default values if there's a conflict.
 - ✅ Custom placeholder overrides
 
 **Test Execution**:
+
 ```bash
 deno test test/core/problem/templates.test.ts
 deno test test/core/problem/templates.integration.test.ts
@@ -328,6 +341,7 @@ async function generateProblemFiles(problemId: string, config: TemplateConfig) {
 ## API Documentation
 
 All public functions are fully documented with JSDoc comments including:
+
 - Purpose and behavior
 - Parameter descriptions with types
 - Return value documentation
@@ -353,6 +367,7 @@ See `src/core/problem/templates.ts` for complete API documentation.
 ## Definition of Done
 
 ✅ **All subtasks completed**:
+
 - ✅ Resolve correct template path for `(language, style, kind)` tuple
 - ✅ Implement placeholder replacement
 - ✅ Implement formatting helpers (bullet lists, examples, etc.)
@@ -360,6 +375,7 @@ See `src/core/problem/templates.ts` for complete API documentation.
 - ✅ Error handling with `TemplateError` and `createErrorContext()`
 
 ✅ **Quality standards met**:
+
 - ✅ Renderer behavior is deterministic
 - ✅ Unit tests cover all formatting functions
 - ✅ Integration tests verify real template rendering

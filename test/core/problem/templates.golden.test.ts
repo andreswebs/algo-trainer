@@ -9,10 +9,7 @@
 
 import { assertEquals } from '@std/assert';
 import { join } from '@std/path';
-import {
-  renderTemplate,
-  type TemplateContext,
-} from '../../../src/core/problem/templates.ts';
+import { renderTemplate, type TemplateContext } from '../../../src/core/problem/templates.ts';
 import type { Problem } from '../../../src/types/global.ts';
 
 // Test problem with consistent data for golden output tests

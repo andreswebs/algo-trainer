@@ -5,8 +5,6 @@
  */
 
 import { assertEquals, assertRejects, assertStringIncludes } from '@std/assert';
-import { join } from '@std/path';
-import { ensureDir } from '@std/fs';
 import {
   formatCompanies,
   formatConstraints,
@@ -31,7 +29,8 @@ const mockProblem: Problem = {
   slug: 'two-sum',
   title: 'Two Sum',
   difficulty: 'easy',
-  description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+  description:
+    'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
   examples: [
     {
       input: { nums: [2, 7, 11, 15], target: 9 },
