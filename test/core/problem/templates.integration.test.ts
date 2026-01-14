@@ -219,8 +219,20 @@ Deno.test('renderAllTemplates - works for all supported languages (minimal style
     assertEquals(typeof readme, 'string');
 
     // Verify no unresolved placeholders
-    assertEquals(solution.includes('{{PROBLEM_'), false, `${language} solution has unresolved placeholders`);
-    assertEquals(test.includes('{{PROBLEM_'), false, `${language} test has unresolved placeholders`);
-    assertEquals(readme.includes('{{PROBLEM_'), false, `${language} readme has unresolved placeholders`);
+    assertEquals(
+      solution.includes('{{PROBLEM_'),
+      false,
+      `${language} solution has unresolved placeholders`,
+    );
+    assertEquals(
+      test.includes('{{PROBLEM_'),
+      false,
+      `${language} test has unresolved placeholders`,
+    );
+    assertEquals(
+      readme.includes('{{PROBLEM_'),
+      false,
+      `${language} readme has unresolved placeholders`,
+    );
   }
 });

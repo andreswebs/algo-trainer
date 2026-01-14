@@ -140,7 +140,18 @@ export function slugToClassName(slug: string): string {
   return slug
     .split('-')
     .map((word) => {
-      const digitWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+      const digitWords = [
+        'zero',
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine',
+      ];
 
       // Find where digits end
       const digitMatch = word.match(/^\d+/);
@@ -187,7 +198,18 @@ export function slugToFunctionName(slug: string): string {
   return slug
     .split('-')
     .map((word, wordIndex) => {
-      const digitWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+      const digitWords = [
+        'zero',
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine',
+      ];
 
       // Find where digits end
       const digitMatch = word.match(/^\d+/);

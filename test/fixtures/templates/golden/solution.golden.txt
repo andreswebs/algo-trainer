@@ -1,0 +1,6 @@
+// Two Sum
+
+export function twoSum(...args: unknown[]): unknown {
+  // TODO: Implement solution
+  throw new Error('Not implemented');
+}

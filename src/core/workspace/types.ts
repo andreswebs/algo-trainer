@@ -1,15 +1,15 @@
 /**
  * Workspace types for the Problem Management System.
- * 
+ *
  * Defines the concrete structure of the user's workspace where problems
  * are solved, templates are stored, and configuration is kept.
- * 
+ *
  * @module core/workspace/types
- * 
+ *
  * @example
  * ```ts
  * import { getWorkspacePaths, type WorkspacePaths } from './workspace/mod.ts';
- * 
+ *
  * const paths = getWorkspacePaths('/home/user/algo-workspace');
  * console.log(paths.problems); // /home/user/algo-workspace/problems
  * ```
@@ -19,12 +19,12 @@ import type { SupportedLanguage } from '../../types/global.ts';
 
 /**
  * Concrete layout of the workspace directory structure
- * 
+ *
  * This interface maps the high-level `WorkspaceStructure` from global types
  * to concrete file system paths and naming conventions.
- * 
+ *
  * All paths are absolute and resolved from the root directory.
- * 
+ *
  * @example
  * ```ts
  * const paths: WorkspacePaths = {
@@ -39,26 +39,26 @@ import type { SupportedLanguage } from '../../types/global.ts';
 export interface WorkspacePaths {
   /** Root directory of the workspace (absolute path) */
   readonly root: string;
-  
-  /** 
-   * Directory for active problems being solved 
+
+  /**
+   * Directory for active problems being solved
    * Path: `<root>/problems`
    */
   readonly problems: string;
-  
-  /** 
+
+  /**
    * Directory for completed/archived problems
    * Path: `<root>/completed`
    */
   readonly completed: string;
-  
-  /** 
+
+  /**
    * Directory for user templates
    * Path: `<root>/templates`
    */
   readonly templates: string;
-  
-  /** 
+
+  /**
    * Directory for workspace configuration
    * Path: `<root>/config`
    */
@@ -67,9 +67,9 @@ export interface WorkspacePaths {
 
 /**
  * File paths for a specific problem within the workspace
- * 
+ *
  * All paths are absolute and language-specific where applicable.
- * 
+ *
  * @example
  * ```ts
  * const problemPaths: ProblemWorkspacePaths = {
@@ -87,25 +87,25 @@ export interface ProblemWorkspacePaths {
    * Path: `<root>/problems/<slug>`
    */
   readonly dir: string;
-  
+
   /**
    * Path to the solution file (absolute path)
    * Path: `<dir>/solution.<ext>`
    */
   readonly solutionFile: string;
-  
+
   /**
    * Path to the test file (absolute path)
    * Path: `<dir>/solution_test.<ext>` (or language specific)
    */
   readonly testFile: string;
-  
+
   /**
    * Path to the problem README (absolute path)
    * Path: `<dir>/README.md`
    */
   readonly readmeFile: string;
-  
+
   /**
    * Path to the problem metadata/tracking file (hidden, absolute path)
    * Path: `<dir>/.problem.json`
@@ -115,14 +115,14 @@ export interface ProblemWorkspacePaths {
 
 /**
  * Configuration for workspace path resolution
- * 
+ *
  * @example
  * ```ts
  * const config: WorkspacePathConfig = {
  *   rootDir: '/home/user/workspace',
  *   language: 'typescript',
  * };
- * 
+ *
  * const paths = getProblemPaths(config, 'two-sum');
  * ```
  */
@@ -144,7 +144,7 @@ export const WORKSPACE_RULES = {
     templates: 'templates',
     config: 'config',
   },
-  
+
   /** File names */
   files: {
     readme: 'README.md',
