@@ -13,7 +13,7 @@ import {
   problemExists,
   type ProblemWorkspaceMetadata,
 } from '../../../src/core/workspace/generation.ts';
-import { getProblemPaths } from '../../../src/core/workspace/files.ts';
+import { getFileExtension, getProblemPaths } from '../../../src/core/workspace/files.ts';
 import type { Problem, SupportedLanguage } from '../../../src/types/global.ts';
 import { WorkspaceError } from '../../../src/utils/errors.ts';
 import { pathExists } from '../../../src/utils/fs.ts';
@@ -50,6 +50,14 @@ const mockProblem: Problem = {
   companies: ['Amazon', 'Google', 'Microsoft'],
   leetcodeUrl: 'https://leetcode.com/problems/two-sum/',
 };
+
+/**
+ * Check if a path contains mixed path separators (both / and \)
+ * This would indicate a path construction issue.
+ */
+function hasMixedSeparators(path: string): boolean {
+  return path.includes('/') && path.includes('\\');
+}
 
 /**
  * Create a temporary workspace directory for testing
@@ -556,11 +564,7 @@ Deno.test('generateProblemFiles - handles special characters in workspace path',
     assertEquals(await pathExists(paths.readmeFile), true);
     assertEquals(await pathExists(paths.metadataFile), true);
   } finally {
-    try {
-      await Deno.remove(tempBase, { recursive: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+    await cleanupTempWorkspace(tempBase);
   }
 });
 
@@ -590,10 +594,6 @@ Deno.test('generateProblemFiles - uses platform-specific path separators', async
     assertEquals(paths.readmeFile.startsWith(workspaceRoot), true);
 
     // Paths should not contain mixed separators
-    const hasMixedSeparators = (path: string) => {
-      return path.includes('/') && path.includes('\\');
-    };
-
     assertEquals(hasMixedSeparators(result.problemDir), false);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
@@ -604,21 +604,21 @@ Deno.test('generateProblemFiles - file extensions match language', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
-    const languageExtensions: Record<SupportedLanguage, string> = {
-      typescript: '.ts',
-      javascript: '.js',
-      python: '.py',
-      java: '.java',
-      cpp: '.cpp',
-      rust: '.rs',
-      go: '.go',
-    };
+    const languages: SupportedLanguage[] = [
+      'typescript',
+      'javascript',
+      'python',
+      'java',
+      'cpp',
+      'rust',
+      'go',
+    ];
 
-    for (const [language, expectedExt] of Object.entries(languageExtensions)) {
+    for (const language of languages) {
       const options: GenerateProblemFilesOptions = {
         problem: { ...mockProblem, slug: `test-${language}` },
         workspaceRoot,
-        language: language as SupportedLanguage,
+        language,
         templateStyle: 'minimal',
       };
 
@@ -626,11 +626,12 @@ Deno.test('generateProblemFiles - file extensions match language', async () => {
       assertEquals(result.success, true);
 
       const paths = getProblemPaths(
-        { rootDir: workspaceRoot, language: language as SupportedLanguage },
+        { rootDir: workspaceRoot, language },
         `test-${language}`,
       );
 
-      // Verify solution file has correct extension
+      // Verify solution file has correct extension using the same logic as the implementation
+      const expectedExt = getFileExtension(language);
       assertEquals(paths.solutionFile.endsWith(expectedExt), true);
     }
   } finally {
