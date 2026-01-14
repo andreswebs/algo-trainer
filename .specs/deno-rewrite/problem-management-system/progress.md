@@ -19,7 +19,7 @@ This document tracks the completion status of all tasks in the Problem Managemen
 | PMS-011 | Add language template packs (parallelizable)                         | ✅ Done |
 | PMS-012 | Template tests (renderer + fixtures)                                 | ✅ Done |
 | PMS-013 | Define workspace layout + path resolution rules                      | ✅ Done |
-| PMS-014 | Implement `WorkspaceManager` init + structure creation               | 📋 Todo |
+| PMS-014 | Implement `WorkspaceManager` init + structure creation               | ✅ Done |
 | PMS-015 | Implement workspace file generation (solution/test/README)           | 📋 Todo |
 | PMS-016 | Implement "complete/archive" file moves                              | 📋 Todo |
 | PMS-017 | Implement file watching + auto-refresh hooks                         | 📋 Todo |
@@ -29,9 +29,9 @@ This document tracks the completion status of all tasks in the Problem Managemen
 
 ## Summary
 
-- ✅ **Completed**: 14 tasks
-- 📋 **Remaining**: 6 tasks
-- **Progress**: 70% complete
+- ✅ **Completed**: 15 tasks
+- 📋 **Remaining**: 5 tasks
+- **Progress**: 75% complete
 
 ## Parallel Execution Lanes Status
 
@@ -43,9 +43,9 @@ This document tracks the completion status of all tasks in the Problem Managemen
 
 - ✅ PMS-009 → ✅ PMS-010 → ✅ PMS-011 → ✅ PMS-012
 
-### Lane C (Workspace): 1/6 completed
+### Lane C (Workspace): 2/6 completed
 
-- ✅ PMS-013 → 📋 PMS-014 → 📋 PMS-015 → 📋 PMS-016 → 📋 PMS-017 → 📋 PMS-019
+- ✅ PMS-013 → ✅ PMS-014 → 📋 PMS-015 → 📋 PMS-016 → 📋 PMS-017 → 📋 PMS-019
 
 ### Lane D (Data seeding): 1/1 completed
 
