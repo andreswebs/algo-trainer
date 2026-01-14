@@ -261,18 +261,18 @@ export async function archiveProblem(
           const slugWithTimestamp = `${slug}-${timestamp}`;
           const destinationWithTimestamp = getArchivedProblemPaths(config, slugWithTimestamp);
           const timestampedExists = await pathExists(destinationWithTimestamp.dir);
-          
+
           if (!timestampedExists) {
             finalDestination = destinationWithTimestamp.dir;
             collisionHandled = true;
             break;
           }
-          
+
           // Wait 1ms before trying again to ensure different timestamp
           await new Promise((resolve) => setTimeout(resolve, 1));
           attempts++;
         }
-        
+
         if (attempts >= maxAttempts) {
           throw new WorkspaceError(
             `Could not find unique timestamp suffix after ${maxAttempts} attempts`,
@@ -414,18 +414,18 @@ export async function unarchiveProblem(
           const slugWithTimestamp = `${baseSlug}-${timestamp}`;
           const destinationWithTimestamp = getProblemPaths(config, slugWithTimestamp);
           const timestampedExists = await pathExists(destinationWithTimestamp.dir);
-          
+
           if (!timestampedExists) {
             finalDestination = destinationWithTimestamp.dir;
             collisionHandled = true;
             break;
           }
-          
+
           // Wait 1ms before trying again to ensure different timestamp
           await new Promise((resolve) => setTimeout(resolve, 1));
           attempts++;
         }
-        
+
         if (attempts >= maxAttempts) {
           throw new WorkspaceError(
             `Could not find unique timestamp suffix after ${maxAttempts} attempts`,

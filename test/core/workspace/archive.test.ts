@@ -8,10 +8,10 @@ import { assertEquals, assertExists, assertRejects } from '@std/assert';
 import { join } from '@std/path';
 import {
   archiveProblem,
+  type ArchiveProblemOptions,
   isArchived,
   listArchivedProblems,
   unarchiveProblem,
-  type ArchiveProblemOptions,
   type UnarchiveProblemOptions,
 } from '../../../src/core/workspace/archive.ts';
 import { WorkspaceError } from '../../../src/utils/errors.ts';
