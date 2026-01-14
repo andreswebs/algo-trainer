@@ -52,6 +52,7 @@ const path = await resolveTemplatePath('typescript', 'minimal', 'solution');
 | `{{LEETCODE_URL}}` | LeetCode URL or "N/A" | "https://leetcode.com/..." |
 | `{{DATE}}` | Current date (YYYY-MM-DD) | "2025-01-14" |
 | `{{FUNCTION_NAME}}` | Camelized slug | "twoSum" |
+| `{{CLASS_NAME}}` | PascalCased class name derived from the problem slug/title | "TwoSum" |
 
 **Placeholder Replacement**:
 - Unknown placeholders throw `TemplateError` by default
