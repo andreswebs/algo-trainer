@@ -396,12 +396,12 @@ deno.json               # Deno configuration
 - ✅ Help system with basic usage information
 - ✅ Version command (`-v`, `--version`)
 - ✅ CLI types defined in `src/cli/types.ts`
+- ✅Extract command handlers to `src/cli/commands/` directory
 
 **Remaining Tasks:**
 
 1. **Command Implementations**
 
-   - Extract command handlers to `src/cli/commands/` directory
    - `at challenge` - Problem generation with enhanced UX
    - `at complete` - Mark problems as completed/active
    - `at config` - Configuration management (get/set/list/reset)
@@ -416,6 +416,7 @@ deno.json               # Deno configuration
    - Create progress indicators for long operations (using `ProgressIndicator`)
 
 3. **Shell Integration**
+
    - Generate shell completions (bash, zsh, fish)
    - Add environment variable support for all config options
    - Implement proper exit codes
