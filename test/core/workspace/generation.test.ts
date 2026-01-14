@@ -5,6 +5,7 @@
  */
 
 import { assertEquals, assertExists, assertRejects, assertStringIncludes } from '@std/assert';
+import { join } from '@std/path';
 import {
   generateProblemFiles,
   type GenerateProblemFilesOptions,
@@ -12,7 +13,7 @@ import {
   problemExists,
   type ProblemWorkspaceMetadata,
 } from '../../../src/core/workspace/generation.ts';
-import { getProblemPaths } from '../../../src/core/workspace/files.ts';
+import { getFileExtension, getProblemPaths } from '../../../src/core/workspace/files.ts';
 import type { Problem, SupportedLanguage } from '../../../src/types/global.ts';
 import { WorkspaceError } from '../../../src/utils/errors.ts';
 import { pathExists } from '../../../src/utils/fs.ts';
@@ -49,6 +50,14 @@ const mockProblem: Problem = {
   companies: ['Amazon', 'Google', 'Microsoft'],
   leetcodeUrl: 'https://leetcode.com/problems/two-sum/',
 };
+
+/**
+ * Check if a path contains mixed path separators (both / and \)
+ * This would indicate a path construction issue.
+ */
+function hasMixedSeparators(path: string): boolean {
+  return path.includes('/') && path.includes('\\');
+}
 
 /**
  * Create a temporary workspace directory for testing
@@ -466,8 +475,8 @@ Deno.test('generateProblemFiles - creates problem directory structure', async ()
     assertExists(problemDir);
     assertEquals(await pathExists(problemDir), true);
 
-    // Check it's under the problems subdirectory
-    assertStringIncludes(problemDir, '/problems/two-sum');
+    // Check it's under the problems subdirectory (use OS-independent path)
+    assertStringIncludes(problemDir, join('problems', 'two-sum'));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
@@ -520,6 +529,111 @@ Deno.test('generateProblemFiles - handles problem with minimal data', async () =
     assertEquals(solutionContent.length > 0, true);
     assertEquals(testContent.length > 0, true);
     assertEquals(readmeContent.length > 0, true);
+  } finally {
+    await cleanupTempWorkspace(workspaceRoot);
+  }
+});
+
+Deno.test('generateProblemFiles - handles special characters in workspace path', async () => {
+  // Create a workspace with spaces in the path
+  const tempBase = await Deno.makeTempDir({ prefix: 'algo-trainer test-' });
+  const workspaceRoot = join(tempBase, 'workspace with spaces');
+  await Deno.mkdir(workspaceRoot, { recursive: true });
+
+  try {
+    const options: GenerateProblemFilesOptions = {
+      problem: mockProblem,
+      workspaceRoot,
+      language: 'typescript',
+      templateStyle: 'minimal',
+    };
+
+    const result = await generateProblemFiles(options);
+
+    assertEquals(result.success, true);
+    assertEquals(result.filesCreated.length, 4);
+
+    // Verify files exist in the path with spaces
+    const paths = getProblemPaths(
+      { rootDir: workspaceRoot, language: 'typescript' },
+      'two-sum',
+    );
+
+    assertEquals(await pathExists(paths.solutionFile), true);
+    assertEquals(await pathExists(paths.testFile), true);
+    assertEquals(await pathExists(paths.readmeFile), true);
+    assertEquals(await pathExists(paths.metadataFile), true);
+  } finally {
+    await cleanupTempWorkspace(tempBase);
+  }
+});
+
+Deno.test('generateProblemFiles - uses platform-specific path separators', async () => {
+  const workspaceRoot = await createTempWorkspace();
+
+  try {
+    const options: GenerateProblemFilesOptions = {
+      problem: mockProblem,
+      workspaceRoot,
+      language: 'typescript',
+      templateStyle: 'minimal',
+    };
+
+    const result = await generateProblemFiles(options);
+
+    // Verify the returned path uses the correct separator for the platform
+    const paths = getProblemPaths(
+      { rootDir: workspaceRoot, language: 'typescript' },
+      'two-sum',
+    );
+
+    // All paths should be under the workspace root
+    assertEquals(paths.dir.startsWith(workspaceRoot), true);
+    assertEquals(paths.solutionFile.startsWith(workspaceRoot), true);
+    assertEquals(paths.testFile.startsWith(workspaceRoot), true);
+    assertEquals(paths.readmeFile.startsWith(workspaceRoot), true);
+
+    // Paths should not contain mixed separators
+    assertEquals(hasMixedSeparators(result.problemDir), false);
+  } finally {
+    await cleanupTempWorkspace(workspaceRoot);
+  }
+});
+
+Deno.test('generateProblemFiles - file extensions match language', async () => {
+  const workspaceRoot = await createTempWorkspace();
+
+  try {
+    const languages: SupportedLanguage[] = [
+      'typescript',
+      'javascript',
+      'python',
+      'java',
+      'cpp',
+      'rust',
+      'go',
+    ];
+
+    for (const language of languages) {
+      const options: GenerateProblemFilesOptions = {
+        problem: { ...mockProblem, slug: `test-${language}` },
+        workspaceRoot,
+        language,
+        templateStyle: 'minimal',
+      };
+
+      const result = await generateProblemFiles(options);
+      assertEquals(result.success, true);
+
+      const paths = getProblemPaths(
+        { rootDir: workspaceRoot, language },
+        `test-${language}`,
+      );
+
+      // Verify solution file has correct extension using the same logic as the implementation
+      const expectedExt = getFileExtension(language);
+      assertEquals(paths.solutionFile.endsWith(expectedExt), true);
+    }
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
