@@ -17,6 +17,7 @@ import {
   renderTemplate,
   replacePlaceholders,
   resolveTemplatePath,
+  slugToClassName,
   slugToFunctionName,
   type TemplateContext,
   type TemplateKind,
@@ -64,20 +65,6 @@ const mockTemplateConfig = {
   includeExample: false,
 };
 
-// Helper to create a temporary template file
-async function _createTempTemplate(
-  language: string,
-  style: string,
-  kind: string,
-  content: string,
-): Promise<string> {
-  const tempDir = await Deno.makeTempDir();
-  const templatePath = join(tempDir, language, style, `${kind}.tpl`);
-  await ensureDir(join(tempDir, language, style));
-  await Deno.writeTextFile(templatePath, content);
-  return tempDir;
-}
-
 Deno.test('slugToFunctionName - converts kebab-case to camelCase', () => {
   assertEquals(slugToFunctionName('two-sum'), 'twoSum');
   assertEquals(slugToFunctionName('longest-substring'), 'longestSubstring');
@@ -93,6 +80,31 @@ Deno.test('slugToFunctionName - handles numbers in slug', () => {
   assertEquals(slugToFunctionName('3sum'), 'threeSum');
   assertEquals(slugToFunctionName('4sum-ii'), 'fourSumIi');
   assertEquals(slugToFunctionName('number-1-problem'), 'numberOneProblem');
+});
+
+Deno.test('slugToClassName - converts kebab-case to PascalCase', () => {
+  assertEquals(slugToClassName('two-sum'), 'TwoSum');
+  assertEquals(slugToClassName('longest-substring'), 'LongestSubstring');
+  assertEquals(slugToClassName('reverse-linked-list'), 'ReverseLinkedList');
+});
+
+Deno.test('slugToClassName - handles single word', () => {
+  assertEquals(slugToClassName('reverse'), 'Reverse');
+  assertEquals(slugToClassName('palindrome'), 'Palindrome');
+});
+
+Deno.test('slugToClassName - handles numbers in slug', () => {
+  assertEquals(slugToClassName('3sum'), 'ThreeSum');
+  assertEquals(slugToClassName('4sum-ii'), 'FourSumIi');
+  assertEquals(slugToClassName('number-1-problem'), 'NumberOneProblem');
+});
+
+Deno.test('slugToClassName - handles complex edge cases', () => {
+  // Edge cases for class name generation
+  assertEquals(slugToClassName('a'), 'A');
+  assertEquals(slugToClassName('a-b-c-d-e'), 'ABCDE');
+  assertEquals(slugToClassName('123-test'), 'OneTwoThreeTest');
+  assertEquals(slugToClassName('test-123'), 'TestOneTwoThree');
 });
 
 Deno.test('formatExamples - formats single example correctly', () => {
@@ -257,41 +269,12 @@ Deno.test('resolveTemplatePath - throws error for non-existent template', async 
 });
 
 Deno.test('renderTemplate - renders template with problem data', async () => {
-  const _templateContent = `# {{PROBLEM_TITLE}}
-
-Difficulty: {{PROBLEM_DIFFICULTY}}
-Tags: {{TAGS}}
-
-{{PROBLEM_DESCRIPTION}}
-
-## Examples
-
-{{EXAMPLES}}
-
-## Constraints
-
-{{CONSTRAINTS}}
-
-## Function
-
-\`\`\`typescript
-function {{FUNCTION_NAME}}() {}
-\`\`\``;
-
   // This test requires actual template files in the correct location
   // We'll test the integration with real templates in the actual environment
   // For now, we verify the function signature and error handling
   const context: TemplateContext = {
     problem: mockProblem,
     config: mockTemplateConfig,
-  };
-
-  // Test with custom placeholders
-  const _contextWithCustom: TemplateContext = {
-    ...context,
-    customPlaceholders: {
-      CUSTOM_VALUE: 'test-value',
-    },
   };
 
   // This will fail if templates don't exist, which is expected in test environment
