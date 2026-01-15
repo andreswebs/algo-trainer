@@ -116,7 +116,10 @@ export function getExitCodeForError(error: unknown): ExitCodeValue {
         // Check if it's a permission error
         if (error instanceof Error) {
           const message = error.message.toLowerCase();
-          if (message.includes('permission') || message.includes('access denied') || message.includes('eacces')) {
+          if (
+            message.includes('permission') || message.includes('access denied') ||
+            message.includes('eacces')
+          ) {
             return ExitCode.PERMISSION_ERROR;
           }
         }

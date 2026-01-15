@@ -103,10 +103,10 @@ describe('progressCommand', () => {
   beforeEach(async () => {
     // Create temp directory
     tempDir = await Deno.makeTempDir({ prefix: 'progress_test_' });
-    
+
     // Initialize console capture
     capture = new ConsoleCapture();
-    
+
     // Load config first, then update workspace
     await configManager.load();
     await configManager.updateConfig({ workspace: tempDir });
@@ -115,7 +115,7 @@ describe('progressCommand', () => {
   afterEach(async () => {
     // Restore console
     capture.stop();
-    
+
     // Clean up temp directory
     try {
       await Deno.remove(tempDir, { recursive: true });
@@ -144,7 +144,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
     assertEquals(result.exitCode, ExitCode.SUCCESS);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'Progress Summary');
     assertStringIncludes(output, 'Problems Completed: 0');
@@ -160,7 +160,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'By Difficulty');
     assertStringIncludes(output, 'easy');
@@ -177,7 +177,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'By Category');
   });
@@ -191,7 +191,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'By Category');
     assertStringIncludes(output, 'By Difficulty');
@@ -206,7 +206,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     // Should be valid JSON
     const parsed = JSON.parse(output);
@@ -220,11 +220,11 @@ describe('progressCommand', () => {
   it('should count current problems when they exist', async () => {
     // Initialize workspace
     await initWorkspace(tempDir);
-    
+
     // Create a fake problem in current directory
     const problemDir = join(tempDir, 'problems', 'test-problem');
     await Deno.mkdir(problemDir, { recursive: true });
-    
+
     // Create .problem.json metadata
     const metadata = {
       id: 'test-1',
@@ -242,7 +242,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'Problems In Progress: 1');
   });
@@ -250,11 +250,11 @@ describe('progressCommand', () => {
   it('should count completed problems when they exist', async () => {
     // Initialize workspace
     await initWorkspace(tempDir);
-    
+
     // Create a fake problem in completed directory
     const problemDir = join(tempDir, 'completed', 'test-problem');
     await Deno.mkdir(problemDir, { recursive: true });
-    
+
     // Create .problem.json metadata
     const metadata = {
       id: 'test-1',
@@ -272,7 +272,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'Problems Completed: 1');
   });
@@ -280,31 +280,39 @@ describe('progressCommand', () => {
   it('should count both current and completed problems', async () => {
     // Initialize workspace
     await initWorkspace(tempDir);
-    
+
     // Create current problem
     const currentDir = join(tempDir, 'problems', 'current-problem');
     await Deno.mkdir(currentDir, { recursive: true });
     await Deno.writeTextFile(
       join(currentDir, '.problem.json'),
-      JSON.stringify({
-        id: 'test-1',
-        slug: 'current-problem',
-        difficulty: 'easy',
-        tags: ['array'],
-      }, null, 2),
+      JSON.stringify(
+        {
+          id: 'test-1',
+          slug: 'current-problem',
+          difficulty: 'easy',
+          tags: ['array'],
+        },
+        null,
+        2,
+      ),
     );
-    
+
     // Create completed problem
     const completedDir = join(tempDir, 'completed', 'completed-problem');
     await Deno.mkdir(completedDir, { recursive: true });
     await Deno.writeTextFile(
       join(completedDir, '.problem.json'),
-      JSON.stringify({
-        id: 'test-2',
-        slug: 'completed-problem',
-        difficulty: 'hard',
-        tags: ['dynamic-programming'],
-      }, null, 2),
+      JSON.stringify(
+        {
+          id: 'test-2',
+          slug: 'completed-problem',
+          difficulty: 'hard',
+          tags: ['dynamic-programming'],
+        },
+        null,
+        2,
+      ),
     );
 
     capture.start();
@@ -312,7 +320,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'Problems In Progress: 1');
     assertStringIncludes(output, 'Problems Completed: 1');
@@ -327,7 +335,7 @@ describe('progressCommand', () => {
     capture.stop();
 
     assertEquals(result.success, true);
-    
+
     const output = capture.getLog();
     assertStringIncludes(output, 'Overall Completion:');
     assertStringIncludes(output, '%');
