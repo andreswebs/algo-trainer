@@ -6,18 +6,18 @@
  */
 
 import {
+  type Config,
+  generateProblemFiles,
+  initWorkspace,
+  type Problem,
   // All APIs from a single import!
   ProblemManager,
-  initWorkspace,
-  generateProblemFiles,
-  type Problem,
-  type Config,
 } from '../src/core/mod.ts';
 
 /**
  * Example: Challenge command implementation
  */
-async function challengeCommand(
+async function _challengeCommand(
   config: Config,
   difficulty?: 'easy' | 'medium' | 'hard',
 ): Promise<Problem> {
@@ -51,7 +51,7 @@ async function challengeCommand(
 /**
  * Example: Init command implementation
  */
-async function initCommand(workspacePath: string): Promise<void> {
+async function _initCommand(workspacePath: string): Promise<void> {
   // Single import for workspace operations
   await initWorkspace(workspacePath);
   console.log(`✅ Workspace initialized at: ${workspacePath}`);
@@ -60,7 +60,7 @@ async function initCommand(workspacePath: string): Promise<void> {
 /**
  * Example: List command implementation
  */
-async function listCommand(tag?: string): Promise<Problem[]> {
+async function _listCommand(tag?: string): Promise<Problem[]> {
   const manager = new ProblemManager();
   await manager.init();
 

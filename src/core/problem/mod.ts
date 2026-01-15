@@ -67,4 +67,4 @@ export * from './escaping.ts';
 export * from './parser.ts';
 export * from './database.ts';
 export * from './manager.ts';
-export { renderTemplate, renderAllTemplates } from './templates.ts';
+export { renderAllTemplates, renderTemplate } from './templates.ts';

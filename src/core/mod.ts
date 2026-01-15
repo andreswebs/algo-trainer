@@ -177,12 +177,12 @@ export * from './workspace/mod.ts';
 
 // Re-export commonly needed types from global.ts for convenience
 export type {
+  Config,
+  Difficulty,
   Problem,
   ProblemQuery,
   ProblemQueryResult,
-  Difficulty,
   SupportedLanguage,
-  WorkspaceStructure,
-  Config,
   UserPreferences,
+  WorkspaceStructure,
 } from '../types/global.ts';
