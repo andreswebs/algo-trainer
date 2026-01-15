@@ -9,6 +9,7 @@
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import type { CommandHandler } from '../types.ts';
+import { ExitCode } from '../exit-codes.ts';
 import { challengeCommand } from './challenge.ts';
 import { completeCommand } from './complete.ts';
 import { hintCommand } from './hint.ts';
@@ -16,6 +17,7 @@ import { configCommand } from './config.ts';
 import { initCommand } from './init.ts';
 
 export type { CommandHandler } from '../types.ts';
+export { ExitCode } from '../exit-codes.ts';
 
 interface CommandEntry {
   handler: CommandHandler;
@@ -44,7 +46,7 @@ export async function dispatch(command: string, args: Args): Promise<CommandResu
     return {
       success: false,
       error: `Unknown command: ${command}. Available commands: ${availableNames}`,
-      exitCode: 1,
+      exitCode: ExitCode.USAGE_ERROR,
     };
   }
   return await entry.handler(args);

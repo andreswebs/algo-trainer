@@ -9,6 +9,7 @@
 import { parseArgs } from '@std/cli/parse-args';
 import { exitWithError, logError, setOutputOptions } from '../utils/output.ts';
 import { formatError } from '../utils/errors.ts';
+import { getExitCodeForError } from './exit-codes.ts';
 import { initializeConfig } from '../config/manager.ts';
 import { dispatch, getAvailableCommands } from './commands/mod.ts';
 import { extractGlobalFlags } from './types.ts';
@@ -63,6 +64,16 @@ EXAMPLES:
     at config set language ts   Set default language to TypeScript
     at init ~/my-practice       Initialize workspace
 
+EXIT CODES:
+    0    Success - Command completed successfully
+    1    General error - Unexpected error occurred
+    2    Usage error - Invalid arguments or usage
+    3    Config error - Configuration issues
+    4    Workspace error - Workspace not initialized or invalid
+    5    Problem error - Problem not found or invalid
+    6    Network error - Network or API issues
+    7    Permission error - File permission denied
+
 For more information about a specific command, run:
     at <command> --help
 `;
@@ -102,6 +113,7 @@ export async function main(inputArgs: string[] = Deno.args): Promise<void> {
   } catch (error) {
     const errorMessage = formatError(error);
     logError('Unexpected error occurred', errorMessage);
-    Deno.exit(1);
+    const exitCode = getExitCodeForError(error);
+    Deno.exit(exitCode);
   }
 }
