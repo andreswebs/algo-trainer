@@ -38,12 +38,12 @@ watcher.on('all', (event) => {
 });
 
 // React specifically to problem changes
-watcher.on('problem-changed', (event) => {
+watcher.on('problem-changed', (_event) => {
   console.log('🎯 Problem file changed! Time to reload problem data...');
 });
 
 // React specifically to template changes
-watcher.on('template-changed', (event) => {
+watcher.on('template-changed', (_event) => {
   console.log('📋 Template changed! Time to regenerate files...');
 });
 

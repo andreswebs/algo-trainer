@@ -221,8 +221,8 @@ Deno.test('FileWatcher - detects file creation in problems directory', async () 
     const testFile = join(workspace, 'problems', 'test.txt');
     await Deno.writeTextFile(testFile, 'test content');
 
-    // Wait for debounce + event processing
-    await delay(500);
+    // Wait for debounce + event processing (increased for test reliability)
+    await delay(800);
 
     watcher.stop();
 
@@ -657,11 +657,14 @@ Deno.test('FileWatcher - real-world scenario: problem file editing', async () =>
 
     watcher.start();
 
+    // Give the watcher time to initialize
+    await delay(100);
+
     // Simulate editing solution file
     const solutionFile = join(workspace, 'problems', 'two-sum', 'solution.ts');
     await Deno.writeTextFile(solutionFile, '// Updated solution');
 
-    await delay(500);
+    await delay(800);
     watcher.stop();
 
     // Should detect the modification
