@@ -24,6 +24,7 @@ import { ExitCode } from '../exit-codes.ts';
 import { logError, logInfo, logSuccess, logWarning } from '../../utils/output.ts';
 import { confirmAction, formatProblemSummary, requireProblemManager } from './shared.ts';
 import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
+import { promptDifficulty, promptLanguage } from '../prompts.ts';
 
 export interface ChallengeOptions {
   slug: string | undefined;
@@ -85,10 +86,22 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       // Get random problem with filters
       const query: ProblemQuery = {};
 
-      if (options.difficulty) {
-        const diffLower = options.difficulty.toLowerCase();
+      // Prompt for difficulty if not provided and interactive
+      let difficulty = options.difficulty;
+      if (!difficulty && !options.random) {
+        // Note: config.preferences doesn't have difficulty field, 
+        // so we default to undefined (will show all options)
+        const prompted = await promptDifficulty();
+        if (prompted) {
+          difficulty = prompted;
+          logInfo(`Selected difficulty: ${difficulty}`);
+        }
+      }
+
+      if (difficulty) {
+        const diffLower = difficulty.toLowerCase();
         if (!['easy', 'medium', 'hard'].includes(diffLower)) {
-          logError(`Invalid difficulty: ${options.difficulty}`);
+          logError(`Invalid difficulty: ${difficulty}`);
           logInfo('Valid difficulties: easy, medium, hard');
           return { success: false, exitCode: ExitCode.USAGE_ERROR };
         }
@@ -110,8 +123,21 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       }
     }
 
-    // Determine language (CLI arg > config > default)
-    const language = (options.language || config.language || 'typescript') as SupportedLanguage;
+    // Determine language (prompt if not provided)
+    let language: SupportedLanguage;
+    const configLanguage = options.language || config.language;
+    if (!configLanguage) {
+      const prompted = await promptLanguage('typescript');
+      if (prompted) {
+        language = prompted;
+        logInfo(`Selected language: ${language}`);
+      } else {
+        // Use default if prompt returns null (non-interactive)
+        language = 'typescript';
+      }
+    } else {
+      language = configLanguage as SupportedLanguage;
+    }
 
     // Validate language
     const validLanguages: SupportedLanguage[] = [
@@ -124,7 +150,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       'go',
     ];
     if (!validLanguages.includes(language)) {
-      logError(`Invalid language: ${language}`);
+      logError(`Invalid language: ${configLanguage}`);
       logInfo(`Valid languages: ${validLanguages.join(', ')}`);
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
