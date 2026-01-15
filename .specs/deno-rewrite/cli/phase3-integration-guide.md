@@ -22,18 +22,16 @@ This guide provides everything you need to integrate with the Problem Management
 ```typescript
 // Single import for all PMS functionality
 import {
-  // Problem Management
-  ProblemManager,
-  
+  archiveProblem,
+  generateProblemFiles,
+  getWorkspaceStructure,
   // Workspace Management
   initWorkspace,
-  getWorkspaceStructure,
-  generateProblemFiles,
   isWorkspaceInitialized,
-  archiveProblem,
-  
   // Types
   type Problem,
+  // Problem Management
+  ProblemManager,
   type ProblemQuery,
   type WorkspaceStructure,
 } from '../../core/mod.ts';
@@ -44,17 +42,17 @@ import {
 ```typescript
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
-import { ProblemManager, generateProblemFiles } from '../../core/mod.ts';
+import { generateProblemFiles, ProblemManager } from '../../core/mod.ts';
 
 export async function commandName(args: Args): Promise<CommandResult> {
   try {
     // 1. Initialize ProblemManager
     const manager = new ProblemManager();
     await manager.init();
-    
+
     // 2. Perform operations
     const problem = manager.getBySlug('two-sum');
-    
+
     // 3. Return success
     return { success: true, exitCode: 0 };
   } catch (error) {
@@ -69,7 +67,7 @@ export async function commandName(args: Args): Promise<CommandResult> {
 All PMS functionality is available through `src/core/mod.ts`. This single import point provides:
 
 - **Problem Management**: Full `ProblemManager` API
-- **Workspace Management**: Initialize, generate, archive operations  
+- **Workspace Management**: Initialize, generate, archive operations
 - **Type Definitions**: All necessary types from `types/global.ts`
 - **Comprehensive Documentation**: JSDoc with examples for every export
 
@@ -77,30 +75,28 @@ All PMS functionality is available through `src/core/mod.ts`. This single import
 
 ```typescript
 import {
-  // === PROBLEM MANAGEMENT ===
-  ProblemManager,                    // Main problem database manager
-  validateProblem,                   // Validate problem format
-  
+  type ArchiveOptions, // Archive operation options
+  archiveProblem, // Archive completed problem
+  type Difficulty, // Problem difficulty
+  type GenerateOptions, // File generation options
+  generateProblemFiles, // Generate problem files
+  getProblemMetadata, // Get problem metadata
+  getWorkspaceStructure, // Get workspace paths
   // === WORKSPACE MANAGEMENT ===
-  initWorkspace,                     // Initialize workspace directory
-  getWorkspaceStructure,             // Get workspace paths
-  isWorkspaceInitialized,            // Check if workspace exists
-  validateWorkspace,                 // Validate workspace structure
-  generateProblemFiles,              // Generate problem files
-  problemExists,                     // Check if problem exists
-  getProblemMetadata,                // Get problem metadata
-  archiveProblem,                    // Archive completed problem
-  unarchiveProblem,                  // Restore archived problem
-  
+  initWorkspace, // Initialize workspace directory
+  isWorkspaceInitialized, // Check if workspace exists
   // === TYPES ===
-  type Problem,                      // Core problem type
-  type ProblemQuery,                 // Query/filter interface
-  type SupportedLanguage,            // Available languages
-  type Difficulty,                   // Problem difficulty
-  type ProblemCategory,              // Problem categories
-  type WorkspaceStructure,           // Workspace directory paths
-  type GenerateOptions,              // File generation options
-  type ArchiveOptions,               // Archive operation options
+  type Problem, // Core problem type
+  type ProblemCategory, // Problem categories
+  problemExists, // Check if problem exists
+  // === PROBLEM MANAGEMENT ===
+  ProblemManager, // Main problem database manager
+  type ProblemQuery, // Query/filter interface
+  type SupportedLanguage, // Available languages
+  unarchiveProblem, // Restore archived problem
+  validateProblem, // Validate problem format
+  validateWorkspace, // Validate workspace structure
+  type WorkspaceStructure, // Workspace directory paths
 } from '../../core/mod.ts';
 ```
 
@@ -114,26 +110,26 @@ import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import {
-  ProblemManager,
-  initWorkspace,
   generateProblemFiles,
+  initWorkspace,
   isWorkspaceInitialized,
+  ProblemManager,
   type ProblemQuery,
 } from '../../core/mod.ts';
 
 export async function challengeCommand(args: Args): Promise<CommandResult> {
   try {
     const config = configManager.getConfig();
-    
+
     // Initialize workspace if needed
     if (!await isWorkspaceInitialized(config.workspace.root)) {
       await initWorkspace(config.workspace.root);
     }
-    
+
     // Initialize problem manager
     const manager = new ProblemManager();
     await manager.init();
-    
+
     // Get problem (by slug, ID, or random)
     let problem;
     if (args.slug) {
@@ -149,12 +145,12 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       };
       problem = manager.getRandom(query);
     }
-    
+
     if (!problem) {
       console.error('Problem not found');
       return { success: false, exitCode: 1 };
     }
-    
+
     // Generate problem files
     await generateProblemFiles({
       problem,
@@ -163,11 +159,11 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       templateStyle: config.preferences.templateStyle,
       overwrite: !!args.force,
     });
-    
+
     console.log(`Started challenge: ${problem.title}`);
     console.log(`Language: ${config.preferences.language}`);
     console.log(`Difficulty: ${problem.difficulty}`);
-    
+
     return { success: true, exitCode: 0 };
   } catch (error) {
     console.error(`Error starting challenge: ${error.message}`);
@@ -188,15 +184,15 @@ export async function listCommand(args: Args): Promise<CommandResult> {
   try {
     const manager = new ProblemManager();
     await manager.init();
-    
+
     // Build query from arguments
     const query: ProblemQuery = {};
-    
+
     if (args.difficulty) query.difficulty = args.difficulty as any;
     if (args.category) query.category = args.category as any;
     if (args.status) query.status = args.status as any;
     if (args.custom !== undefined) query.isCustom = !!args.custom;
-    
+
     // Search or list
     let problems;
     if (args.search) {
@@ -204,24 +200,26 @@ export async function listCommand(args: Args): Promise<CommandResult> {
     } else {
       problems = manager.list(query);
     }
-    
+
     // Display results
     if (problems.length === 0) {
       console.log('No problems found');
       return { success: true, exitCode: 0 };
     }
-    
+
     // Format output
     console.log(`Found ${problems.length} problems:\\n`);
     for (const problem of problems) {
-      console.log(`${problem.id.toString().padStart(4)} | ${problem.difficulty.padEnd(6)} | ${problem.title}`);
+      console.log(
+        `${problem.id.toString().padStart(4)} | ${problem.difficulty.padEnd(6)} | ${problem.title}`,
+      );
       if (args.verbose) {
         console.log(`      ${problem.description.substring(0, 80)}...`);
         console.log(`      Category: ${problem.category.join(', ')}`);
         console.log('');
       }
     }
-    
+
     return { success: true, exitCode: 0 };
   } catch (error) {
     console.error(`Error listing problems: ${error.message}`);
@@ -237,17 +235,13 @@ export async function listCommand(args: Args): Promise<CommandResult> {
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
-import {
-  initWorkspace,
-  isWorkspaceInitialized,
-  getWorkspaceStructure,
-} from '../../core/mod.ts';
+import { getWorkspaceStructure, initWorkspace, isWorkspaceInitialized } from '../../core/mod.ts';
 
 export async function initCommand(args: Args): Promise<CommandResult> {
   try {
     const config = configManager.getConfig();
     const workspaceRoot = (args.path as string) || config.workspace.root;
-    
+
     // Check if already initialized
     if (await isWorkspaceInitialized(workspaceRoot)) {
       if (!args.force) {
@@ -255,20 +249,20 @@ export async function initCommand(args: Args): Promise<CommandResult> {
         return { success: true, exitCode: 0 };
       }
     }
-    
+
     // Initialize workspace
     await initWorkspace(workspaceRoot);
-    
+
     // Get structure for display
     const structure = getWorkspaceStructure(workspaceRoot);
-    
+
     console.log(`Workspace initialized at: ${workspaceRoot}`);
     console.log('\\nDirectory structure:');
     console.log(`  ${structure.current}/     - Current challenges`);
     console.log(`  ${structure.completed}/   - Completed problems`);
     console.log(`  ${structure.templates}/   - Code templates`);
     console.log(`  ${structure.config}/      - Workspace config`);
-    
+
     return { success: true, exitCode: 0 };
   } catch (error) {
     console.error(`Error initializing workspace: ${error.message}`);
@@ -285,44 +279,44 @@ import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import {
-  ProblemManager,
   archiveProblem,
-  problemExists,
   getProblemMetadata,
+  problemExists,
+  ProblemManager,
 } from '../../core/mod.ts';
 
 export async function completeCommand(args: Args): Promise<CommandResult> {
   try {
     const config = configManager.getConfig();
     const problemSlug = args._[0] as string;
-    
+
     if (!problemSlug) {
       console.error('Problem slug is required');
       return { success: false, exitCode: 1 };
     }
-    
+
     // Check if problem exists in current workspace
     const exists = await problemExists(
       config.workspace.root,
       problemSlug,
       config.preferences.language,
     );
-    
+
     if (!exists) {
       console.error(`Problem '${problemSlug}' not found in current workspace`);
       return { success: false, exitCode: 1 };
     }
-    
+
     // Get problem metadata
     const manager = new ProblemManager();
     await manager.init();
     const problem = manager.getBySlug(problemSlug);
-    
+
     if (!problem) {
       console.error(`Problem '${problemSlug}' not found in database`);
       return { success: false, exitCode: 1 };
     }
-    
+
     // Archive the problem
     await archiveProblem({
       workspaceRoot: config.workspace.root,
@@ -330,10 +324,10 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
       language: config.preferences.language,
       includeMetadata: true,
     });
-    
+
     console.log(`Completed and archived: ${problem.title}`);
     console.log(`Files moved to: ${config.workspace.root}/completed/${problemSlug}`);
-    
+
     return { success: true, exitCode: 0 };
   } catch (error) {
     console.error(`Error completing problem: ${error.message}`);
@@ -354,13 +348,13 @@ export async function infoCommand(args: Args): Promise<CommandResult> {
   try {
     const manager = new ProblemManager();
     await manager.init();
-    
+
     const identifier = args._[0] as string;
     if (!identifier) {
       console.error('Problem ID or slug is required');
       return { success: false, exitCode: 1 };
     }
-    
+
     // Try to find problem by ID or slug
     let problem;
     if (/^\\d+$/.test(identifier)) {
@@ -368,26 +362,26 @@ export async function infoCommand(args: Args): Promise<CommandResult> {
     } else {
       problem = manager.getBySlug(identifier);
     }
-    
+
     if (!problem) {
       console.error(`Problem '${identifier}' not found`);
       return { success: false, exitCode: 1 };
     }
-    
+
     // Display problem information
     console.log(`\\n=== ${problem.title} ===`);
     console.log(`ID: ${problem.id}`);
     console.log(`Slug: ${problem.slug}`);
     console.log(`Difficulty: ${problem.difficulty}`);
     console.log(`Categories: ${problem.category.join(', ')}`);
-    
+
     if (problem.topics) {
       console.log(`Topics: ${problem.topics.join(', ')}`);
     }
-    
+
     console.log(`\\nDescription:`);
     console.log(problem.description);
-    
+
     if (problem.examples && problem.examples.length > 0) {
       console.log('\\nExamples:');
       problem.examples.forEach((example, i) => {
@@ -399,14 +393,14 @@ export async function infoCommand(args: Args): Promise<CommandResult> {
         }
       });
     }
-    
+
     if (problem.constraints && problem.constraints.length > 0) {
       console.log('\\nConstraints:');
-      problem.constraints.forEach(constraint => {
+      problem.constraints.forEach((constraint) => {
         console.log(`- ${constraint}`);
       });
     }
-    
+
     return { success: true, exitCode: 0 };
   } catch (error) {
     console.error(`Error getting problem info: ${error.message}`);
@@ -422,11 +416,7 @@ export async function infoCommand(args: Args): Promise<CommandResult> {
 The PMS provides specific error types that you can catch and handle appropriately:
 
 ```typescript
-import { 
-  ProblemError,
-  WorkspaceError,
-  ValidationError,
-} from '../../utils/errors.ts';
+import { ProblemError, ValidationError, WorkspaceError } from '../../utils/errors.ts';
 
 try {
   // PMS operations
@@ -486,15 +476,15 @@ import { configManager } from '../../config/manager.ts';
 
 export async function someCommand(args: Args): Promise<CommandResult> {
   const config = configManager.getConfig();
-  
+
   // Use configuration values
   const workspaceRoot = config.workspace.root;
   const language = config.preferences.language;
   const templateStyle = config.preferences.templateStyle;
-  
+
   // Allow CLI args to override config
   const finalLanguage = (args.language as any) || language;
-  
+
   // ... rest of command
 }
 ```
@@ -506,14 +496,14 @@ Available configuration properties:
 ```typescript
 interface Config {
   preferences: {
-    language: SupportedLanguage;      // Default language
+    language: SupportedLanguage; // Default language
     templateStyle: 'minimal' | 'documented' | 'complete';
-    difficulty: Difficulty[];         // Preferred difficulties
-    autoArchive: boolean;            // Auto-archive on completion
-    showHints: boolean;              // Show hints by default
+    difficulty: Difficulty[]; // Preferred difficulties
+    autoArchive: boolean; // Auto-archive on completion
+    showHints: boolean; // Show hints by default
   };
   workspace: {
-    root: string;                    // Workspace directory
+    root: string; // Workspace directory
     organization: 'flat' | 'nested'; // File organization
   };
   ai: {
@@ -623,31 +613,31 @@ const workspaceRoot = (args.workspace as string) || config.workspace.root;
 ```typescript
 class ProblemManager {
   // Initialize the manager (loads problem database)
-  async init(): Promise<void>
-  
+  async init(): Promise<void>;
+
   // Get problem by ID
-  getById(id: number): Problem | undefined
-  
+  getById(id: number): Problem | undefined;
+
   // Get problem by slug
-  getBySlug(slug: string): Problem | undefined
-  
+  getBySlug(slug: string): Problem | undefined;
+
   // List problems with optional filtering
-  list(query?: ProblemQuery): Problem[]
-  
+  list(query?: ProblemQuery): Problem[];
+
   // Search problems by text
-  search(searchText: string, query?: ProblemQuery): Problem[]
-  
+  search(searchText: string, query?: ProblemQuery): Problem[];
+
   // Get random problem
-  getRandom(query?: ProblemQuery): Problem | undefined
-  
+  getRandom(query?: ProblemQuery): Problem | undefined;
+
   // Add custom problem
-  async add(problem: Problem): Promise<void>
-  
+  async add(problem: Problem): Promise<void>;
+
   // Update existing problem
-  async update(id: number, patch: Partial<Problem>): Promise<void>
-  
+  async update(id: number, patch: Partial<Problem>): Promise<void>;
+
   // Remove problem
-  async remove(id: number): Promise<void>
+  async remove(id: number): Promise<void>;
 }
 ```
 
@@ -655,31 +645,31 @@ class ProblemManager {
 
 ```typescript
 // Initialize workspace directory structure
-function initWorkspace(workspaceRoot: string): Promise<void>
+function initWorkspace(workspaceRoot: string): Promise<void>;
 
 // Get workspace directory paths
-function getWorkspaceStructure(workspaceRoot: string): WorkspaceStructure
+function getWorkspaceStructure(workspaceRoot: string): WorkspaceStructure;
 
 // Check if workspace is initialized
-function isWorkspaceInitialized(workspaceRoot: string): Promise<boolean>
+function isWorkspaceInitialized(workspaceRoot: string): Promise<boolean>;
 
 // Validate workspace structure
-function validateWorkspace(workspaceRoot: string): Promise<boolean>
+function validateWorkspace(workspaceRoot: string): Promise<boolean>;
 
 // Generate problem files
-function generateProblemFiles(options: GenerateOptions): Promise<void>
+function generateProblemFiles(options: GenerateOptions): Promise<void>;
 
 // Check if problem files exist
-function problemExists(workspaceRoot: string, slug: string, language: string): Promise<boolean>
+function problemExists(workspaceRoot: string, slug: string, language: string): Promise<boolean>;
 
 // Get problem metadata
-function getProblemMetadata(workspaceRoot: string, slug: string, language: string): Promise<any>
+function getProblemMetadata(workspaceRoot: string, slug: string, language: string): Promise<any>;
 
 // Archive completed problem
-function archiveProblem(options: ArchiveOptions): Promise<void>
+function archiveProblem(options: ArchiveOptions): Promise<void>;
 
 // Restore archived problem
-function unarchiveProblem(options: ArchiveOptions): Promise<void>
+function unarchiveProblem(options: ArchiveOptions): Promise<void>;
 ```
 
 ### Type Interfaces
@@ -728,38 +718,38 @@ Create test files in `test/commands/`:
 ```typescript
 // test/commands/challenge.test.ts
 import { assertEquals, assertRejects } from '@std/assert';
-import { describe, it, beforeEach, afterEach } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { challengeCommand } from '../../src/cli/commands/challenge.ts';
 
 describe('challengeCommand', () => {
   let tempDir: string;
-  
+
   beforeEach(async () => {
     tempDir = await Deno.makeTempDir();
   });
-  
+
   afterEach(async () => {
     await Deno.remove(tempDir, { recursive: true });
   });
-  
+
   it('should start a challenge by slug', async () => {
     const result = await challengeCommand({
       slug: 'two-sum',
       workspace: tempDir,
       _: [],
     });
-    
+
     assertEquals(result.success, true);
     assertEquals(result.exitCode, 0);
   });
-  
+
   it('should handle unknown problem slug', async () => {
     const result = await challengeCommand({
       slug: 'unknown-problem',
       workspace: tempDir,
       _: [],
     });
-    
+
     assertEquals(result.success, false);
     assertEquals(result.exitCode, 1);
   });
@@ -781,7 +771,7 @@ import { completeCommand } from '../../src/cli/commands/complete.ts';
 describe('Complete Workflow', () => {
   it('should support init -> challenge -> complete workflow', async () => {
     const tempDir = await Deno.makeTempDir();
-    
+
     try {
       // 1. Initialize workspace
       const initResult = await initCommand({
@@ -789,7 +779,7 @@ describe('Complete Workflow', () => {
         _: [],
       });
       assertEquals(initResult.success, true);
-      
+
       // 2. Start challenge
       const challengeResult = await challengeCommand({
         slug: 'two-sum',
@@ -797,14 +787,13 @@ describe('Complete Workflow', () => {
         _: [],
       });
       assertEquals(challengeResult.success, true);
-      
+
       // 3. Complete challenge
       const completeResult = await completeCommand({
         _: ['two-sum'],
         workspace: tempDir,
       });
       assertEquals(completeResult.success, true);
-      
     } finally {
       await Deno.remove(tempDir, { recursive: true });
     }
@@ -823,15 +812,15 @@ export class MockProblemManager {
     ['two-sum', { id: 1, slug: 'two-sum', title: 'Two Sum' }],
     ['add-two-numbers', { id: 2, slug: 'add-two-numbers', title: 'Add Two Numbers' }],
   ]);
-  
+
   async init() {
     // Mock initialization
   }
-  
+
   getBySlug(slug: string) {
     return this.problems.get(slug);
   }
-  
+
   list(query?: any) {
     return Array.from(this.problems.values());
   }

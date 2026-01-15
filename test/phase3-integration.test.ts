@@ -9,35 +9,30 @@ import { assertEquals, assertExists } from '@std/assert';
 
 // Test that all key APIs are available from the single import point
 import {
-  // Problem Management
-  ProblemManager,
-  ProblemDatabase,
-
-  // Workspace Management
-  initWorkspace,
-  getWorkspaceStructure,
-  isWorkspaceInitialized,
-  validateWorkspace,
-
-  // File Generation
-  generateProblemFiles,
-  problemExists,
-  getProblemMetadata,
-
   // Archive Operations
   archiveProblem,
-
-  // Template Rendering (less commonly needed, but available)
-  renderTemplate,
-  renderAllTemplates,
-
+  type Difficulty as _Difficulty,
+  // File Generation
+  generateProblemFiles,
+  type GenerateProblemFilesOptions as _GenerateProblemFilesOptions,
+  getProblemMetadata,
+  getWorkspaceStructure,
+  // Workspace Management
+  initWorkspace,
+  isWorkspaceInitialized,
   // Types (imported to verify they're exported, hence the underscore prefix)
   type Problem as _Problem,
+  ProblemDatabase,
+  problemExists,
+  // Problem Management
+  ProblemManager,
   type ProblemQuery as _ProblemQuery,
-  type WorkspaceStructure as _WorkspaceStructure,
-  type GenerateProblemFilesOptions as _GenerateProblemFilesOptions,
+  renderAllTemplates,
+  // Template Rendering (less commonly needed, but available)
+  renderTemplate,
   type SupportedLanguage,
-  type Difficulty as _Difficulty,
+  validateWorkspace,
+  type WorkspaceStructure as _WorkspaceStructure,
 } from '../src/core/mod.ts';
 
 Deno.test('PMS-020: Core module exports all required APIs', () => {
