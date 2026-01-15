@@ -720,9 +720,9 @@ Testing can run in parallel with implementation:
 
 ### Core Commands
 
-- [ ] CLI-010: init command
-- [ ] CLI-011: config command
-- [ ] CLI-012: list command
+- [x] CLI-010: init command
+- [x] CLI-011: config command
+- [x] CLI-012: list command
 
 ### Problem Commands
 
