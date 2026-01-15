@@ -21,8 +21,9 @@ This means environment variables will always override values from the configurat
 ### Workspace Configuration
 
 #### `AT_WORKSPACE`
-**Type:** String (path)  
-**Default:** `''` (empty string)  
+
+**Type:** String (path)\
+**Default:** `''` (empty string)\
 **Description:** Specifies the workspace directory path where problems and solutions are stored.
 
 ```bash
@@ -31,8 +32,9 @@ at init
 ```
 
 #### `AT_CONFIG_PATH`
-**Type:** String (path)  
-**Default:** System default config path  
+
+**Type:** String (path)\
+**Default:** System default config path\
 **Description:** Specifies a custom location for the configuration file.
 
 ```bash
@@ -43,9 +45,10 @@ at config list
 ### Language Settings
 
 #### `AT_LANGUAGE`
-**Type:** String  
-**Valid values:** `typescript`, `javascript`, `python`, `java`, `cpp`, `rust`, `go`  
-**Default:** `typescript`  
+
+**Type:** String\
+**Valid values:** `typescript`, `javascript`, `python`, `java`, `cpp`, `rust`, `go`\
+**Default:** `typescript`\
 **Description:** Sets the default programming language for problem solutions.
 
 ```bash
@@ -56,9 +59,10 @@ at challenge easy
 ### Template Settings
 
 #### `AT_TEMPLATE_STYLE`
-**Type:** String  
-**Valid values:** `minimal`, `documented`, `comprehensive`  
-**Default:** `documented`  
+
+**Type:** String\
+**Valid values:** `minimal`, `documented`, `comprehensive`\
+**Default:** `documented`\
 **Description:** Specifies the code template style for generated files.
 
 ```bash

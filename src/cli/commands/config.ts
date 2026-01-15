@@ -164,9 +164,10 @@ function configList(json: boolean): CommandResult {
       console.error('  language:            ' + config.language);
       console.error('  workspace:           ' + (config.workspace || '(not set)'));
       console.error('  aiEnabled:           ' + config.aiEnabled);
-      console.error('  companies:           ' + (config.companies.length > 0
-        ? config.companies.join(', ')
-        : '(none)'));
+      console.error(
+        '  companies:           ' +
+          (config.companies.length > 0 ? config.companies.join(', ') : '(none)'),
+      );
       console.error('');
 
       // Preferences
@@ -185,7 +186,10 @@ function configList(json: boolean): CommandResult {
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError('Failed to list configuration', error instanceof Error ? error.message : String(error));
+    logError(
+      'Failed to list configuration',
+      error instanceof Error ? error.message : String(error),
+    );
     return { success: false, exitCode: ExitCode.CONFIG_ERROR };
   }
 }
@@ -210,15 +214,16 @@ function configGet(key: string, json: boolean): CommandResult {
       outputData({ [key]: value });
     } else {
       // Human-readable format
-      const displayValue = Array.isArray(value)
-        ? value.join(', ')
-        : String(value);
+      const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
       console.log(`${key} = ${displayValue}`);
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError('Failed to get configuration value', error instanceof Error ? error.message : String(error));
+    logError(
+      'Failed to get configuration value',
+      error instanceof Error ? error.message : String(error),
+    );
     return { success: false, exitCode: ExitCode.CONFIG_ERROR };
   }
 }
@@ -244,7 +249,10 @@ async function configSet(key: string, value: string): Promise<CommandResult> {
     logSuccess(`Set ${key} = ${value}`);
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError('Failed to set configuration value', error instanceof Error ? error.message : String(error));
+    logError(
+      'Failed to set configuration value',
+      error instanceof Error ? error.message : String(error),
+    );
     return { success: false, exitCode: ExitCode.CONFIG_ERROR };
   }
 }
@@ -274,7 +282,10 @@ async function configReset(key?: string): Promise<CommandResult> {
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError('Failed to reset configuration', error instanceof Error ? error.message : String(error));
+    logError(
+      'Failed to reset configuration',
+      error instanceof Error ? error.message : String(error),
+    );
     return { success: false, exitCode: ExitCode.CONFIG_ERROR };
   }
 }
