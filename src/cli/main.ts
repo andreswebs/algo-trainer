@@ -12,6 +12,7 @@ import { formatError } from '../utils/errors.ts';
 import { initializeConfig } from '../config/manager.ts';
 import { dispatch, getAvailableCommands } from './commands/mod.ts';
 import { extractGlobalFlags } from './types.ts';
+import { getEnvVarDocumentation } from './env.ts';
 import { VERSION } from '../version.ts';
 
 const PARSE_OPTIONS = {
@@ -55,6 +56,8 @@ GLOBAL OPTIONS:
     --no-color        Disable colored output
     --no-emoji        Disable emoji in output
     -c, --config      Specify custom config file path
+
+${getEnvVarDocumentation()}
 
 EXAMPLES:
     at challenge easy           Start an easy challenge

@@ -13,6 +13,7 @@ import { ConfigError, createErrorContext } from '../utils/errors.ts';
 import { logInfo } from '../utils/output.ts';
 import { getConfigFilePaths, getConfigPaths } from './paths.ts';
 import { DEFAULT_CONFIG } from './types.ts';
+import { getEnvConfigPath, loadEnvConfig } from '../cli/env.ts';
 import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
 
 /**
@@ -23,15 +24,24 @@ export class ConfigManager {
   private configPath: string;
 
   constructor() {
-    this.configPath = getConfigFilePaths().main;
+    // Allow environment variable to override config path
+    this.configPath = getEnvConfigPath() ?? getConfigFilePaths().main;
   }
 
   /**
    * Load configuration from file
+   *
+   * Configuration is loaded with the following precedence (highest to lowest):
+   * 1. Environment variables (AT_*)
+   * 2. Configuration file
+   * 3. Default values
    */
   async load(): Promise<Config> {
     try {
-      // Check if config file exists
+      // Start with defaults
+      let mergedConfig: Config = { ...DEFAULT_CONFIG };
+
+      // Check if config file exists and merge
       if (await pathExists(this.configPath)) {
         const configData = await readJsonFile<Config>(this.configPath);
 
@@ -44,15 +54,37 @@ export class ConfigManager {
           );
         }
 
-        // Merge with defaults to handle missing fields
-        this.config = { ...DEFAULT_CONFIG, ...configData };
-        return this.config;
+        // Merge file config with defaults (file config takes precedence)
+        mergedConfig = {
+          ...mergedConfig,
+          ...configData,
+          preferences: {
+            ...mergedConfig.preferences,
+            ...configData.preferences,
+          },
+        };
+      } else {
+        // Create default config file
+        logInfo('No configuration found, creating default configuration');
+        // Set config before saving
+        this.config = mergedConfig;
+        await this.save();
       }
 
-      // Create default config
-      logInfo('No configuration found, creating default configuration');
-      this.config = { ...DEFAULT_CONFIG };
-      await this.save();
+      // Load environment variables and merge (env takes highest precedence)
+      const envConfig = loadEnvConfig();
+      if (Object.keys(envConfig).length > 0) {
+        mergedConfig = {
+          ...mergedConfig,
+          ...envConfig,
+          preferences: {
+            ...mergedConfig.preferences,
+            ...(envConfig.preferences || {}),
+          },
+        };
+      }
+
+      this.config = mergedConfig;
       return this.config;
     } catch (error) {
       if (error instanceof ConfigError) {

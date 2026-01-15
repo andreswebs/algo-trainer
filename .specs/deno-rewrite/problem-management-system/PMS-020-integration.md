@@ -16,22 +16,21 @@ Created a unified module that re-exports all PMS APIs:
 
 ```typescript
 import {
-  // Problem Management
-  ProblemManager,
-  
-  // Workspace Management  
-  initWorkspace,
-  getWorkspaceStructure,
   generateProblemFiles,
-  
+  getWorkspaceStructure,
+  // Workspace Management
+  initWorkspace,
   // Types
   type Problem,
+  // Problem Management
+  ProblemManager,
   type ProblemQuery,
   type WorkspaceStructure,
 } from './core/mod.ts';
 ```
 
 **Benefits:**
+
 - Single import point for all PMS functionality
 - No need to know internal module structure
 - Re-exports common types from `types/global.ts`
@@ -40,12 +39,14 @@ import {
 ### 2. Enhanced Module Documentation
 
 #### `src/core/problem/mod.ts`
+
 - Added comprehensive usage examples
 - Documented ProblemManager API
 - Explained template rendering system
 - Listed all key exports
 
 #### `src/core/workspace/mod.ts`
+
 - Added Phase 3 quick start guide
 - Documented workspace initialization
 - Explained file generation patterns
@@ -59,7 +60,7 @@ import {
 300+ line guide covering:
 
 - **Quick Reference**: Single import point examples
-- **Common Command Patterns**: 
+- **Common Command Patterns**:
   - Challenge command (start new problem)
   - List command (search/filter problems)
   - Init command (initialize workspace)
@@ -89,8 +90,9 @@ Six comprehensive tests verifying:
 **File**: `examples/phase3-usage-example.ts`
 
 Working example showing:
+
 - Challenge command implementation
-- Init command implementation  
+- Init command implementation
 - List command implementation
 - Clean import patterns
 - Proper error handling
@@ -100,11 +102,7 @@ Working example showing:
 ### Basic Pattern
 
 ```typescript
-import {
-  ProblemManager,
-  initWorkspace,
-  generateProblemFiles,
-} from './core/mod.ts';
+import { generateProblemFiles, initWorkspace, ProblemManager } from './core/mod.ts';
 
 // 1. Initialize manager
 const manager = new ProblemManager();
@@ -128,6 +126,7 @@ await generateProblemFiles({
 ### Available APIs
 
 **Problem Management** (`ProblemManager`):
+
 - `getById(id)` - Get problem by ID
 - `getBySlug(slug)` - Get problem by slug
 - `list(query)` - Search/filter problems
@@ -138,17 +137,20 @@ await generateProblemFiles({
 - `remove(id)` - Remove problem
 
 **Workspace Management**:
+
 - `initWorkspace(root)` - Initialize workspace
 - `getWorkspaceStructure(root)` - Get workspace paths
 - `isWorkspaceInitialized(root)` - Check if initialized
 - `validateWorkspace(root)` - Validate workspace
 
 **File Generation**:
+
 - `generateProblemFiles(options)` - Generate all files
 - `problemExists(root, slug, lang)` - Check if exists
 - `getProblemMetadata(root, slug, lang)` - Get metadata
 
 **Archive Operations**:
+
 - `archiveProblem(options)` - Archive completed problem
 - `unarchiveProblem(options)` - Restore archived problem
 
@@ -178,6 +180,7 @@ All 288 tests pass, including 6 new integration tests:
 ## Dependencies
 
 This task depends on:
+
 - ✅ PMS-006: ProblemManager read API
 - ✅ PMS-014: WorkspaceManager init + structure
 - ✅ PMS-015: Workspace file generation

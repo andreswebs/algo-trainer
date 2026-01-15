@@ -2,7 +2,7 @@
 
 /**
  * Example demonstration of archive operations
- * 
+ *
  * This script demonstrates how to use the archive and unarchive functions
  * to move problems between active and completed directories.
  */
