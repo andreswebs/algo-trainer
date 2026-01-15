@@ -101,6 +101,8 @@ export interface ProblemWorkspaceMetadata {
   templateStyle: UserPreferences['templateStyle'];
   /** When last modified (initially same as generatedAt) */
   lastModified: string; // ISO-8601
+  /** Hint levels that have been viewed (0-indexed) */
+  hintsUsed?: number[];
 }
 
 /**
@@ -370,5 +372,67 @@ export async function getProblemMetadata(
   } catch (_error) {
     // If there's an error reading/parsing, return null
     return null;
+  }
+}
+
+/**
+ * Update metadata for a problem in the workspace
+ *
+ * Updates the .problem.json metadata file with new values.
+ * This is useful for tracking hint usage and other progress indicators.
+ *
+ * @param workspaceRoot - Workspace root directory
+ * @param slug - Problem slug
+ * @param language - Programming language
+ * @param updates - Partial metadata updates to apply
+ * @returns True if update succeeded, false otherwise
+ *
+ * @example
+ * ```ts
+ * const success = await updateProblemMetadata(
+ *   '/workspace',
+ *   'two-sum',
+ *   'typescript',
+ *   { hintsUsed: [0, 1] }
+ * );
+ * ```
+ */
+export async function updateProblemMetadata(
+  workspaceRoot: string,
+  slug: string,
+  language: SupportedLanguage,
+  updates: Partial<ProblemWorkspaceMetadata>,
+): Promise<boolean> {
+  try {
+    const config: WorkspacePathConfig = {
+      rootDir: workspaceRoot,
+      language,
+    };
+    const paths = getProblemPaths(config, slug);
+
+    // Read current metadata
+    const currentMetadata = await getProblemMetadata(workspaceRoot, slug, language);
+    if (!currentMetadata) {
+      return false;
+    }
+
+    // Merge updates with current metadata
+    const updatedMetadata: ProblemWorkspaceMetadata = {
+      ...currentMetadata,
+      ...updates,
+      lastModified: new Date().toISOString(),
+    };
+
+    // Write updated metadata
+    await writeTextFile(
+      paths.metadataFile,
+      JSON.stringify(updatedMetadata, null, 2),
+      { overwrite: true },
+    );
+
+    return true;
+  } catch (_error) {
+    // If there's an error updating, return false
+    return false;
   }
 }
