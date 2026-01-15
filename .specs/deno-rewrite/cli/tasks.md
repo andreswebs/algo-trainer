@@ -726,9 +726,9 @@ Testing can run in parallel with implementation:
 
 ### Problem Commands
 
-- [ ] CLI-020: challenge command
-- [ ] CLI-021: hint command
-- [ ] CLI-022: progress command
+- [x] CLI-020: challenge command
+- [x] CLI-021: hint command
+- [x] CLI-022: progress command
 
 ### Completion & UX
 
