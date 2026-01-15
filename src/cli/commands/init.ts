@@ -8,6 +8,7 @@
 
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
+import { ExitCode } from '../exit-codes.ts';
 import { logSuccess } from '../../utils/output.ts';
 
 export interface InitOptions {
@@ -29,6 +30,6 @@ export function initCommand(args: Args): Promise<CommandResult> {
 
   return Promise.resolve({
     success: true,
-    exitCode: 0,
+    exitCode: ExitCode.SUCCESS,
   });
 }
