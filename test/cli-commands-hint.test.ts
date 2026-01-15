@@ -84,10 +84,10 @@ describe('hintCommand', () => {
   beforeEach(async () => {
     // Load config first
     await configManager.load();
-    
+
     // Create a temporary workspace
     tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-test-' });
-    
+
     // Save original config
     const config = configManager.getConfig();
     originalWorkspace = config.workspace;
@@ -195,10 +195,10 @@ describe('hintCommand with workspace tracking', () => {
   beforeEach(async () => {
     // Load config first
     await configManager.load();
-    
+
     // Create a temporary workspace
     tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-workspace-test-' });
-    
+
     // Save original config
     const config = configManager.getConfig();
     originalWorkspace = config.workspace;
@@ -232,11 +232,11 @@ describe('hintCommand with workspace tracking', () => {
   it('should track hint usage in metadata when problem exists', async () => {
     const config = configManager.getConfig();
     const problemSlug = 'two-sum';
-    
+
     // Create problem directory and metadata file
     const problemDir = join(tempDir, 'problems', problemSlug);
     await ensureDir(problemDir);
-    
+
     const metadataPath = join(problemDir, '.problem.json');
     const metadata = {
       problemId: '1',
@@ -284,11 +284,11 @@ describe('hintCommand with workspace tracking', () => {
   it('should handle progressive hint display', async () => {
     const config = configManager.getConfig();
     const problemSlug = 'two-sum';
-    
+
     // Create problem directory and metadata file with some hints already used
     const problemDir = join(tempDir, 'problems', problemSlug);
     await ensureDir(problemDir);
-    
+
     const metadataPath = join(problemDir, '.problem.json');
     const metadata = {
       problemId: '1',
