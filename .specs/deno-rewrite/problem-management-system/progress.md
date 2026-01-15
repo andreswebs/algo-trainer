@@ -21,17 +21,17 @@ This document tracks the completion status of all tasks in the Problem Managemen
 | PMS-013 | Define workspace layout + path resolution rules                      | ✅ Done |
 | PMS-014 | Implement `WorkspaceManager` init + structure creation               | ✅ Done |
 | PMS-015 | Implement workspace file generation (solution/test/README)           | ✅ Done |
-| PMS-016 | Implement "complete/archive" file moves                              | 📋 Todo |
-| PMS-017 | Implement file watching + auto-refresh hooks                         | 📋 Todo |
+| PMS-016 | Implement "complete/archive" file moves                              | ✅ Done |
+| PMS-017 | Implement file watching + auto-refresh hooks                         | ✅ Done |
 | PMS-018 | Problem parser/database tests                                        | ✅ Done |
 | PMS-019 | Workspace generation tests                                           | ✅ Done |
 | PMS-020 | Integration glue (minimal) for Phase 3                               | ✅ Done |
 
 ## Summary
 
-- ✅ **Completed**: 18 tasks
-- 📋 **Remaining**: 2 tasks
-- **Progress**: 90% complete
+- ✅ **Completed**: 20 tasks
+- 📋 **Remaining**: 0 tasks
+- **Progress**: 100% complete
 
 ## Parallel Execution Lanes Status
 
@@ -43,9 +43,9 @@ This document tracks the completion status of all tasks in the Problem Managemen
 
 - ✅ PMS-009 → ✅ PMS-010 → ✅ PMS-011 → ✅ PMS-012
 
-### Lane C (Workspace): 4/6 completed
+### Lane C (Workspace): 6/6 completed ✅
 
-- ✅ PMS-013 → ✅ PMS-014 → ✅ PMS-015 → 📋 PMS-016 → 📋 PMS-017 → ✅ PMS-019
+- ✅ PMS-013 → ✅ PMS-014 → ✅ PMS-015 → ✅ PMS-016 → ✅ PMS-017 → ✅ PMS-019
 
 ### Lane D (Data seeding): 1/1 completed
 
