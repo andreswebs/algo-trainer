@@ -16,6 +16,7 @@ import { hintCommand } from './hint.ts';
 import { configCommand } from './config.ts';
 import { initCommand } from './init.ts';
 import { listCommand } from './list.ts';
+import { progressCommand } from './progress.ts';
 
 export type { CommandHandler } from '../types.ts';
 export { ExitCode } from '../exit-codes.ts';
@@ -32,6 +33,7 @@ const commands: Record<string, CommandEntry> = {
   config: { handler: configCommand, description: 'Manage configuration settings' },
   init: { handler: initCommand, description: 'Initialize a new workspace' },
   list: { handler: listCommand, description: 'List and filter available problems' },
+  progress: { handler: progressCommand, description: 'View progress stats and completion' },
 };
 
 export function getAvailableCommands(): Array<{ name: string; description: string }> {
@@ -60,3 +62,4 @@ export { hintCommand } from './hint.ts';
 export { configCommand } from './config.ts';
 export { initCommand } from './init.ts';
 export { listCommand } from './list.ts';
+export { progressCommand } from './progress.ts';
