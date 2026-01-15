@@ -113,7 +113,7 @@ function displayHints(
   console.log(`\nProgress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
 
   if (newHintsUsed.length < hints.length) {
-    console.log(`\n💬 Use 'at hint ${requestedLevel ?? ''} --level ${nextHintIndex + 2}' for the next hint`);
+    console.log(`\n💬 Use 'at hint --level ${nextHintIndex + 2}' for the next hint`);
   }
 
   return newHintsUsed.sort((a, b) => a - b);
