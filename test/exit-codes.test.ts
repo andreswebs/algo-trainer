@@ -5,19 +5,15 @@
  */
 
 import { assertEquals } from '@std/assert';
+import { ExitCode, getExitCodeDescription, getExitCodeForError } from '../src/cli/exit-codes.ts';
 import {
-  ExitCode,
-  getExitCodeDescription,
-  getExitCodeForError,
-} from '../src/cli/exit-codes.ts';
-import {
-  ConfigError,
-  ProblemError,
-  WorkspaceError,
-  NetworkError,
-  ValidationError,
   CommandError,
+  ConfigError,
   FileSystemError,
+  NetworkError,
+  ProblemError,
+  ValidationError,
+  WorkspaceError,
 } from '../src/utils/errors.ts';
 
 Deno.test('ExitCode - should have all required exit codes', () => {

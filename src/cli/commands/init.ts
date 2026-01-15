@@ -83,7 +83,11 @@ export async function initCommand(args: Args): Promise<CommandResult> {
         logInfo('Configuration updated with new workspace path');
       } catch (error) {
         // Log but don't fail if config update fails
-        logInfo(`Note: Could not update configuration: ${error instanceof Error ? error.message : String(error)}`);
+        logInfo(
+          `Note: Could not update configuration: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
       }
     }
 

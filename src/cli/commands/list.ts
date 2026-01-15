@@ -28,28 +28,29 @@ export interface ListOptions {
  * Extract list options from command arguments
  */
 export function extractListOptions(args: Args): ListOptions {
-  const difficulty = (args.difficulty as Difficulty | undefined) || (args.d as Difficulty | undefined);
+  const difficulty = (args.difficulty as Difficulty | undefined) ||
+    (args.d as Difficulty | undefined);
   const category = (args.category as string | undefined) || (args.c as string | undefined);
   const search = (args.search as string | undefined) || (args.s as string | undefined);
-  
+
   const result: ListOptions = {
     limit: (args.limit as number | undefined) || (args.l as number | undefined) || 20,
     json: !!args.json,
     verbose: !!args.verbose,
   };
-  
+
   if (difficulty !== undefined) {
     result.difficulty = difficulty;
   }
-  
+
   if (category !== undefined) {
     result.category = category;
   }
-  
+
   if (search !== undefined) {
     result.search = search;
   }
-  
+
   return result;
 }
 
@@ -57,7 +58,9 @@ export function extractListOptions(args: Args): ListOptions {
  * Format problems as a table for display
  */
 function formatAsTable(
-  problems: Array<{ id: string; difficulty: string; title: string; description: string; tags: string[] }>,
+  problems: Array<
+    { id: string; difficulty: string; title: string; description: string; tags: string[] }
+  >,
   options: { verbose: boolean },
 ): string {
   if (problems.length === 0) {
@@ -144,11 +147,15 @@ export async function listCommand(args: Args): Promise<CommandResult> {
     // Output results
     if (options.json) {
       // JSON output
-      console.log(JSON.stringify({
-        problems: result.problems,
-        total: result.total,
-        hasMore: result.hasMore,
-      }, null, 2));
+      console.log(JSON.stringify(
+        {
+          problems: result.problems,
+          total: result.total,
+          hasMore: result.hasMore,
+        },
+        null,
+        2,
+      ));
     } else {
       // Table output
       const table = formatAsTable(result.problems, { verbose: options.verbose });

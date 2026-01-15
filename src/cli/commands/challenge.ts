@@ -7,7 +7,12 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult, Difficulty, ProblemQuery, SupportedLanguage } from '../../types/global.ts';
+import type {
+  CommandResult,
+  Difficulty,
+  ProblemQuery,
+  SupportedLanguage,
+} from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import {
   generateProblemFiles,
@@ -109,7 +114,15 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const language = (options.language || config.language || 'typescript') as SupportedLanguage;
 
     // Validate language
-    const validLanguages: SupportedLanguage[] = ['typescript', 'javascript', 'python', 'java', 'cpp', 'rust', 'go'];
+    const validLanguages: SupportedLanguage[] = [
+      'typescript',
+      'javascript',
+      'python',
+      'java',
+      'cpp',
+      'rust',
+      'go',
+    ];
     if (!validLanguages.includes(language)) {
       logError(`Invalid language: ${language}`);
       logInfo(`Valid languages: ${validLanguages.join(', ')}`);
@@ -121,7 +134,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     if (exists && !options.force) {
       logWarning(`Problem '${problem.slug}' already exists in workspace`);
       logInfo('Use --force to overwrite existing files');
-      
+
       const confirmed = await confirmAction('Do you want to overwrite existing files?', false);
       if (!confirmed) {
         logInfo('Operation cancelled');
@@ -149,11 +162,11 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     console.error(''); // Empty line for spacing
     console.error(formatProblemSummary(problem));
     console.error(''); // Empty line for spacing
-    
+
     logInfo(`Language: ${language}`);
     logInfo(`Template style: ${config.preferences.templateStyle}`);
     logInfo(`Problem directory: ${result.problemDir}`);
-    
+
     if (result.filesCreated.length > 0) {
       logInfo(`Created ${result.filesCreated.length} file(s)`);
     }

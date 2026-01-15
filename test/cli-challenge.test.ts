@@ -236,13 +236,13 @@ describe('challengeCommand', () => {
     const newTempDir = await Deno.makeTempDir();
     try {
       await configManager.updateConfig({ workspace: newTempDir });
-      
+
       const result = await challengeCommand({
         _: ['challenge', 'two-sum'],
       });
       assertEquals(result.success, true);
       assertEquals(result.exitCode, ExitCode.SUCCESS);
-      
+
       // Verify workspace was initialized
       const problemsDir = `${newTempDir}/problems`;
       const stat = await Deno.stat(problemsDir);
