@@ -129,7 +129,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
       const problem = manager.getBySlug(problemSlug);
 
       if (problem) {
-        logInfo(`\\nCompleted: ${problem.title} [${problem.difficulty.toUpperCase()}]`);
+        logInfo(`\nCompleted: ${problem.title} [${problem.difficulty.toUpperCase()}]`);
 
         // Suggest next problems of similar difficulty
         const similarProblems = manager.list({
@@ -138,7 +138,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
         });
 
         if (similarProblems.problems.length > 0) {
-          logInfo('\\nSuggested next challenges:');
+          logInfo('\nSuggested next challenges:');
           for (const p of similarProblems.problems.slice(0, 3)) {
             if (p.slug !== problemSlug) {
               logInfo(`  - ${p.title} (${p.slug})`);
