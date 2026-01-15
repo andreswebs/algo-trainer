@@ -714,9 +714,9 @@ Testing can run in parallel with implementation:
 
 ### Foundation
 
-- [ ] CLI-001: Shared command utilities
-- [ ] CLI-002: Exit codes standardization
-- [ ] CLI-003: Environment variable support
+- [x] CLI-001: Shared command utilities
+- [x] CLI-002: Exit codes standardization
+- [x] CLI-003: Environment variable support
 
 ### Core Commands
 
