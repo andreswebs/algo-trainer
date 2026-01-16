@@ -93,7 +93,7 @@ describe('completeCommand', () => {
     await challengeCommand({
       _: ['challenge', 'two-sum'],
     });
-    
+
     // Complete the problem so workspace is empty
     await completeCommand({
       _: ['complete', 'two-sum'],

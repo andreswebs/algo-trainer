@@ -13,6 +13,26 @@ import { getWorkspaceStructure, initWorkspace, isWorkspaceInitialized } from '..
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
 import { logError, logInfo, logSuccess } from '../../utils/output.ts';
 import { resolve } from '@std/path';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'init',
+    description: 'Initialize a new workspace',
+    usage: [
+      'at init [path]',
+    ],
+    options: [
+      { flags: '-f, --force', description: 'Reinitialize existing workspace' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at init', description: 'Initialize in current directory' },
+      { command: 'at init ~/my-practice', description: 'Initialize at specific path' },
+      { command: 'at init --force', description: 'Reinitialize existing workspace' },
+    ],
+  });
+}
 
 export interface InitOptions {
   path: string | undefined;
@@ -28,6 +48,12 @@ export function extractInitOptions(args: Args): InitOptions {
 }
 
 export async function initCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   try {
     const options = extractInitOptions(args);
 

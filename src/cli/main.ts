@@ -100,7 +100,14 @@ export async function main(inputArgs: string[] = Deno.args): Promise<void> {
       verbosity: globalFlags.verbose ? 'verbose' : globalFlags.quiet ? 'quiet' : 'normal',
     });
 
-    if (globalFlags.help || args._.length === 0) {
+    // Show global help only if no command is specified
+    if ((globalFlags.help || args._.length === 0) && args._.length === 0) {
+      showHelp();
+      return;
+    }
+
+    // If help flag is present but a command is specified, let the command handle it
+    if (args._.length === 0) {
       showHelp();
       return;
     }
