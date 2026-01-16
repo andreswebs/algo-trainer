@@ -1,24 +1,21 @@
 /**
  * Complete command handler
  *
- * Marks a problem as completed and archives it.
+ * Marks a problem as completed by archiving it from the current workspace
+ * to the completed directory. Supports interactive prompts for problem selection.
  *
  * @module cli/commands/complete
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult, SupportedLanguage } from '../../types/global.ts';
+import type { CommandResult, ProblemQuery, SupportedLanguage } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
-import {
-  archiveProblem,
-  problemExists,
-  ProblemManager,
-} from '../../core/mod.ts';
+import { archiveProblem, problemExists, ProblemManager } from '../../core/mod.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { logError, logInfo, logSuccess } from '../../utils/output.ts';
-import { requireWorkspace } from './shared.ts';
+import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
+import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { promptSelect, promptText } from '../prompts.ts';
-import { join } from '@std/path';
 
 export interface CompleteOptions {
   problemSlug: string | undefined;
@@ -46,7 +43,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     // Get language from config
     const language = (config.language || 'typescript') as SupportedLanguage;
 
-    // Get problem slug - prompt if not provided
+    // Get problem slug - prompt if not provided or resolve by ID
     let problemSlug = options.problemSlug;
     if (!problemSlug) {
       // Try to find current problems in workspace
@@ -86,6 +83,19 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
         logError(`Failed to read problems directory: ${errorMessage}`);
         return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
       }
+    } else {
+      // Try to resolve by ID or slug
+      try {
+        const manager = new ProblemManager();
+        await manager.init();
+        const problem = resolveProblem(problemSlug, manager, structure.root);
+        if (problem) {
+          // Use the resolved slug (in case they provided an ID)
+          problemSlug = problem.slug;
+        }
+      } catch {
+        // If resolution fails, continue with the provided slug
+      }
     }
 
     // Verify problem exists in workspace
@@ -110,50 +120,81 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     // Archive the problem unless --no-archive is set
     if (!options.noArchive) {
       logInfo(`Archiving problem: ${problemSlug}`);
-      await archiveProblem({
+      const archiveResult = await archiveProblem({
         workspaceRoot: structure.root,
         slug: problemSlug,
         language,
       });
+
+      if (!archiveResult.success) {
+        logError(`Failed to archive problem: ${archiveResult.error}`);
+        return { success: false, exitCode: ExitCode.GENERAL_ERROR };
+      }
+
       logSuccess(`Completed and archived: ${problemSlug}`);
-      logInfo(`Files moved to: ${join(structure.completed, problemSlug)}`);
+      if (archiveResult.collisionHandled) {
+        logInfo('Note: A previous completion exists. Archived with timestamp.');
+      }
+      logInfo(`Archived to: ${archiveResult.archivedTo}`);
     } else {
       logSuccess(`Marked as completed: ${problemSlug}`);
       logInfo('Files kept in current workspace (--no-archive)');
     }
 
-    // Get problem info for suggestions
+    // Show notes if provided
+    if (notes) {
+      logInfo(`Notes: ${notes}`);
+    }
+
+    // Get problem info for detailed display and suggestions
     try {
       const manager = new ProblemManager();
       await manager.init();
       const problem = manager.getBySlug(problemSlug);
 
       if (problem) {
-        logInfo(`\nCompleted: ${problem.title} [${problem.difficulty.toUpperCase()}]`);
+        // Display problem summary
+        console.error(''); // Empty line for spacing
+        console.error(formatProblemSummary(problem));
+        console.error(''); // Empty line for spacing
 
         // Suggest next problems of similar difficulty
-        const similarProblems = manager.list({
+        logInfo('Looking for next challenge...');
+        const query: ProblemQuery = {
           difficulty: problem.difficulty,
           limit: 3,
-        });
+        };
+        const similarProblems = manager.list(query);
 
         if (similarProblems.problems.length > 0) {
-          logInfo('\nSuggested next challenges:');
-          for (const p of similarProblems.problems.slice(0, 3)) {
-            if (p.slug !== problemSlug) {
+          const suggestions = similarProblems.problems.filter((p) => p.slug !== problemSlug).slice(
+            0,
+            3,
+          );
+          if (suggestions.length > 0) {
+            for (const p of suggestions) {
               logInfo(`  - ${p.title} (${p.slug})`);
             }
+            logInfo(`\nStart with: at challenge ${suggestions[0].slug}`);
           }
         }
       }
     } catch {
-      // Ignore errors in suggestion logic
+      // Ignore errors in display/suggestion logic
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError('Failed to complete problem:', error instanceof Error ? error.message : String(error));
-    return { success: false, exitCode: ExitCode.GENERAL_ERROR };
+    if (error instanceof WorkspaceError) {
+      logError('Workspace error:', error.message);
+      return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
+    } else if (error instanceof ProblemError) {
+      logError('Problem error:', error.message);
+      return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
+    } else {
+      logError('Unexpected error:', error instanceof Error ? error.message : String(error));
+      return { success: false, exitCode: ExitCode.GENERAL_ERROR };
+    }
   }
 }
 

@@ -5,9 +5,11 @@ The CLI now supports interactive prompts for missing required arguments. This im
 ## Features
 
 ### Automatic Detection
+
 The CLI automatically detects whether it's running in an interactive terminal or a non-interactive environment (CI, pipelines, etc.). In non-interactive environments, default values are used automatically.
 
 ### Smart Prompts
+
 When required arguments are missing, the CLI will prompt for them interactively:
 
 - **Text Input**: For notes, descriptions, and custom values
@@ -17,6 +19,7 @@ When required arguments are missing, the CLI will prompt for them interactively:
 ## Supported Commands
 
 ### Challenge Command
+
 When starting a new challenge without specifying all options:
 
 ```bash
@@ -28,10 +31,12 @@ at challenge easy
 ```
 
 **Prompts:**
+
 - Difficulty level (easy, medium, hard) - if not provided
 - Programming language - if not in config or command line
 
 ### Complete Command
+
 When marking a problem as complete:
 
 ```bash
@@ -43,12 +48,14 @@ at complete
 ```
 
 **Prompts:**
+
 - Problem selection - from available problems in workspace
 - Completion notes - optional text input
 
 ## Non-Interactive Mode
 
 In CI/CD pipelines or when stdin is not a TTY, the CLI:
+
 - Uses default values for all prompts
 - Never blocks waiting for user input
 - Returns `null` for prompts without defaults
@@ -58,6 +65,7 @@ This ensures your automation scripts work reliably.
 ## Examples
 
 ### Interactive Challenge Start
+
 ```bash
 $ at challenge
 Select difficulty level:
@@ -82,6 +90,7 @@ Selected language: python
 ```
 
 ### Interactive Problem Completion
+
 ```bash
 $ at complete
 Select problem to complete:
@@ -104,12 +113,12 @@ All prompt functions are available from `src/cli/prompts.ts`:
 
 ```typescript
 import {
-  promptText,
-  promptSelect,
+  isInteractive,
   promptConfirm,
   promptDifficulty,
   promptLanguage,
-  isInteractive,
+  promptSelect,
+  promptText,
 } from './cli/prompts.ts';
 
 // Check if terminal is interactive
@@ -121,7 +130,7 @@ if (isInteractive()) {
 const language = await promptSelect(
   'Choose language:',
   ['typescript', 'python', 'java'],
-  { defaultValue: 'typescript' }
+  { defaultValue: 'typescript' },
 );
 
 // Yes/no confirmation

@@ -89,7 +89,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       // Prompt for difficulty if not provided and interactive
       let difficulty = options.difficulty;
       if (!difficulty && !options.random) {
-        // Note: config.preferences doesn't have difficulty field, 
+        // Note: config.preferences doesn't have difficulty field,
         // so we default to undefined (will show all options)
         const prompted = await promptDifficulty();
         if (prompted) {

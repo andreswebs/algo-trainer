@@ -39,7 +39,7 @@ export function extractHintOptions(args: Args): HintOptions {
 function displayHint(level: number, hint: string, isUsed: boolean): void {
   const levelLabel = ['General Approach', 'Algorithm/Data Structure', 'Solution Strategy'][level];
   const usedIndicator = isUsed ? '✓' : '•';
-  
+
   console.log(`\n${usedIndicator} Hint ${level + 1}: ${levelLabel}`);
   console.log(`${'─'.repeat(50)}`);
   console.log(hint);
@@ -107,9 +107,7 @@ function displayHints(
   newHintsUsed.push(nextHintIndex);
 
   // Show progress
-  const progressBar = hints.map((_, i) => 
-    newHintsUsed.includes(i) ? '█' : '░'
-  ).join('');
+  const progressBar = hints.map((_, i) => newHintsUsed.includes(i) ? '█' : '░').join('');
   console.log(`\nProgress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
 
   if (newHintsUsed.length < hints.length) {
