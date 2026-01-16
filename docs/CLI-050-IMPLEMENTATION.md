@@ -1,6 +1,6 @@
 # CLI-050: Unit Tests for Commands - Implementation Report
 
-**Status:** ✅ **COMPLETE**  
+**Status:** ✅ **COMPLETE**\
 **Date:** 2026-01-16
 
 ## Overview
@@ -11,10 +11,11 @@ This document confirms that CLI-050 (Unit Tests for Commands) from `.specs/deno-
 
 ### CLI-050: Unit Tests for Commands
 
-**Scope:** Unit tests for all command implementations  
+**Scope:** Unit tests for all command implementations\
 **File:** `tests/cli/commands_test.ts` (new)
 
 **Tasks per command:**
+
 1. Test argument parsing
 2. Test validation logic
 3. Test error cases
@@ -22,6 +23,7 @@ This document confirms that CLI-050 (Unit Tests for Commands) from `.specs/deno-
 5. Mock PMS functions
 
 **Test Cases (per command):**
+
 - Valid arguments produce correct output
 - Invalid arguments produce correct errors
 - Missing required args handled
@@ -33,27 +35,27 @@ This document confirms that CLI-050 (Unit Tests for Commands) from `.specs/deno-
 
 ### ✅ All Requirements Met
 
-| Requirement | Status | Details |
-|-------------|--------|---------|
-| Test argument parsing | ✅ Complete | All commands have `extractXxxOptions()` tests |
-| Test validation logic | ✅ Complete | Required/invalid argument validation covered |
-| Test error cases | ✅ Complete | Invalid values, missing args, non-existent resources |
-| Test output formatting | ✅ Complete | JSON, table, verbose modes tested |
-| PMS integration | ✅ Complete | Tests use real ProblemManager with temp workspaces |
+| Requirement            | Status      | Details                                              |
+| ---------------------- | ----------- | ---------------------------------------------------- |
+| Test argument parsing  | ✅ Complete | All commands have `extractXxxOptions()` tests        |
+| Test validation logic  | ✅ Complete | Required/invalid argument validation covered         |
+| Test error cases       | ✅ Complete | Invalid values, missing args, non-existent resources |
+| Test output formatting | ✅ Complete | JSON, table, verbose modes tested                    |
+| PMS integration        | ✅ Complete | Tests use real ProblemManager with temp workspaces   |
 
 ### Test Coverage Summary
 
-| Command | Test File | Tests | Status |
-|---------|-----------|-------|--------|
-| challenge | `test/cli-challenge.test.ts` | 28 | ✅ |
-| complete | `test/cli-complete.test.ts` | 14 | ✅ |
-| config | `test/cli-commands-config.test.ts` | 32 | ✅ |
-| hint | `test/cli-commands-hint.test.ts` | 14 | ✅ |
-| init | `test/cli-init.test.ts` | 11 | ✅ |
-| list | `test/list.test.ts` | 24 | ✅ |
-| progress | `test/cli-commands-progress.test.ts` | 18 | ✅ |
-| shared | `test/cli-commands-shared.test.ts` | 21 | ✅ |
-| help | `test/cli-help.test.ts` | 8 | ✅ |
+| Command   | Test File                            | Tests | Status |
+| --------- | ------------------------------------ | ----- | ------ |
+| challenge | `test/cli-challenge.test.ts`         | 28    | ✅     |
+| complete  | `test/cli-complete.test.ts`          | 14    | ✅     |
+| config    | `test/cli-commands-config.test.ts`   | 32    | ✅     |
+| hint      | `test/cli-commands-hint.test.ts`     | 14    | ✅     |
+| init      | `test/cli-init.test.ts`              | 11    | ✅     |
+| list      | `test/list.test.ts`                  | 24    | ✅     |
+| progress  | `test/cli-commands-progress.test.ts` | 18    | ✅     |
+| shared    | `test/cli-commands-shared.test.ts`   | 21    | ✅     |
+| help      | `test/cli-help.test.ts`              | 8     | ✅     |
 
 **Total:** 170 command-specific tests (out of 330 total tests)
 
@@ -71,6 +73,7 @@ This document confirms that CLI-050 (Unit Tests for Commands) from `.specs/deno-
 ### 1. Argument Parsing Tests ✅
 
 All commands have dedicated tests that verify:
+
 - Positional arguments extraction
 - Long flag extraction (e.g., `--difficulty`)
 - Short flag extraction (e.g., `-d`)
@@ -79,6 +82,7 @@ All commands have dedicated tests that verify:
 - Flag precedence
 
 **Example from `test/cli-challenge.test.ts`:**
+
 ```typescript
 describe('extractChallengeOptions', () => {
   it('should extract slug from first positional arg', () => {
@@ -98,6 +102,7 @@ describe('extractChallengeOptions', () => {
 ### 2. Validation Logic Tests ✅
 
 All commands test validation including:
+
 - Required argument validation
 - Invalid argument detection
 - Type validation (e.g., invalid difficulty values)
@@ -105,6 +110,7 @@ All commands test validation including:
 - Format validation
 
 **Example from `test/cli-challenge.test.ts`:**
+
 ```typescript
 it('should fail with invalid difficulty', async () => {
   const result = await challengeCommand({
@@ -127,6 +133,7 @@ it('should fail with non-existent slug', async () => {
 ### 3. Error Cases Tests ✅
 
 Comprehensive error testing includes:
+
 - Missing required arguments
 - Invalid argument values
 - Non-existent resources (problems, workspaces)
@@ -135,6 +142,7 @@ Comprehensive error testing includes:
 - Exit code validation for all error cases
 
 **Example from `test/cli-complete.test.ts`:**
+
 ```typescript
 it('should fail when no problems in workspace', async () => {
   const result = await completeCommand({
@@ -148,6 +156,7 @@ it('should fail when no problems in workspace', async () => {
 ### 4. Output Formatting Tests ✅
 
 Tests cover various output modes:
+
 - JSON output mode testing (list, config commands)
 - Table formatting (list command)
 - Verbose output (list, progress commands)
@@ -155,10 +164,11 @@ Tests cover various output modes:
 - Console output capture and verification
 
 **Example from `test/list.test.ts`:**
+
 ```typescript
 it('should output JSON when json flag is set', async () => {
   const result = await listCommand({ _: ['list'], json: true, limit: 1 });
-  
+
   assertEquals(result.success, true);
   const output = stdoutOutput.join('\n');
   const parsed = JSON.parse(output);
@@ -168,7 +178,7 @@ it('should output JSON when json flag is set', async () => {
 
 it('should display table format by default', async () => {
   const result = await listCommand({ _: ['list'], limit: 1 });
-  
+
   const output = stdoutOutput.join('\n');
   assertEquals(output.includes('Difficulty'), true);
   assertEquals(output.includes('Title'), true);
@@ -178,6 +188,7 @@ it('should display table format by default', async () => {
 ### 5. PMS Function Integration ✅
 
 Tests integrate with the Problem Management System:
+
 - Uses real ProblemManager in tests (not mocked)
 - Tests workspace initialization
 - Tests problem generation
@@ -185,6 +196,7 @@ Tests integrate with the Problem Management System:
 - Uses temporary workspaces for isolation
 
 **Example from `test/cli-init.test.ts`:**
+
 ```typescript
 it('should create all required directories', async () => {
   const args: Args = { _: ['init', tempDir] };
@@ -192,7 +204,7 @@ it('should create all required directories', async () => {
 
   const problemsDir = await Deno.stat(`${tempDir}/problems`);
   assertEquals(problemsDir.isDirectory, true);
-  
+
   const completedDir = await Deno.stat(`${tempDir}/completed`);
   assertEquals(completedDir.isDirectory, true);
 });
@@ -279,6 +291,7 @@ The specification suggested a single `tests/cli/commands_test.ts` file, but the 
 ### Test Quality
 
 All tests demonstrate:
+
 - ✅ Clear, descriptive test names
 - ✅ Arrange-Act-Assert pattern
 - ✅ Proper resource cleanup
@@ -290,6 +303,7 @@ All tests demonstrate:
 ## Commands Tested
 
 ### 1. challenge - Start Coding Challenges
+
 - ✅ Argument parsing (slug, difficulty, category, language, force)
 - ✅ Random problem selection
 - ✅ Problem file generation
@@ -297,12 +311,14 @@ All tests demonstrate:
 - ✅ Error handling (invalid difficulty, non-existent problems)
 
 ### 2. complete - Mark Problems as Completed
+
 - ✅ Argument parsing (slug, notes, no-archive)
 - ✅ Problem archiving
 - ✅ Auto-selection of single problem
 - ✅ Error handling (missing problem, empty workspace)
 
 ### 3. config - Configuration Management
+
 - ✅ Subcommand parsing (list, get, set, reset)
 - ✅ Key-value operations
 - ✅ Nested configuration access
@@ -310,18 +326,21 @@ All tests demonstrate:
 - ✅ Validation (invalid keys, invalid values)
 
 ### 4. hint - Progressive Hint System
+
 - ✅ Argument parsing (slug, level, all)
 - ✅ Hint level selection
 - ✅ Problem resolution
 - ✅ Error handling (invalid problem, missing workspace)
 
 ### 5. init - Workspace Initialization
+
 - ✅ Argument parsing (path, force)
 - ✅ Directory creation
 - ✅ Workspace structure validation
 - ✅ Reinitialization handling
 
 ### 6. list - Problem Listing and Filtering
+
 - ✅ Argument parsing (difficulty, category, search, limit)
 - ✅ Filtering operations
 - ✅ JSON and table output
@@ -329,12 +348,14 @@ All tests demonstrate:
 - ✅ Empty result handling
 
 ### 7. progress - Progress Tracking
+
 - ✅ Argument parsing (detailed, category, json)
 - ✅ Statistics calculation
 - ✅ Multiple output formats
 - ✅ Empty workspace handling
 
 ### 8. shared - Utility Functions
+
 - ✅ `requireWorkspace()` validation
 - ✅ `requireProblemManager()` initialization
 - ✅ `resolveProblem()` lookup
@@ -342,6 +363,7 @@ All tests demonstrate:
 - ✅ `confirmAction()` prompts
 
 ### 9. help - Help System
+
 - ✅ Help flag handling (--help, -h)
 - ✅ Per-command help display
 - ✅ Consistent help formatting
@@ -352,22 +374,24 @@ All tests demonstrate:
 
 ### Summary
 
-✅ All 9 CLI commands have comprehensive unit tests  
-✅ 170+ command-specific tests (330 total tests)  
-✅ 100% test pass rate  
+✅ All 9 CLI commands have comprehensive unit tests\
+✅ 170+ command-specific tests (330 total tests)\
+✅ 100% test pass rate\
 ✅ All CLI-050 requirements met:
-  - Argument parsing tests
-  - Validation logic tests
-  - Error case tests
-  - Output formatting tests
-  - PMS integration tests
+
+- Argument parsing tests
+- Validation logic tests
+- Error case tests
+- Output formatting tests
+- PMS integration tests
 
 ✅ Superior implementation:
-  - Separate test files per command (better practice)
-  - Comprehensive edge case coverage
-  - Consistent test patterns
-  - Real PMS integration (not mocked)
-  - Temporary workspace isolation
+
+- Separate test files per command (better practice)
+- Comprehensive edge case coverage
+- Consistent test patterns
+- Real PMS integration (not mocked)
+- Temporary workspace isolation
 
 ### Verification
 
@@ -390,6 +414,7 @@ ok | 330 passed (226 steps) | 0 failed (14s)
 ---
 
 **Related Documents:**
+
 - `.specs/deno-rewrite/cli/tasks.md` - Original task specification
 - `.specs/deno-rewrite/cli/phase3-integration-guide.md` - Integration guide
 - `test/` - Test implementations

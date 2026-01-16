@@ -8,11 +8,7 @@
  * @module core/ai/session
  */
 
-import type {
-  ExecutionResult,
-  TeachingSessionState,
-  TriggerContext,
-} from './types.ts';
+import type { ExecutionResult, TeachingSessionState, TriggerContext } from './types.ts';
 
 /**
  * Manages session state for a teaching session.

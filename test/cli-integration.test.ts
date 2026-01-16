@@ -23,11 +23,7 @@ import { progressCommand } from '../src/cli/commands/progress.ts';
 // Import utilities
 import { configManager } from '../src/config/manager.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
-import {
-  getWorkspaceStructure,
-  isWorkspaceInitialized,
-  problemExists,
-} from '../src/core/mod.ts';
+import { getWorkspaceStructure, isWorkspaceInitialized, problemExists } from '../src/core/mod.ts';
 
 describe('CLI Integration Tests - CLI-051', () => {
   let tempDir: string;
@@ -62,7 +58,7 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       // Verify workspace structure
       const structure = getWorkspaceStructure(tempDir);
-      
+
       // Check all directories exist
       const problemsDir = await Deno.stat(structure.problems);
       assertEquals(problemsDir.isDirectory, true);
@@ -124,19 +120,19 @@ describe('CLI Integration Tests - CLI-051', () => {
       // Verify files were created based on the actual language configuration
       const structure = getWorkspaceStructure(tempDir);
       const problemDir = join(structure.problems, 'two-sum');
-      
+
       // README should exist regardless of language
       const readmeFile = join(problemDir, 'README.md');
       const readmeStat = await Deno.stat(readmeFile);
       assertEquals(readmeStat.isFile, true);
 
       // Solution file name depends on language
-      const solutionFileName = config.language === 'typescript' 
-        ? 'solution.ts' 
-        : config.language === 'python' 
-        ? 'solution.py' 
+      const solutionFileName = config.language === 'typescript'
+        ? 'solution.ts'
+        : config.language === 'python'
+        ? 'solution.py'
         : 'solution.js';
-      
+
       const solutionFile = join(problemDir, solutionFileName);
       const solutionStat = await Deno.stat(solutionFile);
       assertEquals(solutionStat.isFile, true);
@@ -157,7 +153,7 @@ describe('CLI Integration Tests - CLI-051', () => {
       const structure = getWorkspaceStructure(tempDir);
       const problemDir = join(structure.problems, 'two-sum');
       const pythonFile = join(problemDir, 'solution.py');
-      
+
       const stat = await Deno.stat(pythonFile);
       assertEquals(stat.isFile, true);
     });
@@ -180,14 +176,14 @@ describe('CLI Integration Tests - CLI-051', () => {
       const config = configManager.getConfig();
       const structure = getWorkspaceStructure(tempDir);
       const problemDir = join(structure.problems, 'two-sum');
-      
+
       // Get the actual solution file name based on language
       const solutionFileName = config.language === 'typescript'
         ? 'solution.ts'
         : config.language === 'python'
         ? 'solution.py'
         : 'solution.js';
-      
+
       const solutionFile = join(problemDir, solutionFileName);
 
       // Modify the file
@@ -227,14 +223,14 @@ describe('CLI Integration Tests - CLI-051', () => {
       // Verify problem was moved to completed
       const structure = getWorkspaceStructure(tempDir);
       const completedDir = join(structure.completed, 'two-sum');
-      
+
       const stat = await Deno.stat(completedDir);
       assertEquals(stat.isDirectory, true);
     });
 
     it('should preserve all files when archiving', async () => {
       const structure = getWorkspaceStructure(tempDir);
-      
+
       // Get list of files before archiving
       const problemDir = join(structure.problems, 'two-sum');
       const filesBefore: string[] = [];
@@ -282,7 +278,7 @@ describe('CLI Integration Tests - CLI-051', () => {
       // Reload config from disk
       await configManager.load();
       const config = configManager.getConfig();
-      
+
       assertEquals(config.language, 'python');
     });
 
@@ -518,7 +514,7 @@ describe('CLI Integration Tests - CLI-051', () => {
     it('should handle workspace not initialized error', async () => {
       // Create a new temp directory without initializing
       const uninitializedDir = await Deno.makeTempDir();
-      
+
       try {
         await configManager.updateConfig({ workspace: uninitializedDir });
 
@@ -627,7 +623,7 @@ describe('CLI Integration Tests - CLI-051', () => {
       const result = await challengeCommand({
         _: ['challenge', 'two-sum'], // Valid slug
       });
-      
+
       assertEquals(result.success, true);
     });
 
