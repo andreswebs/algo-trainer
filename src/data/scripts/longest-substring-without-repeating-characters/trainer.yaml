@@ -1,0 +1,208 @@
+id: longest-substring-without-repeating-characters
+title: Longest Substring Without Repeating Characters
+difficulty: medium
+tags:
+  - hash-table
+  - string
+  - sliding-window
+language: typescript
+steps:
+  - type: intro
+    content: |
+      # Longest Substring Without Repeating Characters
+      
+      Welcome to the sliding window pattern! 🎯
+      
+      **The challenge:** Find the length of the longest substring without repeating characters.
+      
+      **Example:**
+      - "abcabcbb" → 3 (substring "abc")
+      - "bbbbb" → 1 (substring "b")
+      - "pwwkew" → 3 (substring "wke")
+      
+      This teaches the sliding window technique - crucial for substring/subarray problems!
+
+  - type: pre_prompt
+    content: |
+      Think about a "window" that slides through the string:
+      
+      **Brute force:** Check every substring - O(n³) ❌
+      
+      **Sliding Window + Hash Set:** O(n) ✨
+      
+      **Algorithm:**
+      1. Use two pointers: left and right (window boundaries)
+      2. Use a Set to track characters in current window
+      3. Expand right: add characters to window
+      4. If duplicate found: shrink from left until duplicate removed
+      5. Track maximum window size
+      
+      **Key insight:** Instead of checking every substring, maintain a valid window and slide it!
+      
+      **Data structure:** Set for O(1) lookup of characters in window
+
+  - type: hint
+    trigger: '!code.includes(''Set'') && !code.includes(''Map'')'
+    content: |
+      **Hint:** Use a Set to track characters in your current window!
+      
+      ```typescript
+      const seen = new Set();
+      ```
+      
+      **Why Set?**
+      - O(1) to check if character exists
+      - O(1) to add/remove characters
+      - Perfect for tracking what's in the window
+      
+      **Pattern:**
+      - Expand window: add char to set
+      - If char already in set: shrink window from left
+      - Track max window size
+
+  - type: hint
+    trigger: code.includes('Set') || code.includes('Map')
+    content: |
+      Great! You're using a Set/Map for the sliding window! 🎉
+      
+      **Sliding window pattern:**
+      ```typescript
+      let left = 0;
+      let maxLen = 0;
+      const seen = new Set();
+      
+      for (let right = 0; right < s.length; right++) {
+        // While duplicate exists, shrink from left
+        while (seen.has(s[right])) {
+          seen.delete(s[left]);
+          left++;
+        }
+        
+        // Add current char and update max
+        seen.add(s[right]);
+        maxLen = Math.max(maxLen, right - left + 1);
+      }
+      ```
+
+  - type: on_run
+    trigger: '!passed && attempts > 1'
+    content: |
+      Let me help you debug the sliding window:
+      
+      **Algorithm checklist:**
+      1. ✅ Two pointers: left = 0, right expands
+      2. ✅ Set to track characters in window
+      3. ✅ For each character at right:
+         - While character exists in set:
+           - Remove s[left] from set
+           - Increment left
+         - Add s[right] to set
+         - Update max length: right - left + 1
+      
+      **Common mistakes:**
+      - Not removing characters when shrinking window
+      - Wrong window size calculation (should be right - left + 1)
+      - Not handling empty string edge case
+
+  - type: on_run
+    trigger: '!passed && attempts > 2'
+    content: |
+      Let's trace through an example: "abcabcbb"
+      
+      ```
+      right=0, 'a': window="a", max=1
+      right=1, 'b': window="ab", max=2
+      right=2, 'c': window="abc", max=3
+      right=3, 'a': duplicate! Remove 'a' from left
+                    window="bca", max=3
+      right=4, 'b': duplicate! Remove 'b', 'c'
+                    window="ab", max=3
+      right=5, 'c': window="abc", max=3
+      right=6, 'b': duplicate! Remove 'a', 'b'
+                    window="cb", max=3
+      right=7, 'b': duplicate! Remove 'c', 'b'
+                    window="b", max=3
+      ```
+      
+      **Key:** When you find a duplicate, shrink from left until it's gone!
+
+  - type: on_request
+    keywords:
+      - hint
+      - help
+      - stuck
+      - window
+    content: |
+      **Complete sliding window solution:**
+      
+      ```typescript
+      function lengthOfLongestSubstring(s: string): number {
+        let left = 0;
+        let maxLen = 0;
+        const seen = new Set<string>();
+        
+        for (let right = 0; right < s.length; right++) {
+          // Shrink window while duplicate exists
+          while (seen.has(s[right])) {
+            seen.delete(s[left]);
+            left++;
+          }
+          
+          // Add current character to window
+          seen.add(s[right]);
+          
+          // Update maximum length
+          maxLen = Math.max(maxLen, right - left + 1);
+        }
+        
+        return maxLen;
+      }
+      ```
+      
+      **Why it works:** We maintain a valid window (no duplicates) and track its maximum size!
+
+  - type: on_request
+    keywords:
+      - complexity
+      - optimization
+    content: |
+      **Complexity Analysis:**
+      
+      **Brute force (check all substrings):**
+      - Time: O(n³) - generate O(n²) substrings, check each in O(n) ❌
+      
+      **Sliding window (optimal):**
+      - Time: O(n) - each character visited at most twice (by right and left) ✅
+      - Space: O(min(n, m)) where m is charset size
+        - Set stores at most all unique characters
+        - At most O(n) in worst case
+      
+      **Alternative:** Use a Map to store indices (allows skipping multiple chars at once)
+      - Same complexity, slightly more complex code
+      
+      **This is optimal!** Must visit each character at least once.
+
+  - type: after_success
+    content: |
+      🎉 Excellent! You mastered the sliding window!
+      
+      **What you learned:**
+      - Sliding window pattern with two pointers
+      - Using Set for O(1) lookups
+      - Optimizing from O(n³) to O(n)
+      
+      **Complexity:** O(n) time, O(n) space ✨
+      
+      **This pattern appears in:**
+      - Minimum Window Substring
+      - Longest Repeating Character Replacement
+      - Max Consecutive Ones III
+      - Substring with Concatenation of All Words
+      
+      **Key lesson:** Sliding window is powerful for substring/subarray optimization problems!
+      
+      **Two approaches:**
+      - Set: Track characters in window (this problem)
+      - Counter/Map: Track frequency of characters (other problems)
+      
+      Great job! 🚀

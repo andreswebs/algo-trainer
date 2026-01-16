@@ -13,6 +13,8 @@ import type { TeachingScript } from './types.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';
 import { validateTeachingScript } from './validator.ts';
+import { getConfigPaths } from '../../config/paths.ts';
+import { dirname, fromFileUrl } from '@std/path';
 
 /**
  * Parses a YAML string into a TeachingScript object.
@@ -288,4 +290,50 @@ export async function findScriptPath(
   const fileExists = await pathExists(trainerYamlPath);
 
   return fileExists ? trainerYamlPath : null;
+}
+
+/**
+ * Finds a teaching script for a given problem slug.
+ *
+ * This function implements the script discovery mechanism, searching in priority order:
+ * 1. User custom scripts: `$XDG_DATA_HOME/algo-trainer/scripts/<problem-slug>/trainer.yaml`
+ * 2. Built-in scripts: `src/data/scripts/<problem-slug>/trainer.yaml`
+ *
+ * This allows users to override built-in scripts with their own custom versions.
+ *
+ * @param problemSlug - The problem slug (e.g., "two-sum", "climbing-stairs")
+ * @returns Full path to trainer.yaml if found, null otherwise
+ *
+ * @example
+ * ```typescript
+ * const scriptPath = await findTeachingScript('two-sum');
+ * if (scriptPath) {
+ *   const script = await loadAndValidateScript(scriptPath);
+ * }
+ * ```
+ */
+export async function findTeachingScript(
+  problemSlug: string,
+): Promise<string | null> {
+  // 1. Check user custom scripts first (allows overriding built-in scripts)
+  const paths = getConfigPaths();
+  const userScriptPath = join(paths.data, 'scripts', problemSlug, 'trainer.yaml');
+  
+  if (await pathExists(userScriptPath)) {
+    return userScriptPath;
+  }
+
+  // 2. Check built-in scripts
+  // Get the directory where this module is located
+  const moduleDir = dirname(fromFileUrl(import.meta.url));
+  // Go up to src directory: src/core/ai -> src
+  const srcDir = join(moduleDir, '..', '..');
+  const builtinScriptPath = join(srcDir, 'data', 'scripts', problemSlug, 'trainer.yaml');
+  
+  if (await pathExists(builtinScriptPath)) {
+    return builtinScriptPath;
+  }
+
+  // No script found
+  return null;
 }

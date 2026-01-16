@@ -122,6 +122,7 @@
  * - **parseTeachingScript** - Parse YAML content into TeachingScript
  * - **validateTeachingScript** - Validate teaching script
  * - **findScriptPath** - Find trainer.yaml in problem directory
+ * - **findTeachingScript** - Find teaching script by problem slug (searches user custom and built-in)
  *
  * ### Types
  * - **TriggerContext** - Context variables available for evaluation
@@ -146,6 +147,7 @@ export { TeachingSession } from './session.ts';
 // Parser and validator
 export {
   findScriptPath,
+  findTeachingScript,
   loadAndValidateScript,
   loadTeachingScript,
   parseTeachingScript,
