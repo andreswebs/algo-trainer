@@ -93,6 +93,12 @@ This project serves as a testbed for various AI-assisted development strategies.
 3. **Parallel Execution**: Multiple agents work simultaneously on tasks
 4. **AI reviews**: PRs are reviewed separately by GitHub Copilot
 
+## Features
+
+- **Shell Completions**: Tab completion for Zsh (Bash and Fish coming soon). See [docs/SHELL_COMPLETIONS.md](docs/SHELL_COMPLETIONS.md) for installation instructions.
+- **Environment Variables**: Configure via environment variables. See [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
+- **Interactive Prompts**: User-friendly interactive prompts. See [docs/INTERACTIVE_PROMPTS.md](docs/INTERACTIVE_PROMPTS.md).
+
 ## Authors
 
 **Andre Silva** - [@andreswebs](https://github.com/andreswebs)

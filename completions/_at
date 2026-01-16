@@ -1,0 +1,199 @@
+#compdef at
+
+# Zsh completion script for Algo Trainer (at)
+# This provides tab completion for commands, flags, and dynamic values
+
+_at() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  # Define global flags available to all commands
+  local -a global_flags
+  global_flags=(
+    '(-h --help)'{-h,--help}'[Show help message]'
+    '(-v --version)'{-v,--version}'[Show version information]'
+    '--verbose[Enable verbose output]'
+    '--quiet[Suppress non-essential output]'
+    '--no-color[Disable colored output]'
+    '--no-emoji[Disable emoji in output]'
+    '(-c --config)'{-c,--config}'[Specify custom config file path]:config file:_files'
+  )
+
+  # Main command completion
+  _arguments -C \
+    '1: :->command' \
+    '*::arg:->args' \
+    $global_flags
+
+  case $state in
+    command)
+      # Define available commands with descriptions
+      local -a commands
+      commands=(
+        'challenge:Start a new coding challenge'
+        'complete:Mark a problem as completed and archive it'
+        'config:Manage configuration settings'
+        'hint:Get progressive hints for a problem'
+        'init:Initialize a new workspace'
+        'list:List and filter available problems'
+        'progress:View progress stats and completion'
+      )
+      _describe -t commands 'at commands' commands
+      ;;
+
+    args)
+      # Handle command-specific completions
+      case $words[1] in
+        challenge)
+          _at_challenge
+          ;;
+        complete)
+          _at_complete
+          ;;
+        config)
+          _at_config
+          ;;
+        hint)
+          _at_hint
+          ;;
+        init)
+          _at_init
+          ;;
+        list)
+          _at_list
+          ;;
+        progress)
+          _at_progress
+          ;;
+      esac
+      ;;
+  esac
+}
+
+# Challenge command completions
+_at_challenge() {
+  local -a difficulties languages categories
+  difficulties=(easy medium hard)
+  languages=(typescript javascript python java cpp rust go)
+  categories=(array string hash-table dynamic-programming tree graph sorting)
+
+  _arguments \
+    '1:difficulty or slug:(easy medium hard)' \
+    '(-d --difficulty)'{-d,--difficulty}'[Filter by difficulty]:difficulty:(easy medium hard)' \
+    '(-c --category)'{-c,--category}'[Filter by category]:category:(array string hash-table dynamic-programming tree graph sorting searching binary-search backtracking greedy)' \
+    '(-t --topic)'{-t,--topic}'[Filter by topic]:topic:' \
+    '(-l --language)'{-l,--language}'[Override default language]:language:(typescript javascript python java cpp rust go)' \
+    '(-f --force)'{-f,--force}'[Overwrite existing files]' \
+    '--random[Start random problem (any difficulty)]' \
+    '(-h --help)'{-h,--help}'[Show help message]'
+}
+
+# Complete command completions
+_at_complete() {
+  _arguments \
+    '1:problem slug:' \
+    '(-n --notes)'{-n,--notes}'[Add completion notes]:notes:' \
+    '--no-archive[Keep files in current (do not move)]' \
+    '(-h --help)'{-h,--help}'[Show help message]'
+}
+
+# Config command completions
+_at_config() {
+  local -a subcommands config_keys languages
+  subcommands=(
+    'list:List all configuration values'
+    'get:Get a configuration value'
+    'set:Set a configuration value'
+    'reset:Reset configuration to defaults'
+  )
+  config_keys=(
+    language
+    workspace
+    aiEnabled
+    companies
+    preferences.theme
+    preferences.verbosity
+    preferences.autoSave
+    preferences.templateStyle
+    preferences.useEmoji
+    preferences.useColors
+  )
+  languages=(typescript javascript python java cpp rust go)
+
+  if (( CURRENT == 2 )); then
+    _describe -t subcommands 'config subcommands' subcommands
+  elif (( CURRENT == 3 )); then
+    case $words[2] in
+      get|set|reset)
+        _describe -t config-keys 'config keys' config_keys
+        ;;
+    esac
+  elif (( CURRENT == 4 )); then
+    case $words[2] in
+      set)
+        case $words[3] in
+          language)
+            _describe -t languages 'languages' languages
+            ;;
+          preferences.theme)
+            _values 'theme' 'light' 'dark' 'auto'
+            ;;
+          preferences.verbosity)
+            _values 'verbosity' 'quiet' 'normal' 'verbose'
+            ;;
+          preferences.templateStyle)
+            _values 'template style' 'minimal' 'documented' 'comprehensive'
+            ;;
+          preferences.autoSave|preferences.useEmoji|preferences.useColors|aiEnabled)
+            _values 'boolean' 'true' 'false'
+            ;;
+        esac
+        ;;
+    esac
+  else
+    _arguments \
+      '--json[Output in JSON format]' \
+      '(-h --help)'{-h,--help}'[Show help message]'
+  fi
+}
+
+# Hint command completions
+_at_hint() {
+  _arguments \
+    '1:problem slug or id:' \
+    '--level[Get specific hint level]:level:(1 2 3)' \
+    '(-a --all)'{-a,--all}'[Show all available hints]' \
+    '(-h --help)'{-h,--help}'[Show help message]'
+}
+
+# Init command completions
+_at_init() {
+  _arguments \
+    '1:workspace path:_directories' \
+    '(-f --force)'{-f,--force}'[Reinitialize existing workspace]' \
+    '(-h --help)'{-h,--help}'[Show help message]'
+}
+
+# List command completions
+_at_list() {
+  _arguments \
+    '(-d --difficulty)'{-d,--difficulty}'[Filter by difficulty]:difficulty:(easy medium hard)' \
+    '(-c --category)'{-c,--category}'[Filter by category]:category:(array string hash-table dynamic-programming tree graph sorting)' \
+    '(-s --search)'{-s,--search}'[Search in title/description]:search text:' \
+    '(-l --limit)'{-l,--limit}'[Limit results]:limit:' \
+    '--json[Output in JSON format]' \
+    '--verbose[Show full descriptions]' \
+    '(-h --help)'{-h,--help}'[Show help message]'
+}
+
+# Progress command completions
+_at_progress() {
+  _arguments \
+    '(-d --detailed)'{-d,--detailed}'[Show detailed breakdown]' \
+    '(-c --category)'{-c,--category}'[Group by category]' \
+    '--json[Output in JSON format]' \
+    '(-h --help)'{-h,--help}'[Show help message]'
+}
+
+# Execute the main completion function
+_at "$@"
