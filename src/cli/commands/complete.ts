@@ -2,7 +2,7 @@
  * Complete command handler
  *
  * Marks a problem as completed by archiving it from the current workspace
- * to the completed directory.
+ * to the completed directory. Supports interactive prompts for problem selection.
  *
  * @module cli/commands/complete
  */
