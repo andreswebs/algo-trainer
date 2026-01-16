@@ -75,8 +75,8 @@ describe('completeCommand', () => {
     await Deno.remove(tempDir, { recursive: true }).catch(() => {});
   });
 
-  it('should fail when no problem slug provided', async () => {
-    // First, initialize workspace
+  it('should auto-select single problem when no slug provided', async () => {
+    // First, initialize workspace with one problem
     await challengeCommand({
       _: ['challenge', 'two-sum'],
     });
@@ -84,8 +84,27 @@ describe('completeCommand', () => {
     const result = await completeCommand({
       _: ['complete'],
     });
+    assertEquals(result.success, true);
+    assertEquals(result.exitCode, ExitCode.SUCCESS);
+  });
+
+  it('should fail when no problems in workspace', async () => {
+    // Initialize workspace but don't add any problems
+    await challengeCommand({
+      _: ['challenge', 'two-sum'],
+    });
+    
+    // Complete the problem so workspace is empty
+    await completeCommand({
+      _: ['complete', 'two-sum'],
+    });
+
+    // Now try to complete without slug (should fail as no problems)
+    const result = await completeCommand({
+      _: ['complete'],
+    });
     assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+    assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
   });
 
   it('should fail when problem does not exist', async () => {
