@@ -8,9 +8,11 @@
  */
 
 import { parse as parseYaml } from '@std/yaml';
+import { join } from '@std/path';
 import type { TeachingScript } from './types.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';
+import { validateTeachingScript } from './validator.ts';
 
 /**
  * Parses a YAML string into a TeachingScript object.
@@ -208,4 +210,82 @@ export async function loadTeachingScript(
     }
     throw error;
   }
+}
+
+/**
+ * Loads and validates a teaching script from a file path.
+ *
+ * This is the recommended way to load teaching scripts as it combines
+ * parsing and validation into a single operation with consistent error handling.
+ *
+ * Error handling behavior:
+ * - File not found → returns null
+ * - Parse error → throws ScriptError
+ * - Validation error → throws ScriptError with validation details
+ *
+ * @param filePath - Path to the trainer.yaml file
+ * @returns Validated TeachingScript object, or null if file doesn't exist
+ * @throws {ScriptError} If parsing or validation fails
+ *
+ * @example
+ * ```typescript
+ * const script = await loadAndValidateScript('./problems/two-sum/trainer.yaml');
+ * if (script) {
+ *   console.log(`Loaded valid script for: ${script.title}`);
+ * } else {
+ *   console.log('No teaching script found');
+ * }
+ * ```
+ */
+export async function loadAndValidateScript(
+  filePath: string,
+): Promise<TeachingScript | null> {
+  // First, try to load the script (returns null if not found)
+  const script = await loadTeachingScript(filePath);
+
+  if (script === null) {
+    return null;
+  }
+
+  // Validate the loaded script
+  const validationResult = validateTeachingScript(script);
+
+  if (!validationResult.valid) {
+    throw new ScriptError(
+      `Teaching script validation failed: ${validationResult.errors.join(', ')}`,
+      createErrorContext('loadAndValidateScript', {
+        filePath,
+        errors: validationResult.errors,
+      }),
+    );
+  }
+
+  return script;
+}
+
+/**
+ * Finds the path to a teaching script (trainer.yaml) in a problem directory.
+ *
+ * This function looks for trainer.yaml in the given problem directory path.
+ * It checks if the file exists and returns the full path if found.
+ *
+ * @param problemPath - Path to the problem directory
+ * @returns Full path to trainer.yaml if found, null otherwise
+ *
+ * @example
+ * ```typescript
+ * const scriptPath = await findScriptPath('./problems/two-sum');
+ * if (scriptPath) {
+ *   const script = await loadAndValidateScript(scriptPath);
+ * }
+ * ```
+ */
+export async function findScriptPath(
+  problemPath: string,
+): Promise<string | null> {
+  const trainerYamlPath = join(problemPath, 'trainer.yaml');
+  
+  const fileExists = await pathExists(trainerYamlPath);
+  
+  return fileExists ? trainerYamlPath : null;
 }
