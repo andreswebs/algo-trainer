@@ -284,8 +284,8 @@ export async function findScriptPath(
   problemPath: string,
 ): Promise<string | null> {
   const trainerYamlPath = join(problemPath, 'trainer.yaml');
-  
+
   const fileExists = await pathExists(trainerYamlPath);
-  
+
   return fileExists ? trainerYamlPath : null;
 }

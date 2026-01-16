@@ -117,7 +117,7 @@ Deno.test('evaluateTrigger - complex logical expressions', () => {
     evaluateTrigger('passed === true && attempts > 2 || attempts === 3', baseContext),
     true,
   );
-  
+
   // false && (false || true) = false
   assertEquals(
     evaluateTrigger('passed === true && passed === false || attempts > 5', baseContext),
@@ -170,7 +170,7 @@ Deno.test('evaluateTrigger - string match() with regex', () => {
     ...baseContext,
     stderr: 'TypeError: undefined is not a function',
   };
-  
+
   assertEquals(
     evaluateTrigger('stderr.match(/TypeError|ReferenceError/)', errorContext),
     true,
@@ -186,7 +186,7 @@ Deno.test('evaluateTrigger - string match() with string pattern', () => {
     ...baseContext,
     stderr: 'TypeError: undefined is not a function',
   };
-  
+
   assertEquals(
     evaluateTrigger('stderr.match("TypeError")', errorContext),
     true,
