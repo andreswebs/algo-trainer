@@ -9,11 +9,17 @@
  * @module core/ai/engine
  */
 
-import type { ExecutionResult, TeachingScript, TeachingStep, TeachingStepType, TriggerContext } from './types.ts';
+import type {
+  ExecutionResult,
+  TeachingScript,
+  TeachingStep,
+  TeachingStepType,
+  TriggerContext,
+} from './types.ts';
 import { TeachingSession } from './session.ts';
 import { evaluateTrigger } from './triggers.ts';
-import { loadAndValidateScript, findScriptPath } from './parser.ts';
-import { TeachingError, createErrorContext } from '../../utils/errors.ts';
+import { findScriptPath, loadAndValidateScript } from './parser.ts';
+import { createErrorContext, TeachingError } from '../../utils/errors.ts';
 
 /**
  * Script metadata information returned by getScriptInfo.

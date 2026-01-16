@@ -6,7 +6,7 @@
 
 import { assertEquals, assertExists } from '@std/assert';
 import { assertRejects } from '@std/assert';
-import { describe, it, beforeEach, afterEach } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { TeachingEngine } from '../../src/core/ai/engine.ts';
 import { TeachingSession } from '../../src/core/ai/session.ts';
 import type { ExecutionResult } from '../../src/core/ai/types.ts';
