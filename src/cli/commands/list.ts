@@ -21,7 +21,10 @@ function showHelp(): void {
       'at list [options]',
     ],
     options: [
-      { flags: '-d, --difficulty <level>', description: 'Filter by difficulty (easy, medium, hard)' },
+      {
+        flags: '-d, --difficulty <level>',
+        description: 'Filter by difficulty (easy, medium, hard)',
+      },
       { flags: '-c, --category <cat>', description: 'Filter by category' },
       { flags: '-s, --search <text>', description: 'Search in title/description' },
       { flags: '-l, --limit <n>', description: 'Limit results (default: 20)' },

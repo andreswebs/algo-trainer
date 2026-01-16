@@ -28,7 +28,7 @@ function showHelp(): void {
     ],
     options: [
       { flags: '-n, --notes <text>', description: 'Add completion notes' },
-      { flags: '--no-archive', description: 'Keep files in current (don\'t move)' },
+      { flags: '--no-archive', description: "Keep files in current (don't move)" },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
@@ -226,4 +226,3 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     }
   }
 }
-

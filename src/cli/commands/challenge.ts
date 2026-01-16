@@ -37,7 +37,10 @@ function showHelp(): void {
       'at challenge --random',
     ],
     options: [
-      { flags: '-d, --difficulty <level>', description: 'Filter by difficulty (easy, medium, hard)' },
+      {
+        flags: '-d, --difficulty <level>',
+        description: 'Filter by difficulty (easy, medium, hard)',
+      },
       { flags: '-c, --category <cat>', description: 'Filter by category' },
       { flags: '-t, --topic <topic>', description: 'Filter by topic' },
       { flags: '-l, --language <lang>', description: 'Override default language' },
