@@ -1,23 +1,66 @@
 /**
- * AI Teaching System - Trigger Expression Evaluator
+ * AI Teaching System
  *
- * Re-exports all public APIs for the AI teaching system trigger evaluator.
+ * Re-exports all public APIs for the AI teaching system.
  *
  * ## Overview
  *
- * This module provides a secure trigger expression evaluator for the AI Teaching System.
- * It safely evaluates JavaScript-like expressions from teaching scripts to determine
- * when guidance should be shown to users.
+ * The AI Teaching System provides intelligent, proactive coaching for users solving
+ * algorithmic problems. It uses a YAML-based DSL (trainer.yaml) to define teaching
+ * scripts that respond to user code, execution results, and progress patterns.
  *
- * ## Security
+ * ## Key Capabilities
  *
- * The evaluator uses a sandboxed approach without eval() or Function() constructor
- * to prevent arbitrary code execution. All expressions are parsed and evaluated
- * in a controlled environment with only whitelisted operations and context variables.
+ * - **Proactive guidance**: Provides contextual hints without explicit requests
+ * - **Code analysis**: Analyzes user code patterns to provide relevant feedback
+ * - **Execution feedback**: Interprets stdout, stderr, and test results
+ * - **Progressive hints**: Escalates guidance based on attempts and struggle patterns
+ * - **Script generation**: Auto-generates teaching scripts from problem metadata
  *
  * ## Quick Start
  *
- * ### Basic Usage
+ * ### Basic Usage with TeachingEngine
+ *
+ * ```ts
+ * import { TeachingEngine, TeachingSession } from './core/ai/mod.ts';
+ *
+ * // Create session and engine
+ * const session = new TeachingSession('two-sum');
+ * const engine = new TeachingEngine(session);
+ *
+ * // Load teaching script
+ * const loaded = await engine.loadScript('./problems/two-sum');
+ * if (loaded) {
+ *   // Get introduction
+ *   const intro = engine.getIntroduction();
+ *   console.log(intro);
+ *
+ *   // Get pre-coding guidance
+ *   const prePrompt = engine.getPrePrompt();
+ *   console.log(prePrompt);
+ *
+ *   // Record attempt and process execution
+ *   session.recordAttempt(userCode);
+ *   const feedback = engine.processExecution(userCode, executionResult);
+ *   if (feedback) {
+ *     console.log('Feedback:', feedback);
+ *   }
+ *
+ *   // Get contextual hint
+ *   const hint = engine.getHint(userCode);
+ *   if (hint) {
+ *     console.log('Hint:', hint);
+ *   }
+ *
+ *   // Handle explicit request
+ *   const help = engine.handleRequest('how to optimize?');
+ *   if (help) {
+ *     console.log(help);
+ *   }
+ * }
+ * ```
+ *
+ * ### Using Trigger Evaluator
  *
  * ```ts
  * import { evaluateTrigger } from './core/ai/mod.ts';
@@ -31,89 +74,49 @@
  *   attempts: 3
  * };
  *
- * // Simple comparisons
  * evaluateTrigger('attempts > 2', context); // true
- * evaluateTrigger('passed === true', context); // false
- *
- * // String methods
  * evaluateTrigger('code.includes("for")', context); // true
- * evaluateTrigger('stderr.match(/TypeError/)', context); // false
- *
- * // Complex conditions
- * evaluateTrigger('passed === false && attempts > 1', context); // true
- * evaluateTrigger('code.includes("for") && !code.includes("Map")', context); // true
  * ```
  *
- * ## Supported Operations
+ * ### Loading and Validating Scripts
  *
- * ### Comparisons
- * - `===` - Strict equality
- * - `!==` - Strict inequality
- * - `>`, `<`, `>=`, `<=` - Numeric comparisons
+ * ```ts
+ * import { loadAndValidateScript, validateTeachingScript } from './core/ai/mod.ts';
  *
- * ### Logical Operators
- * - `&&` - Logical AND
- * - `||` - Logical OR
- * - `!` - Logical NOT
+ * // Load from file
+ * const script = await loadAndValidateScript('./problems/two-sum/trainer.yaml');
  *
- * ### String Methods
- * - `includes(substring)` - Check if string contains substring
- * - `startsWith(prefix)` - Check if string starts with prefix
- * - `endsWith(suffix)` - Check if string ends with suffix
- * - `match(pattern)` - Match against string or regex pattern
+ * // Validate existing script
+ * const result = validateTeachingScript(script);
+ * if (!result.valid) {
+ *   console.error('Validation errors:', result.errors);
+ * }
+ * ```
  *
- * ### Property Access
- * - `.length` - Get string length
+ * ### Generating Scripts
  *
- * ## Context Variables
+ * ```ts
+ * import { TeachingScriptGenerator } from './core/ai/mod.ts';
  *
- * The following variables are available in trigger expressions:
- *
- * - **code** (string) - User's current code
- * - **stdout** (string) - Execution output
- * - **stderr** (string) - Execution errors
- * - **passed** (boolean) - Test result
- * - **attempts** (number) - Attempt count
- *
- * ## Error Handling
- *
- * The evaluator fails safely:
- * - Invalid expressions return `false`
- * - Malformed triggers log warnings
- * - Unknown variables return `false`
- * - Security violations return `false`
- *
- * ## Performance
- *
- * Trigger evaluation is optimized for speed:
- * - Target: < 1ms per evaluation
- * - Actual: ~0.007ms average
- * - No external dependencies
- * - Minimal memory allocation
- *
- * ## Example Triggers
- *
- * ```yaml
- * # Show hint after multiple failed attempts
- * trigger: passed === false && attempts > 2
- *
- * # Detect specific code patterns
- * trigger: code.includes('for') && !code.includes('Map')
- *
- * # Check for common errors
- * trigger: stderr.match(/TypeError|undefined/)
- *
- * # Encourage optimization
- * trigger: passed === true && code.length > 100
- *
- * # Detect missing patterns
- * trigger: code.includes('Map') && !code.includes('has')
+ * const generator = new TeachingScriptGenerator();
+ * const script = generator.generate(problem);
+ * const yaml = generator.generateYaml(problem);
  * ```
  *
  * ## Key Exports
  *
+ * ### Classes
+ * - **TeachingEngine** - Main engine for orchestrating teaching system
+ * - **TeachingSession** - Session state management
+ * - **TeachingScriptGenerator** - Generate teaching scripts from problem metadata
+ *
  * ### Functions
- * - **evaluateTrigger** - Evaluate a trigger expression against a context
+ * - **evaluateTrigger** - Evaluate trigger expressions
+ * - **loadAndValidateScript** - Load and validate teaching script from file
+ * - **loadTeachingScript** - Load teaching script without validation
+ * - **parseTeachingScript** - Parse YAML content into TeachingScript
+ * - **validateTeachingScript** - Validate teaching script
+ * - **findScriptPath** - Find trainer.yaml in problem directory
  *
  * ### Types
  * - **TriggerContext** - Context variables available for evaluation
@@ -123,9 +126,32 @@
  * - **TeachingSessionState** - User session state
  * - **ExecutionResult** - Code execution results
  * - **TestResult** - Individual test case results
+ * - **ScriptInfo** - Script metadata
  *
  * @module core/ai
  */
 
+// Core engine
+export { TeachingEngine } from './engine.ts';
+export type { ScriptInfo } from './engine.ts';
+
+// Session management
+export { TeachingSession } from './session.ts';
+
+// Parser and validator
+export {
+  findScriptPath,
+  loadAndValidateScript,
+  loadTeachingScript,
+  parseTeachingScript,
+} from './parser.ts';
+export { validateTeachingScript } from './validator.ts';
+
+// Trigger evaluator
 export { evaluateTrigger } from './triggers.ts';
+
+// Generator
+export { TeachingScriptGenerator } from './generator.ts';
+
+// Types
 export * from './types.ts';
