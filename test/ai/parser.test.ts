@@ -6,10 +6,7 @@
 
 import { assertEquals, assertRejects, assertThrows } from '@std/assert';
 import { join } from '@std/path';
-import {
-  loadTeachingScript,
-  parseTeachingScript,
-} from '../../src/core/ai/parser.ts';
+import { loadTeachingScript, parseTeachingScript } from '../../src/core/ai/parser.ts';
 import { ScriptError } from '../../src/utils/errors.ts';
 
 /**

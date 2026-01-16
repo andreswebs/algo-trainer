@@ -9,10 +9,10 @@ import {
   ADVANCED_TEMPLATE,
   BASIC_TEMPLATE,
   COMPREHENSIVE_TEMPLATE,
-  selectTemplateForProblem,
-  TEMPLATES,
   type ScriptGeneratorOptions,
   type ScriptTemplateType,
+  selectTemplateForProblem,
+  TEMPLATES,
 } from '../../../src/core/ai/generator.ts';
 import type { Problem } from '../../../src/types/global.ts';
 
@@ -22,7 +22,7 @@ import type { Problem } from '../../../src/types/global.ts';
 
 Deno.test('ScriptTemplateType - has all expected values', () => {
   const types: ScriptTemplateType[] = ['basic', 'comprehensive', 'advanced'];
-  
+
   // Verify all template types are valid by checking they exist in TEMPLATES
   for (const type of types) {
     assertExists(TEMPLATES[type], `Template type "${type}" should exist in TEMPLATES`);
@@ -101,7 +101,7 @@ Deno.test('BASIC_TEMPLATE - has steps array', () => {
 
 Deno.test('BASIC_TEMPLATE - includes essential step types', () => {
   const stepTypes = BASIC_TEMPLATE.steps.map((step) => step.type);
-  
+
   // Basic template should have intro, pre_prompt, and after_success at minimum
   assertEquals(stepTypes.includes('intro'), true, 'Should include intro step');
   assertEquals(stepTypes.includes('pre_prompt'), true, 'Should include pre_prompt step');
@@ -112,7 +112,11 @@ Deno.test('BASIC_TEMPLATE - all steps have content', () => {
   for (const step of BASIC_TEMPLATE.steps) {
     assertExists(step.content);
     assertEquals(typeof step.content, 'string');
-    assertEquals(step.content.length > 0, true, `Step type "${step.type}" should have non-empty content`);
+    assertEquals(
+      step.content.length > 0,
+      true,
+      `Step type "${step.type}" should have non-empty content`,
+    );
   }
 });
 
@@ -125,7 +129,7 @@ Deno.test('BASIC_TEMPLATE - intro step has no trigger', () => {
 Deno.test('BASIC_TEMPLATE - content includes placeholders', () => {
   const introStep = BASIC_TEMPLATE.steps.find((step) => step.type === 'intro');
   assertExists(introStep);
-  
+
   // Should include template variables like {{title}} or {{difficulty}}
   const hasPlaceholders = introStep.content.includes('{{') && introStep.content.includes('}}');
   assertEquals(hasPlaceholders, true, 'Intro should include template placeholders');
@@ -167,7 +171,7 @@ Deno.test('COMPREHENSIVE_TEMPLATE - includes on_request steps', () => {
 
 Deno.test('COMPREHENSIVE_TEMPLATE - on_request steps have keywords', () => {
   const onRequestSteps = COMPREHENSIVE_TEMPLATE.steps.filter((step) => step.type === 'on_request');
-  
+
   for (const step of onRequestSteps) {
     assertExists(step.keywords, 'on_request steps should have keywords');
     assertEquals(Array.isArray(step.keywords), true);
@@ -231,7 +235,9 @@ Deno.test('ADVANCED_TEMPLATE - includes hint steps', () => {
 
 Deno.test('ADVANCED_TEMPLATE - includes strategy frameworks', () => {
   const hasStrategy = ADVANCED_TEMPLATE.steps.some(
-    (step) => step.content.toLowerCase().includes('strategy') || step.content.toLowerCase().includes('approach'),
+    (step) =>
+      step.content.toLowerCase().includes('strategy') ||
+      step.content.toLowerCase().includes('approach'),
   );
   assertEquals(hasStrategy, true, 'Should include strategy/approach guidance');
 });
@@ -257,17 +263,17 @@ Deno.test('TEMPLATES - all templates have consistent structure', () => {
 
   for (const type of templateTypes) {
     const template = TEMPLATES[type];
-    
+
     // Check required properties
     assertExists(template.type);
     assertExists(template.description);
     assertExists(template.steps);
-    
+
     // Check property types
     assertEquals(typeof template.type, 'string');
     assertEquals(typeof template.description, 'string');
     assertEquals(Array.isArray(template.steps), true);
-    
+
     // Check template type matches key
     assertEquals(template.type, type);
   }
@@ -355,9 +361,13 @@ Deno.test('Template content - steps with triggers have valid trigger syntax', ()
         // Trigger should be a non-empty string
         assertEquals(typeof step.trigger, 'string');
         assertEquals(step.trigger.length > 0, true);
-        
+
         // Trigger should not have obvious syntax errors
-        assertEquals(step.trigger.includes('{{'), false, 'Trigger should not contain template placeholders');
+        assertEquals(
+          step.trigger.includes('{{'),
+          false,
+          'Trigger should not contain template placeholders',
+        );
       }
     }
   }
@@ -368,12 +378,12 @@ Deno.test('Template content - on_request steps have valid keywords', () => {
 
   for (const template of allTemplates) {
     const onRequestSteps = template.steps.filter((step) => step.type === 'on_request');
-    
+
     for (const step of onRequestSteps) {
       assertExists(step.keywords, `on_request step in ${template.type} should have keywords`);
       assertEquals(Array.isArray(step.keywords), true);
       assertEquals(step.keywords.length > 0, true);
-      
+
       // All keywords should be non-empty strings
       for (const keyword of step.keywords) {
         assertEquals(typeof keyword, 'string');
@@ -389,7 +399,7 @@ Deno.test('Template content - intro and pre_prompt have no triggers', () => {
   for (const template of allTemplates) {
     const introSteps = template.steps.filter((step) => step.type === 'intro');
     const prePromptSteps = template.steps.filter((step) => step.type === 'pre_prompt');
-    
+
     for (const step of [...introSteps, ...prePromptSteps]) {
       assertEquals(
         step.trigger,
@@ -405,7 +415,7 @@ Deno.test('Template content - after_success has no trigger', () => {
 
   for (const template of allTemplates) {
     const successSteps = template.steps.filter((step) => step.type === 'after_success');
-    
+
     for (const step of successSteps) {
       assertEquals(
         step.trigger,
@@ -458,7 +468,7 @@ Deno.test('Template progression - all templates have required base steps', () =>
 
   for (const template of allTemplates) {
     const stepTypes = template.steps.map((s) => s.type);
-    
+
     for (const requiredType of requiredTypes) {
       assertEquals(
         stepTypes.includes(requiredType as typeof stepTypes[0]),
@@ -477,7 +487,7 @@ import { TeachingScriptGenerator } from '../../../src/core/ai/generator.ts';
 
 Deno.test('TeachingScriptGenerator - constructor with defaults', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   // Should use default options
   const problem: Problem = {
     id: '1',
@@ -490,9 +500,9 @@ Deno.test('TeachingScriptGenerator - constructor with defaults', () => {
     hints: [],
     tags: [],
   };
-  
+
   const script = generator.generate(problem);
-  
+
   // Should use default language (typescript)
   assertEquals(script.language, 'typescript');
 });
@@ -503,7 +513,7 @@ Deno.test('TeachingScriptGenerator - constructor with custom options', () => {
     language: 'python',
     includeTopicHints: false,
   });
-  
+
   const problem: Problem = {
     id: '1',
     slug: 'test-problem',
@@ -515,9 +525,9 @@ Deno.test('TeachingScriptGenerator - constructor with custom options', () => {
     hints: [],
     tags: [],
   };
-  
+
   const script = generator.generate(problem);
-  
+
   assertEquals(script.language, 'python');
   // Should use advanced template even though problem is easy
   assertEquals(script.steps.length >= ADVANCED_TEMPLATE.steps.length, true);
@@ -525,7 +535,7 @@ Deno.test('TeachingScriptGenerator - constructor with custom options', () => {
 
 Deno.test('TeachingScriptGenerator - generate creates complete script', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   const problem: Problem = {
     id: 'two-sum',
     slug: 'two-sum',
@@ -537,18 +547,18 @@ Deno.test('TeachingScriptGenerator - generate creates complete script', () => {
     hints: [],
     tags: ['array', 'hash-table'],
   };
-  
+
   const script = generator.generate(problem);
-  
+
   // Verify script metadata matches problem
   assertEquals(script.id, 'two-sum');
   assertEquals(script.title, 'Two Sum');
   assertEquals(script.difficulty, 'easy');
   assertEquals(script.tags, ['array', 'hash-table']);
-  
+
   // Should have steps
   assertEquals(script.steps.length > 0, true);
-  
+
   // Should have required step types
   const stepTypes = script.steps.map((s) => s.type);
   assertEquals(stepTypes.includes('intro'), true);
@@ -558,7 +568,7 @@ Deno.test('TeachingScriptGenerator - generate creates complete script', () => {
 
 Deno.test('TeachingScriptGenerator - substitutes variables in content', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test-problem',
@@ -570,21 +580,21 @@ Deno.test('TeachingScriptGenerator - substitutes variables in content', () => {
     hints: [],
     tags: [],
   };
-  
+
   const script = generator.generate(problem);
-  
+
   // Find intro step and check variable substitution
   const introStep = script.steps.find((s) => s.type === 'intro');
   assertExists(introStep);
-  
+
   // {{title}} should be replaced with actual title
   assertEquals(introStep.content.includes('Test Problem'), true);
   assertEquals(introStep.content.includes('{{title}}'), false);
-  
+
   // {{difficulty}} should be replaced with actual difficulty
   assertEquals(introStep.content.includes('medium'), true);
   assertEquals(introStep.content.includes('{{difficulty}}'), false);
-  
+
   // {{attempts}} should remain for runtime substitution
   const attemptsSteps = script.steps.filter((s) => s.content.includes('{{attempts}}'));
   // Some templates may have {{attempts}}, others may not
@@ -595,7 +605,7 @@ Deno.test('TeachingScriptGenerator - substitutes variables in content', () => {
 
 Deno.test('TeachingScriptGenerator - auto-selects template based on difficulty', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   const easyProblem: Problem = {
     id: '1',
     slug: 'easy',
@@ -607,7 +617,7 @@ Deno.test('TeachingScriptGenerator - auto-selects template based on difficulty',
     hints: [],
     tags: [],
   };
-  
+
   const mediumProblem: Problem = {
     id: '2',
     slug: 'medium',
@@ -619,7 +629,7 @@ Deno.test('TeachingScriptGenerator - auto-selects template based on difficulty',
     hints: [],
     tags: [],
   };
-  
+
   const hardProblem: Problem = {
     id: '3',
     slug: 'hard',
@@ -631,14 +641,14 @@ Deno.test('TeachingScriptGenerator - auto-selects template based on difficulty',
     hints: [],
     tags: [],
   };
-  
+
   const easyScript = generator.generate(easyProblem);
   const mediumScript = generator.generate(mediumProblem);
   const hardScript = generator.generate(hardProblem);
-  
+
   // Easy should have fewer steps than medium
   assertEquals(easyScript.steps.length <= mediumScript.steps.length, true);
-  
+
   // Medium should have fewer or equal steps than hard
   assertEquals(mediumScript.steps.length <= hardScript.steps.length, true);
 });
@@ -648,7 +658,7 @@ Deno.test('TeachingScriptGenerator - generateYaml produces valid YAML', () => {
     templateType: 'basic',
     language: 'typescript',
   });
-  
+
   const problem: Problem = {
     id: 'test-yaml',
     slug: 'test-yaml',
@@ -660,23 +670,23 @@ Deno.test('TeachingScriptGenerator - generateYaml produces valid YAML', () => {
     hints: [],
     tags: ['array'],
   };
-  
+
   const yaml = generator.generateYaml(problem);
-  
+
   // Should be a non-empty string
   assertEquals(typeof yaml, 'string');
   assertEquals(yaml.length > 0, true);
-  
+
   // Should contain key metadata fields
   assertEquals(yaml.includes('id: test-yaml'), true);
   assertEquals(yaml.includes('title: Test YAML'), true);
   assertEquals(yaml.includes('difficulty: easy'), true);
   assertEquals(yaml.includes('language: typescript'), true);
-  
+
   // Should contain tags
   assertEquals(yaml.includes('tags:'), true);
   assertEquals(yaml.includes('- array'), true);
-  
+
   // Should contain steps
   assertEquals(yaml.includes('steps:'), true);
   assertEquals(yaml.includes('type: intro'), true);
@@ -685,7 +695,7 @@ Deno.test('TeachingScriptGenerator - generateYaml produces valid YAML', () => {
 
 Deno.test('TeachingScriptGenerator - generateYaml handles multiline content', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test',
@@ -697,9 +707,9 @@ Deno.test('TeachingScriptGenerator - generateYaml handles multiline content', ()
     hints: [],
     tags: [],
   };
-  
+
   const yaml = generator.generateYaml(problem);
-  
+
   // Multiline content should use | syntax
   // Most steps have multiline content, so this should be present
   assertEquals(yaml.includes('content: |'), true);
@@ -709,7 +719,7 @@ Deno.test('TeachingScriptGenerator - generateYaml includes triggers', () => {
   const generator = new TeachingScriptGenerator({
     templateType: 'comprehensive',
   });
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test',
@@ -721,9 +731,9 @@ Deno.test('TeachingScriptGenerator - generateYaml includes triggers', () => {
     hints: [],
     tags: [],
   };
-  
+
   const yaml = generator.generateYaml(problem);
-  
+
   // Comprehensive template has triggers
   assertEquals(yaml.includes('trigger:'), true);
 });
@@ -732,7 +742,7 @@ Deno.test('TeachingScriptGenerator - generateYaml includes keywords', () => {
   const generator = new TeachingScriptGenerator({
     templateType: 'comprehensive',
   });
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test',
@@ -744,9 +754,9 @@ Deno.test('TeachingScriptGenerator - generateYaml includes keywords', () => {
     hints: [],
     tags: [],
   };
-  
+
   const yaml = generator.generateYaml(problem);
-  
+
   // Comprehensive template has on_request steps with keywords
   assertEquals(yaml.includes('keywords:'), true);
 });
@@ -755,7 +765,7 @@ Deno.test('TeachingScriptGenerator - preserves step properties', () => {
   const generator = new TeachingScriptGenerator({
     templateType: 'basic',
   });
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test',
@@ -767,20 +777,20 @@ Deno.test('TeachingScriptGenerator - preserves step properties', () => {
     hints: [],
     tags: [],
   };
-  
+
   const script = generator.generate(problem);
-  
+
   // Each step should preserve its original properties except substituted content
   for (const step of script.steps) {
     // All steps must have a type
     assertExists(step.type);
     assertEquals(typeof step.type, 'string');
-    
+
     // All steps must have content
     assertExists(step.content);
     assertEquals(typeof step.content, 'string');
     assertEquals(step.content.length > 0, true);
-    
+
     // If original step had trigger, it should be preserved
     // (checking this by verifying on_run steps have triggers in comprehensive template)
   }
@@ -788,7 +798,7 @@ Deno.test('TeachingScriptGenerator - preserves step properties', () => {
 
 Deno.test('TeachingScriptGenerator - handles problems with empty tags', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test',
@@ -800,10 +810,10 @@ Deno.test('TeachingScriptGenerator - handles problems with empty tags', () => {
     hints: [],
     tags: [], // Empty tags
   };
-  
+
   const script = generator.generate(problem);
   const yaml = generator.generateYaml(problem);
-  
+
   // Should handle empty tags gracefully
   assertEquals(script.tags, []);
   assertEquals(yaml.includes('tags: []'), true);
@@ -811,7 +821,7 @@ Deno.test('TeachingScriptGenerator - handles problems with empty tags', () => {
 
 Deno.test('TeachingScriptGenerator - handles problems with multiple tags', () => {
   const generator = new TeachingScriptGenerator();
-  
+
   const problem: Problem = {
     id: 'test',
     slug: 'test',
@@ -823,10 +833,10 @@ Deno.test('TeachingScriptGenerator - handles problems with multiple tags', () =>
     hints: [],
     tags: ['array', 'hash-table', 'two-pointers'],
   };
-  
+
   const script = generator.generate(problem);
   const yaml = generator.generateYaml(problem);
-  
+
   // Should include all tags
   assertEquals(script.tags.length, 3);
   assertEquals(yaml.includes('- array'), true);

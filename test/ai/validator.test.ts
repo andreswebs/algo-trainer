@@ -10,7 +10,7 @@
 
 import { assertEquals } from '@std/assert';
 import { describe, it } from '@std/testing/bdd';
-import { validateTeachingScript, isValidTeachingScript } from '../../src/core/ai/validator.ts';
+import { isValidTeachingScript, validateTeachingScript } from '../../src/core/ai/validator.ts';
 import type { TeachingScript } from '../../src/core/ai/types.ts';
 
 describe('validateTeachingScript', () => {

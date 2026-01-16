@@ -275,7 +275,8 @@ Great job working through this {{difficulty}} problem! 🚀`,
  */
 export const ADVANCED_TEMPLATE: ScriptTemplate = {
   type: 'advanced',
-  description: 'Comprehensive guidance with strategy frameworks, pattern recognition, and optimization hints',
+  description:
+    'Comprehensive guidance with strategy frameworks, pattern recognition, and optimization hints',
   steps: [
     {
       type: 'intro',
@@ -347,7 +348,8 @@ You've got this! 🔍`,
     {
       type: 'on_run',
       trigger: '!passed && attempts > 2',
-      content: `{{attempts}} attempts in - you're making progress! This is a {{difficulty}} problem, so persistence is key.
+      content:
+        `{{attempts}} attempts in - you're making progress! This is a {{difficulty}} problem, so persistence is key.
 
 **Debugging strategies for complex problems**:
 1. **Divide and conquer**: Test each part of your solution separately
@@ -360,7 +362,8 @@ Every attempt teaches you something valuable. Keep going! 💪`,
     {
       type: 'on_run',
       trigger: '!passed && attempts > 4',
-      content: `Still working on this? That shows great persistence! Hard problems require multiple attempts.
+      content:
+        `Still working on this? That shows great persistence! Hard problems require multiple attempts.
 
 **When you're deeply stuck**:
 1. **Take a break**: Sometimes the solution comes when you step away
@@ -632,15 +635,15 @@ export class TeachingScriptGenerator {
     // Import stringify dynamically to avoid circular dependency issues
     // Note: Using a simple implementation here for now
     // TODO(ATS-011): Replace with @std/yaml when integrated with parser
-    
+
     const lines: string[] = [];
-    
+
     // Add metadata
     lines.push(`id: ${script.id}`);
     lines.push(`title: ${script.title}`);
     lines.push(`difficulty: ${script.difficulty}`);
     lines.push(`language: ${script.language}`);
-    
+
     // Add tags
     if (script.tags.length > 0) {
       lines.push('tags:');
@@ -650,12 +653,12 @@ export class TeachingScriptGenerator {
     } else {
       lines.push('tags: []');
     }
-    
+
     // Add steps
     lines.push('steps:');
     for (const step of script.steps) {
       lines.push(`  - type: ${step.type}`);
-      
+
       // Handle multiline content with proper YAML formatting
       if (step.content.includes('\n')) {
         lines.push('    content: |');
@@ -666,12 +669,12 @@ export class TeachingScriptGenerator {
       } else {
         lines.push(`    content: ${JSON.stringify(step.content)}`);
       }
-      
+
       // Add trigger if present
       if (step.trigger) {
         lines.push(`    trigger: ${JSON.stringify(step.trigger)}`);
       }
-      
+
       // Add keywords if present
       if (step.keywords && step.keywords.length > 0) {
         lines.push('    keywords:');
@@ -680,7 +683,7 @@ export class TeachingScriptGenerator {
         }
       }
     }
-    
+
     return lines.join('\n') + '\n';
   }
 }
