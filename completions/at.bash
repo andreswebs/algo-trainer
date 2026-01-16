@@ -12,7 +12,18 @@
 
 _at_completion() {
     local cur prev words cword
-    _init_completion || return
+    
+    # Use _init_completion if available (from bash-completion package)
+    # Otherwise, initialize manually
+    if declare -F _init_completion > /dev/null 2>&1; then
+        _init_completion || return
+    else
+        # Manual initialization fallback
+        cur="${COMP_WORDS[COMP_CWORD]}"
+        prev="${COMP_WORDS[COMP_CWORD-1]:-}"
+        words=("${COMP_WORDS[@]}")
+        cword=$COMP_CWORD
+    fi
 
     # All available commands
     local commands="challenge complete config hint init list progress"
