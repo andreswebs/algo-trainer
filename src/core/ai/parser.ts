@@ -8,9 +8,9 @@
  */
 
 import { parse as parseYaml } from '@std/yaml';
-import { exists } from '@std/fs';
 import type { TeachingScript } from './types.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
+import { pathExists } from '../../utils/fs.ts';
 
 /**
  * Parses a YAML string into a TeachingScript object.
@@ -172,7 +172,7 @@ export async function loadTeachingScript(
   filePath: string,
 ): Promise<TeachingScript | null> {
   // Check if file exists
-  const fileExists = await exists(filePath, { isReadable: true });
+  const fileExists = await pathExists(filePath);
 
   if (!fileExists) {
     return null;
