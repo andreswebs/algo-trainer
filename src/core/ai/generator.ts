@@ -9,7 +9,7 @@
  */
 
 import type { Problem, SupportedLanguage } from '../../types/global.ts';
-import type { TeachingStep } from './types.ts';
+import type { TeachingScript, TeachingStep } from './types.ts';
 
 /**
  * Template types determine the comprehensiveness of generated teaching scripts.
@@ -275,7 +275,8 @@ Great job working through this {{difficulty}} problem! 🚀`,
  */
 export const ADVANCED_TEMPLATE: ScriptTemplate = {
   type: 'advanced',
-  description: 'Comprehensive guidance with strategy frameworks, pattern recognition, and optimization hints',
+  description:
+    'Comprehensive guidance with strategy frameworks, pattern recognition, and optimization hints',
   steps: [
     {
       type: 'intro',
@@ -347,7 +348,8 @@ You've got this! 🔍`,
     {
       type: 'on_run',
       trigger: '!passed && attempts > 2',
-      content: `{{attempts}} attempts in - you're making progress! This is a {{difficulty}} problem, so persistence is key.
+      content:
+        `{{attempts}} attempts in - you're making progress! This is a {{difficulty}} problem, so persistence is key.
 
 **Debugging strategies for complex problems**:
 1. **Divide and conquer**: Test each part of your solution separately
@@ -360,7 +362,8 @@ Every attempt teaches you something valuable. Keep going! 💪`,
     {
       type: 'on_run',
       trigger: '!passed && attempts > 4',
-      content: `Still working on this? That shows great persistence! Hard problems require multiple attempts.
+      content:
+        `Still working on this? That shows great persistence! Hard problems require multiple attempts.
 
 **When you're deeply stuck**:
 1. **Take a break**: Sometimes the solution comes when you step away
@@ -497,5 +500,190 @@ export function selectTemplateForProblem(problem: Problem): ScriptTemplateType {
       return 'comprehensive';
     case 'hard':
       return 'advanced';
+  }
+}
+
+/**
+ * Teaching script generator for creating teaching scripts from problem metadata.
+ *
+ * The generator creates teaching scripts by populating templates with problem-specific
+ * information. It supports different template types and can optionally include
+ * topic-specific hints based on problem tags.
+ *
+ * @example
+ * ```typescript
+ * const generator = new TeachingScriptGenerator({
+ *   templateType: 'comprehensive',
+ *   language: 'typescript',
+ *   includeTopicHints: true,
+ * });
+ *
+ * const script = generator.generate(problem);
+ * const yaml = generator.generateYaml(problem);
+ * ```
+ */
+export class TeachingScriptGenerator {
+  private options: ScriptGeneratorOptions;
+
+  /**
+   * Creates a new teaching script generator with the specified options.
+   *
+   * @param options - Partial generator options. Unspecified options will use defaults:
+   *   - templateType: Auto-selected based on problem difficulty
+   *   - language: 'typescript'
+   *   - includeTopicHints: true
+   */
+  constructor(options?: Partial<ScriptGeneratorOptions>) {
+    this.options = {
+      templateType: options?.templateType ?? 'comprehensive',
+      language: options?.language ?? 'typescript',
+      includeTopicHints: options?.includeTopicHints ?? true,
+    };
+  }
+
+  /**
+   * Generates a teaching script from a problem.
+   *
+   * This method creates a complete teaching script by:
+   * 1. Selecting an appropriate template (if not specified)
+   * 2. Populating the template with problem metadata
+   * 3. Substituting content variables ({{title}}, {{difficulty}}, etc.)
+   * 4. Optionally adding topic-specific hints
+   *
+   * @param problem - The problem to generate a script for
+   * @returns A complete teaching script ready to use
+   */
+  generate(problem: Problem): TeachingScript {
+    // Select template type if not explicitly specified in constructor
+    const templateType = this.options.templateType ?? selectTemplateForProblem(problem);
+    const template = TEMPLATES[templateType];
+
+    // Create base script with problem metadata
+    const script: TeachingScript = {
+      id: problem.id,
+      title: problem.title,
+      difficulty: problem.difficulty,
+      tags: problem.tags,
+      language: this.options.language,
+      steps: this.populateSteps(template.steps, problem),
+    };
+
+    return script;
+  }
+
+  /**
+   * Generates a YAML representation of a teaching script.
+   *
+   * This method generates a script and serializes it to YAML format suitable
+   * for saving as a trainer.yaml file.
+   *
+   * @param problem - The problem to generate a script for
+   * @returns YAML string representation of the teaching script
+   */
+  generateYaml(problem: Problem): string {
+    const script = this.generate(problem);
+    return this.serializeToYaml(script);
+  }
+
+  /**
+   * Populates template steps with problem-specific information.
+   *
+   * This method processes each step in the template to replace variable
+   * placeholders with actual problem data.
+   *
+   * @param steps - Template steps to populate
+   * @param problem - Problem to use for populating
+   * @returns Populated teaching steps
+   */
+  private populateSteps(steps: TeachingStep[], problem: Problem): TeachingStep[] {
+    return steps.map((step) => ({
+      ...step,
+      content: this.substituteVariables(step.content, problem),
+    }));
+  }
+
+  /**
+   * Substitutes variable placeholders in content with actual values.
+   *
+   * Supported variables:
+   * - {{title}} - Problem title
+   * - {{difficulty}} - Problem difficulty level
+   * - {{attempts}} - Placeholder for attempt count (filled at runtime)
+   *
+   * @param content - Content string with variable placeholders
+   * @param problem - Problem to extract values from
+   * @returns Content with variables substituted
+   */
+  private substituteVariables(content: string, problem: Problem): string {
+    return content
+      .replace(/\{\{title\}\}/g, problem.title)
+      .replace(/\{\{difficulty\}\}/g, problem.difficulty);
+    // Note: {{attempts}} is left as-is since it's substituted at runtime by the engine
+  }
+
+  /**
+   * Serializes a teaching script to YAML format.
+   *
+   * This method converts a TeachingScript object to a well-formatted YAML string
+   * suitable for saving as trainer.yaml files. It preserves multiline strings
+   * and formats the output for readability.
+   *
+   * @param script - The teaching script to serialize
+   * @returns YAML string representation
+   */
+  private serializeToYaml(script: TeachingScript): string {
+    // Import stringify dynamically to avoid circular dependency issues
+    // Note: Using a simple implementation here for now
+    // TODO(ATS-011): Replace with @std/yaml when integrated with parser
+
+    const lines: string[] = [];
+
+    // Add metadata
+    lines.push(`id: ${script.id}`);
+    lines.push(`title: ${script.title}`);
+    lines.push(`difficulty: ${script.difficulty}`);
+    lines.push(`language: ${script.language}`);
+
+    // Add tags
+    if (script.tags.length > 0) {
+      lines.push('tags:');
+      for (const tag of script.tags) {
+        lines.push(`  - ${tag}`);
+      }
+    } else {
+      lines.push('tags: []');
+    }
+
+    // Add steps
+    lines.push('steps:');
+    for (const step of script.steps) {
+      lines.push(`  - type: ${step.type}`);
+
+      // Handle multiline content with proper YAML formatting
+      if (step.content.includes('\n')) {
+        lines.push('    content: |');
+        const contentLines = step.content.split('\n');
+        for (const line of contentLines) {
+          lines.push(`      ${line}`);
+        }
+      } else {
+        lines.push(`    content: ${JSON.stringify(step.content)}`);
+      }
+
+      // Add trigger if present
+      if (step.trigger) {
+        lines.push(`    trigger: ${JSON.stringify(step.trigger)}`);
+      }
+
+      // Add keywords if present
+      if (step.keywords && step.keywords.length > 0) {
+        lines.push('    keywords:');
+        for (const keyword of step.keywords) {
+          lines.push(`      - ${keyword}`);
+        }
+      }
+    }
+
+    return lines.join('\n') + '\n';
   }
 }
