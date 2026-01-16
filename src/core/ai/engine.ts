@@ -348,9 +348,14 @@ export class TeachingEngine {
   /**
    * Process code execution results and provide feedback.
    *
-   * Updates the session state with execution results and evaluates
-   * 'on_run' step triggers to provide contextual feedback based on
-   * the execution outcome.
+   * Updates the session state with execution results, including:
+   * - Incrementing the attempt counter
+   * - Adding the code to history
+   * - Storing stdout/stderr output
+   * - Updating the passed status
+   *
+   * Then evaluates 'on_run' step triggers to provide contextual feedback
+   * based on the execution outcome.
    *
    * @param code - User's executed code
    * @param result - Execution result containing output, errors, and test results
@@ -358,7 +363,6 @@ export class TeachingEngine {
    *
    * @example
    * ```typescript
-   * session.recordAttempt(userCode);
    * const feedback = engine.processExecution(userCode, {
    *   stdout: 'Test output...',
    *   stderr: '',
@@ -371,7 +375,8 @@ export class TeachingEngine {
    * ```
    */
   processExecution(code: string, result: ExecutionResult): string | null {
-    // Update session state with execution results
+    // Update session state with attempt and execution results
+    this.session.recordAttempt(code);
     this.session.recordExecution(result);
 
     // Get on_run steps

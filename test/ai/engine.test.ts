@@ -620,6 +620,9 @@ steps:
       engine.processExecution('some code', result);
 
       const state = session.getState();
+      assertEquals(state.attempts, 1);
+      assertEquals(state.codeHistory.length, 1);
+      assertEquals(state.codeHistory[0], 'some code');
       assertEquals(state.lastOutput, 'Test output');
       assertEquals(state.lastError, 'Test error');
       assertEquals(state.passed, false);
@@ -648,6 +651,73 @@ steps:
 
       engine.processExecution('code', result);
       assertEquals(session.getState().passed, true);
+    });
+
+    it('should increment attempts on each execution', async () => {
+      const scriptYaml = `
+id: test-problem
+title: Test
+difficulty: easy
+tags: []
+language: typescript
+steps:
+  - type: intro
+    content: Intro
+`;
+      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await engine.loadScript(testProblemDir);
+
+      const result: ExecutionResult = {
+        stdout: 'output',
+        stderr: '',
+        passed: false,
+        exitCode: 0,
+      };
+
+      // First execution
+      engine.processExecution('code1', result);
+      assertEquals(session.getState().attempts, 1);
+
+      // Second execution
+      engine.processExecution('code2', result);
+      assertEquals(session.getState().attempts, 2);
+
+      // Third execution
+      engine.processExecution('code3', result);
+      assertEquals(session.getState().attempts, 3);
+    });
+
+    it('should accumulate code history on each execution', async () => {
+      const scriptYaml = `
+id: test-problem
+title: Test
+difficulty: easy
+tags: []
+language: typescript
+steps:
+  - type: intro
+    content: Intro
+`;
+      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await engine.loadScript(testProblemDir);
+
+      const result: ExecutionResult = {
+        stdout: 'output',
+        stderr: '',
+        passed: false,
+        exitCode: 0,
+      };
+
+      // Execute multiple times
+      engine.processExecution('const x = 1;', result);
+      engine.processExecution('const y = 2;', result);
+      engine.processExecution('const z = 3;', result);
+
+      const state = session.getState();
+      assertEquals(state.codeHistory.length, 3);
+      assertEquals(state.codeHistory[0], 'const x = 1;');
+      assertEquals(state.codeHistory[1], 'const y = 2;');
+      assertEquals(state.codeHistory[2], 'const z = 3;');
     });
 
     it('should return null when no on_run steps exist', async () => {
@@ -719,6 +789,7 @@ steps:
       await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
+      // Simulate previous attempts (processExecution will add the third)
       session.recordAttempt('code1');
       session.recordAttempt('code2');
 
@@ -729,6 +800,8 @@ steps:
         exitCode: 1,
       };
 
+      // This will be the third attempt (attempts will be 3 after this call)
+      // TypeError trigger should match first (before multiple attempts trigger)
       const feedback = engine.processExecution('code3', result);
       assertEquals(feedback, 'TypeError detected!');
     });
