@@ -180,16 +180,16 @@ describe('E2E Workflow Tests - CLI-052', () => {
     it('should respect language configuration in challenge generation', async () => {
       // Initialize workspace
       await initCommand({ _: ['init', tempWorkspace] });
-      
+
       // Set language to Python directly via config update
       restoreConsole();
       await configManager.load();
       await configManager.updateConfig({ workspace: tempWorkspace, language: 'python' });
-      
+
       // Verify configuration was updated
       const config = configManager.getConfig();
       assertEquals(config.language, 'python', 'Language should be set to python in config');
-      
+
       setupConsoleCapture();
 
       // Start a challenge - should use Python language from config
@@ -205,7 +205,7 @@ describe('E2E Workflow Tests - CLI-052', () => {
       // Verify Python files were created
       const pythonExists = await problemExists(tempWorkspace, 'two-sum', 'python');
       setupConsoleCapture();
-      
+
       assertEquals(pythonExists, true, 'Python problem files should be created');
 
       // Verify specific Python file exists - solution.py is the standard filename

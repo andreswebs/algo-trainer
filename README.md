@@ -54,7 +54,7 @@ The bash completion script provides:
 
 - **Command completion**: All available commands (`challenge`, `complete`, `config`, `hint`, `init`, `list`, `progress`)
 - **Flag completion**: Global flags (`--help`, `--version`, `--verbose`, etc.) and command-specific flags
-- **Value completion**: 
+- **Value completion**:
   - Languages: `typescript`, `javascript`, `python`, `java`, `cpp`, `rust`, `go`
   - Difficulties: `easy`, `medium`, `hard`
   - Config keys and their valid values

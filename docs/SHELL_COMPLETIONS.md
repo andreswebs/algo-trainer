@@ -202,13 +202,11 @@ Found a bug or want to add completion for a new command? Contributions are welco
 
 - [Environment Variables](./ENVIRONMENT_VARIABLES.md) - Configuration via environment variables
 - [Interactive Prompts](./INTERACTIVE_PROMPTS.md) - Interactive command prompts
-Algo Trainer provides shell completion scripts to enhance your command-line experience with auto-completion for commands, subcommands, and options.
-
+  Algo Trainer provides shell completion scripts to enhance your command-line experience with auto-completion for commands, subcommands, and options.
 
 ## Bash Shell
 
-*Coming soon - CLI-041*
-
+_Coming soon - CLI-041_
 
 ## Fish Shell
 
