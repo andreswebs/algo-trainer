@@ -145,6 +145,26 @@ flowchart TD
 
 **Total estimated effort**: 35-45 hours
 
+## Waves
+
+Waves of issues that can be assigned in sequence:
+
+Wave 0: ATS-001
+
+Wave 1: ATS-002, ATS-003, ATS-004, ATS-007, ATS-010
+
+Wave 2: ATS-005, ATS-011, ATS-016
+
+Wave 3: ATS-006, ATS-012, ATS-015
+
+Wave 4: ATS-008, ATS-009, ATS-018
+
+Wave 5: ATS-013, ATS-017
+
+Wave 6: ATS-014
+
+Wave 7: ATS-019, ATS-020
+
 ---
 
 ## ATS-001 — Define Teaching System Types
