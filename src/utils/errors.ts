@@ -117,6 +117,33 @@ export class TemplateError extends AlgoTrainerError {
 }
 
 /**
+ * AI teaching system errors
+ */
+export class TeachingError extends AlgoTrainerError {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super(message, 'TEACHING_ERROR', context);
+  }
+}
+
+/**
+ * Teaching script parsing/validation errors
+ */
+export class ScriptError extends AlgoTrainerError {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super(message, 'SCRIPT_ERROR', context);
+  }
+}
+
+/**
+ * Trigger expression evaluation errors
+ */
+export class TriggerError extends AlgoTrainerError {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super(message, 'TRIGGER_ERROR', context);
+  }
+}
+
+/**
  * Error context for better debugging
  */
 export interface ErrorContext extends Record<string, unknown> {
