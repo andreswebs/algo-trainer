@@ -843,3 +843,510 @@ Deno.test('TeachingScriptGenerator - handles problems with multiple tags', () =>
   assertEquals(yaml.includes('- hash-table'), true);
   assertEquals(yaml.includes('- two-pointers'), true);
 });
+
+// -----------------------------------------------------------------------------
+// Topic-Specific Hint Generation Tests (ATS-012)
+// -----------------------------------------------------------------------------
+
+Deno.test('TeachingScriptGenerator - topic detection from tags', () => {
+  const generator = new TeachingScriptGenerator();
+
+  // Test Dynamic Programming detection
+  const dpProblem: Problem = {
+    id: 'dp-test',
+    slug: 'dp-test',
+    title: 'DP Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['dynamic-programming'],
+  };
+  let script = generator.generate(dpProblem);
+  let hintSteps = script.steps.filter((s) => s.type === 'hint');
+  assertEquals(hintSteps.length > 0, true, 'Should generate DP hints');
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Dynamic Programming')),
+    true,
+    'Hints should mention Dynamic Programming',
+  );
+
+  // Test Binary Tree detection
+  const treeProblem: Problem = {
+    id: 'tree-test',
+    slug: 'tree-test',
+    title: 'Tree Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['tree', 'binary-tree'],
+  };
+  script = generator.generate(treeProblem);
+  hintSteps = script.steps.filter((s) => s.type === 'hint');
+  assertEquals(hintSteps.length > 0, true, 'Should generate tree hints');
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Binary Tree')),
+    true,
+    'Hints should mention Binary Tree',
+  );
+
+  // Test Hash Table detection
+  const hashProblem: Problem = {
+    id: 'hash-test',
+    slug: 'hash-test',
+    title: 'Hash Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array', 'hash-table'],
+  };
+  script = generator.generate(hashProblem);
+  hintSteps = script.steps.filter((s) => s.type === 'hint');
+  assertEquals(hintSteps.length > 0, true, 'Should generate hash table hints');
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Hash Table')),
+    true,
+    'Hints should mention Hash Table',
+  );
+});
+
+Deno.test('TeachingScriptGenerator - detects two-pointers topic', () => {
+  const generator = new TeachingScriptGenerator();
+
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array', 'two-pointers'],
+  };
+
+  const script = generator.generate(problem);
+  const hintSteps = script.steps.filter((s) => s.type === 'hint');
+
+  assertEquals(hintSteps.length > 0, true, 'Should generate two-pointers hints');
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Two Pointers')),
+    true,
+    'Hints should mention Two Pointers',
+  );
+});
+
+Deno.test('TeachingScriptGenerator - detects binary-search topic', () => {
+  const generator = new TeachingScriptGenerator();
+
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'hard',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array', 'binary-search'],
+  };
+
+  const script = generator.generate(problem);
+  const hintSteps = script.steps.filter((s) => s.type === 'hint');
+
+  assertEquals(hintSteps.length > 0, true, 'Should generate binary search hints');
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Binary Search')),
+    true,
+    'Hints should mention Binary Search',
+  );
+});
+
+Deno.test('TeachingScriptGenerator - detects stack-queue topic', () => {
+  const generator = new TeachingScriptGenerator();
+
+  // Test stack detection
+  let problem: Problem = {
+    id: 'stack-test',
+    slug: 'stack-test',
+    title: 'Stack Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['stack'],
+  };
+  let script = generator.generate(problem);
+  let hintSteps = script.steps.filter((s) => s.type === 'hint');
+  assertEquals(hintSteps.length > 0, true, 'Should generate stack hints');
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Stack/Queue')),
+    true,
+    'Hints should mention Stack/Queue',
+  );
+
+  // Test queue detection
+  problem = {
+    id: 'queue-test',
+    slug: 'queue-test',
+    title: 'Queue Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['queue'],
+  };
+  script = generator.generate(problem);
+  hintSteps = script.steps.filter((s) => s.type === 'hint');
+  assertEquals(hintSteps.length > 0, true, 'Should generate queue hints');
+});
+
+Deno.test('TeachingScriptGenerator - detects graph topic', () => {
+  const generator = new TeachingScriptGenerator();
+
+  // Test various graph-related tags
+  const graphTags = [
+    ['graph'],
+    ['graph', 'bfs'],
+    ['graph', 'dfs'],
+    ['breadth-first-search'],
+    ['depth-first-search'],
+  ];
+
+  for (const tags of graphTags) {
+    const problem: Problem = {
+      id: 'graph-test',
+      slug: 'graph-test',
+      title: 'Graph Test',
+      difficulty: 'medium',
+      description: 'Test',
+      examples: [],
+      constraints: [],
+      hints: [],
+      tags,
+    };
+
+    const script = generator.generate(problem);
+    const hintSteps = script.steps.filter((s) => s.type === 'hint');
+
+    assertEquals(
+      hintSteps.length > 0,
+      true,
+      `Should generate graph hints for tags: ${tags.join(', ')}`,
+    );
+    assertEquals(
+      hintSteps.some((s) => s.content.includes('Graph')),
+      true,
+      `Hints should mention Graph for tags: ${tags.join(', ')}`,
+    );
+  }
+});
+
+Deno.test('TeachingScriptGenerator - handles multiple topics', () => {
+  const generator = new TeachingScriptGenerator();
+
+  const problem: Problem = {
+    id: 'multi-topic',
+    slug: 'multi-topic',
+    title: 'Multi Topic Test',
+    difficulty: 'hard',
+    description: 'A complex problem with multiple topics',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array', 'dynamic-programming', 'binary-search'],
+  };
+
+  const script = generator.generate(problem);
+  const hintSteps = script.steps.filter((s) => s.type === 'hint');
+
+  // Should generate hints for both detected topics
+  assertEquals(hintSteps.length > 0, true, 'Should generate hints for multiple topics');
+
+  // Should have hints for both DP and binary search
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Dynamic Programming')),
+    true,
+    'Should have DP hints',
+  );
+  assertEquals(
+    hintSteps.some((s) => s.content.includes('Binary Search')),
+    true,
+    'Should have binary search hints',
+  );
+});
+
+Deno.test('TeachingScriptGenerator - topic hints have appropriate triggers', () => {
+  const generator = new TeachingScriptGenerator();
+
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['hash-table'],
+  };
+
+  const script = generator.generate(problem);
+  const hintSteps = script.steps.filter((s) => s.type === 'hint');
+
+  // All hint steps should have triggers
+  for (const step of hintSteps) {
+    assertExists(step.trigger, 'Hint step should have a trigger');
+    assertEquals(typeof step.trigger, 'string', 'Trigger should be a string');
+    assertEquals(step.trigger.length > 0, true, 'Trigger should not be empty');
+    // Should check for attempts and pass state
+    assertEquals(
+      step.trigger.includes('attempts') || step.trigger.includes('passed'),
+      true,
+      'Trigger should reference attempts or passed state',
+    );
+  }
+});
+
+Deno.test('TeachingScriptGenerator - difficulty affects hint triggers', () => {
+  const generator = new TeachingScriptGenerator();
+
+  // Hard problem should have lower attempt threshold
+  const hardProblem: Problem = {
+    id: 'hard-test',
+    slug: 'hard-test',
+    title: 'Hard Test',
+    difficulty: 'hard',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['dynamic-programming'],
+  };
+
+  const hardScript = generator.generate(hardProblem);
+  const hardHints = hardScript.steps.filter((s) => s.type === 'hint');
+
+  // Medium/easy problem should have higher attempt threshold
+  const mediumProblem: Problem = {
+    id: 'medium-test',
+    slug: 'medium-test',
+    title: 'Medium Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['dynamic-programming'],
+  };
+
+  const mediumScript = generator.generate(mediumProblem);
+  const mediumHints = mediumScript.steps.filter((s) => s.type === 'hint');
+
+  // Both should have hints
+  assertEquals(hardHints.length > 0, true, 'Hard problem should have hints');
+  assertEquals(mediumHints.length > 0, true, 'Medium problem should have hints');
+
+  // Hard hints should trigger earlier (lower threshold)
+  // Check if hard problem triggers mention a lower number
+  const hardTrigger = hardHints[0].trigger || '';
+  const mediumTrigger = mediumHints[0].trigger || '';
+
+  // Extract numbers from triggers
+  const hardMatch = hardTrigger.match(/attempts\s*>=\s*(\d+)/);
+  const mediumMatch = mediumTrigger.match(/attempts\s*>=\s*(\d+)/);
+
+  if (hardMatch && mediumMatch) {
+    const hardThreshold = parseInt(hardMatch[1]);
+    const mediumThreshold = parseInt(mediumMatch[1]);
+    assertEquals(
+      hardThreshold <= mediumThreshold,
+      true,
+      'Hard problem should have lower or equal attempt threshold',
+    );
+  }
+});
+
+Deno.test('TeachingScriptGenerator - includeTopicHints option works', () => {
+  // Generator with topic hints disabled
+  const generatorNoHints = new TeachingScriptGenerator({
+    includeTopicHints: false,
+  });
+
+  // Generator with topic hints enabled (default)
+  const generatorWithHints = new TeachingScriptGenerator({
+    includeTopicHints: true,
+  });
+
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['hash-table', 'dynamic-programming'],
+  };
+
+  const scriptNoHints = generatorNoHints.generate(problem);
+  const scriptWithHints = generatorWithHints.generate(problem);
+
+  // Script without topic hints should have fewer or no topic-specific hints
+  const noHintsCount = scriptNoHints.steps.filter((s) => s.type === 'hint').length;
+  const withHintsCount = scriptWithHints.steps.filter((s) => s.type === 'hint').length;
+
+  assertEquals(
+    withHintsCount > noHintsCount,
+    true,
+    'Script with includeTopicHints should have more hint steps',
+  );
+});
+
+Deno.test('TeachingScriptGenerator - language-specific hints', () => {
+  const languages: Array<'typescript' | 'javascript' | 'python' | 'java'> = [
+    'typescript',
+    'javascript',
+    'python',
+    'java',
+  ];
+
+  for (const language of languages) {
+    const generator = new TeachingScriptGenerator({
+      language,
+      includeTopicHints: true,
+    });
+
+    const problem: Problem = {
+      id: 'test',
+      slug: 'test',
+      title: 'Test',
+      difficulty: 'easy',
+      description: 'Test',
+      examples: [],
+      constraints: [],
+      hints: [],
+      tags: ['hash-table'],
+    };
+
+    const script = generator.generate(problem);
+    const hintSteps = script.steps.filter((s) => s.type === 'hint');
+
+    // Hash table hints should mention language-specific data structures
+    assertEquals(hintSteps.length > 0, true, `Should generate hints for ${language}`);
+
+    const hashTableHints = hintSteps.filter((s) => s.content.includes('Hash Table'));
+    assertEquals(
+      hashTableHints.length > 0,
+      true,
+      `Should have hash table hints for ${language}`,
+    );
+
+    // Check for language-specific mentions
+    const content = hashTableHints[0].content.toLowerCase();
+    if (language === 'typescript' || language === 'javascript') {
+      assertEquals(
+        content.includes('map') || content.includes('set'),
+        true,
+        'TypeScript/JavaScript hints should mention Map or Set',
+      );
+    } else if (language === 'python') {
+      assertEquals(
+        content.includes('dict') || content.includes('set'),
+        true,
+        'Python hints should mention dict or set',
+      );
+    } else if (language === 'java') {
+      assertEquals(
+        content.includes('hashmap') || content.includes('hashset'),
+        true,
+        'Java hints should mention HashMap or HashSet',
+      );
+    }
+  }
+});
+
+Deno.test('TeachingScriptGenerator - topic hints include relevant concepts', () => {
+  const generator = new TeachingScriptGenerator();
+
+  // Test DP hints include key concepts
+  let problem: Problem = {
+    id: 'dp-test',
+    slug: 'dp-test',
+    title: 'DP Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['dynamic-programming'],
+  };
+  let script = generator.generate(problem);
+  const dpHints = script.steps.filter((s) =>
+    s.type === 'hint' && s.content.includes('Dynamic Programming')
+  );
+  assertEquals(dpHints.length > 0, true, 'Should have DP hints');
+  const dpContent = dpHints[0].content.toLowerCase();
+  assertEquals(
+    dpContent.includes('subproblem') || dpContent.includes('recurrence'),
+    true,
+    'DP hints should mention subproblems or recurrence',
+  );
+
+  // Test tree hints include key concepts
+  problem = {
+    id: 'tree-test',
+    slug: 'tree-test',
+    title: 'Tree Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['binary-tree'],
+  };
+  script = generator.generate(problem);
+  const treeHints = script.steps.filter((s) =>
+    s.type === 'hint' && s.content.includes('Binary Tree')
+  );
+  assertEquals(treeHints.length > 0, true, 'Should have tree hints');
+  const treeContent = treeHints[0].content.toLowerCase();
+  assertEquals(
+    treeContent.includes('recursion') || treeContent.includes('traversal'),
+    true,
+    'Tree hints should mention recursion or traversal',
+  );
+
+  // Test graph hints include key concepts
+  problem = {
+    id: 'graph-test',
+    slug: 'graph-test',
+    title: 'Graph Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['graph', 'bfs'],
+  };
+  script = generator.generate(problem);
+  const graphHints = script.steps.filter((s) =>
+    s.type === 'hint' && s.content.includes('Graph')
+  );
+  assertEquals(graphHints.length > 0, true, 'Should have graph hints');
+  const graphContent = graphHints[0].content.toLowerCase();
+  assertEquals(
+    graphContent.includes('bfs') || graphContent.includes('dfs') ||
+      graphContent.includes('visited'),
+    true,
+    'Graph hints should mention BFS, DFS, or visited tracking',
+  );
+});

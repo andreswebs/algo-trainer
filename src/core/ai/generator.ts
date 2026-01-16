@@ -568,6 +568,12 @@ export class TeachingScriptGenerator {
       steps: this.populateSteps(template.steps, problem),
     };
 
+    // Add topic-specific hints if enabled
+    if (this.options.includeTopicHints) {
+      const topics = this.detectTopics(problem);
+      this.addTopicHints(script, topics, problem);
+    }
+
     return script;
   }
 
@@ -685,5 +691,286 @@ export class TeachingScriptGenerator {
     }
 
     return lines.join('\n') + '\n';
+  }
+
+  /**
+   * Detects relevant algorithmic topics from problem tags.
+   *
+   * This method normalizes tags to lowercase and identifies known algorithmic
+   * patterns that have specialized teaching hints available.
+   *
+   * @param problem - The problem to analyze
+   * @returns Array of detected topic identifiers
+   * @private
+   */
+  private detectTopics(problem: Problem): string[] {
+    const topics: string[] = [];
+    const normalizedTags = problem.tags.map((tag) => tag.toLowerCase());
+
+    // Check for each known topic pattern
+    if (
+      normalizedTags.some((tag) => tag.includes('dynamic-programming') || tag.includes('dp'))
+    ) {
+      topics.push('dynamic-programming');
+    }
+
+    if (
+      normalizedTags.some((tag) =>
+        tag.includes('tree') || tag.includes('binary-tree') || tag.includes('bst')
+      )
+    ) {
+      topics.push('binary-tree');
+    }
+
+    if (normalizedTags.some((tag) => tag.includes('hash'))) {
+      topics.push('hash-table');
+    }
+
+    if (normalizedTags.some((tag) => tag.includes('two-pointer'))) {
+      topics.push('two-pointers');
+    }
+
+    if (normalizedTags.some((tag) => tag.includes('binary-search'))) {
+      topics.push('binary-search');
+    }
+
+    if (normalizedTags.some((tag) => tag.includes('stack') || tag.includes('queue'))) {
+      topics.push('stack-queue');
+    }
+
+    if (
+      normalizedTags.some((tag) =>
+        tag.includes('graph') || tag.includes('bfs') || tag.includes('dfs') ||
+        tag.includes('breadth-first') || tag.includes('depth-first')
+      )
+    ) {
+      topics.push('graph');
+    }
+
+    return topics;
+  }
+
+  /**
+   * Adds topic-specific teaching hints to the script.
+   *
+   * This method injects specialized hints based on detected topics. Hints are
+   * added as 'hint' type steps with appropriate triggers based on problem
+   * difficulty and attempt count.
+   *
+   * @param script - The teaching script to enhance
+   * @param topics - Array of detected topics
+   * @param problem - The original problem for context
+   * @private
+   */
+  private addTopicHints(script: TeachingScript, topics: string[], problem: Problem): void {
+    // Determine trigger threshold based on difficulty
+    const attemptsThreshold = problem.difficulty === 'hard' ? 2 : 3;
+
+    for (const topic of topics) {
+      const hints = this.generateTopicHints(topic, problem);
+      if (hints.length > 0) {
+        // Add hints with triggers based on attempts
+        for (const hint of hints) {
+          script.steps.push({
+            type: 'hint',
+            trigger: `!passed && attempts >= ${attemptsThreshold}`,
+            content: hint,
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * Generates hints for a specific topic.
+   *
+   * @param topic - The topic identifier
+   * @param problem - The problem for context
+   * @returns Array of hint content strings
+   * @private
+   */
+  private generateTopicHints(topic: string, problem: Problem): string[] {
+    switch (topic) {
+      case 'dynamic-programming':
+        return this.generateDPHints(problem);
+      case 'binary-tree':
+        return this.generateBinaryTreeHints(problem);
+      case 'hash-table':
+        return this.generateHashTableHints(problem);
+      case 'two-pointers':
+        return this.generateTwoPointersHints(problem);
+      case 'binary-search':
+        return this.generateBinarySearchHints(problem);
+      case 'stack-queue':
+        return this.generateStackQueueHints(problem);
+      case 'graph':
+        return this.generateGraphHints(problem);
+      default:
+        return [];
+    }
+  }
+
+  /**
+   * Generates Dynamic Programming specific hints.
+   * @private
+   */
+  private generateDPHints(problem: Problem): string[] {
+    return [
+      `**Dynamic Programming Hint**:
+
+Think about this problem in terms of subproblems:
+1. **Define the state**: What does dp[i] represent?
+2. **Identify the recurrence relation**: How does dp[i] relate to previous states?
+3. **Base cases**: What are the simplest cases you can solve directly?
+4. **Build up**: Can you solve from bottom-up or use memoization for top-down?
+
+${problem.difficulty === 'hard' ? '**Hard DP problems** often have multiple dimensions or complex state transitions. Start simple!' : 'Start by identifying what information you need to track at each step.'}`,
+    ];
+  }
+
+  /**
+   * Generates Binary Tree specific hints.
+   * @private
+   */
+  private generateBinaryTreeHints(_problem: Problem): string[] {
+    return [
+      `**Binary Tree Hint**:
+
+Consider these common patterns:
+1. **Recursion**: Most tree problems have elegant recursive solutions
+   - Base case: What happens at null/leaf nodes?
+   - Recursive case: Process left and right subtrees
+2. **Traversal type**: Does order matter?
+   - Pre-order: Process node, then children
+   - In-order: Left, node, right (useful for BSTs)
+   - Post-order: Children, then node
+   - Level-order: Use a queue for BFS
+3. **Helper function**: Often useful to pass additional parameters
+
+Think: Can you solve this by breaking it down into left and right subtree subproblems?`,
+    ];
+  }
+
+  /**
+   * Generates Hash Table specific hints.
+   * @private
+   */
+  private generateHashTableHints(_problem: Problem): string[] {
+    return [
+      `**Hash Table Hint**:
+
+Hash tables excel at trading space for time:
+1. **What to store**: Keys? Values? Both? Counts? Indices?
+2. **When to check**: Before adding? After? While iterating?
+3. **Common patterns**:
+   - Lookup in O(1): Check if element exists
+   - Count frequency: Map values to counts
+   - Store indices: Map values to positions
+   - Complement/pair finding: Check if target - current exists
+
+In ${this.options.language}, use:
+${this.options.language === 'typescript' || this.options.language === 'javascript' ? '- Map for key-value pairs\n- Set for unique values' : this.options.language === 'python' ? '- dict for key-value pairs\n- set for unique values' : this.options.language === 'java' ? '- HashMap<K,V> for key-value pairs\n- HashSet<T> for unique values' : '- appropriate hash table data structure'}`,
+    ];
+  }
+
+  /**
+   * Generates Two Pointers specific hints.
+   * @private
+   */
+  private generateTwoPointersHints(_problem: Problem): string[] {
+    return [
+      `**Two Pointers Hint**:
+
+The two pointers technique is powerful for array/string problems:
+1. **Pattern identification**:
+   - Sorted array? Consider left/right pointers
+   - Sliding window? Consider start/end pointers
+   - Fast/slow? For linked lists or cycle detection
+2. **Movement strategy**:
+   - Both move inward? (opposite ends)
+   - Both move forward? (sliding window)
+   - One fast, one slow? (cycle detection)
+3. **When to move which pointer**:
+   - Based on comparison? Move the one that doesn't satisfy condition
+   - Based on window size? Move start or end to adjust
+
+Think: How does moving each pointer change your answer?`,
+    ];
+  }
+
+  /**
+   * Generates Binary Search specific hints.
+   * @private
+   */
+  private generateBinarySearchHints(problem: Problem): string[] {
+    return [
+      `**Binary Search Hint**:
+
+Binary search isn't just for finding elements:
+1. **Search space**: What are you searching over? Indices? Values? Answers?
+2. **Monotonic property**: What makes one half eliminatable?
+3. **Mid calculation**: Use \`left + (right - left) / 2\` to avoid overflow
+4. **Boundary handling**:
+   - Which condition moves left? Which moves right?
+   - Is target at mid? Or in left/right half?
+5. **Final check**: After loop, verify left/right position
+
+${problem.difficulty === 'hard' ? '**Hard problems** might require binary search on the answer space rather than indices!' : 'Start with: What makes this problem monotonic?'}`,
+    ];
+  }
+
+  /**
+   * Generates Stack/Queue specific hints.
+   * @private
+   */
+  private generateStackQueueHints(_problem: Problem): string[] {
+    return [
+      `**Stack/Queue Hint**:
+
+These data structures are perfect for specific patterns:
+1. **Stack (LIFO)** - Last In, First Out:
+   - Matching/balancing problems (parentheses, tags)
+   - Reversing or undoing operations
+   - Maintaining monotonic properties
+   - Tracking "most recent" states
+2. **Queue (FIFO)** - First In, First Out:
+   - Level-order traversal
+   - BFS in graphs
+   - Processing in order received
+3. **Key questions**:
+   - What do you push/enqueue? When?
+   - What triggers a pop/dequeue?
+   - Do you need to check top/front before operating?
+
+Think: Does the order of processing matter for your solution?`,
+    ];
+  }
+
+  /**
+   * Generates Graph specific hints.
+   * @private
+   */
+  private generateGraphHints(problem: Problem): string[] {
+    return [
+      `**Graph Hint**:
+
+Graph problems often come down to traversal strategy:
+1. **Representation**:
+   - Adjacency list? Adjacency matrix? Edge list?
+   - Choose based on density and operations needed
+2. **Traversal choice**:
+   - **BFS** (queue): Level-by-level, shortest path in unweighted graphs
+   - **DFS** (recursion/stack): Explore deeply, backtracking, cycle detection
+3. **State tracking**:
+   - Visited set: Prevent revisiting nodes
+   - Distance array: Track path lengths
+   - Parent map: Reconstruct paths
+4. **Edge cases**:
+   - Disconnected components?
+   - Cycles (directed/undirected)?
+   - Self-loops?
+
+${problem.difficulty === 'hard' ? '**Complex graphs** might need advanced algorithms like Dijkstra, Topological Sort, or Union-Find!' : 'Start by choosing BFS or DFS based on what you need to find.'}`,
+    ];
   }
 }
