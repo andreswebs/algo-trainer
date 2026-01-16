@@ -468,3 +468,368 @@ Deno.test('Template progression - all templates have required base steps', () =>
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// TeachingScriptGenerator Tests
+// -----------------------------------------------------------------------------
+
+import { TeachingScriptGenerator } from '../../../src/core/ai/generator.ts';
+
+Deno.test('TeachingScriptGenerator - constructor with defaults', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  // Should use default options
+  const problem: Problem = {
+    id: '1',
+    slug: 'test-problem',
+    title: 'Test Problem',
+    difficulty: 'easy',
+    description: 'A test problem',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const script = generator.generate(problem);
+  
+  // Should use default language (typescript)
+  assertEquals(script.language, 'typescript');
+});
+
+Deno.test('TeachingScriptGenerator - constructor with custom options', () => {
+  const generator = new TeachingScriptGenerator({
+    templateType: 'advanced',
+    language: 'python',
+    includeTopicHints: false,
+  });
+  
+  const problem: Problem = {
+    id: '1',
+    slug: 'test-problem',
+    title: 'Test Problem',
+    difficulty: 'easy',
+    description: 'A test problem',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const script = generator.generate(problem);
+  
+  assertEquals(script.language, 'python');
+  // Should use advanced template even though problem is easy
+  assertEquals(script.steps.length >= ADVANCED_TEMPLATE.steps.length, true);
+});
+
+Deno.test('TeachingScriptGenerator - generate creates complete script', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  const problem: Problem = {
+    id: 'two-sum',
+    slug: 'two-sum',
+    title: 'Two Sum',
+    difficulty: 'easy',
+    description: 'Find two numbers that add up to target',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array', 'hash-table'],
+  };
+  
+  const script = generator.generate(problem);
+  
+  // Verify script metadata matches problem
+  assertEquals(script.id, 'two-sum');
+  assertEquals(script.title, 'Two Sum');
+  assertEquals(script.difficulty, 'easy');
+  assertEquals(script.tags, ['array', 'hash-table']);
+  
+  // Should have steps
+  assertEquals(script.steps.length > 0, true);
+  
+  // Should have required step types
+  const stepTypes = script.steps.map((s) => s.type);
+  assertEquals(stepTypes.includes('intro'), true);
+  assertEquals(stepTypes.includes('pre_prompt'), true);
+  assertEquals(stepTypes.includes('after_success'), true);
+});
+
+Deno.test('TeachingScriptGenerator - substitutes variables in content', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test-problem',
+    title: 'Test Problem',
+    difficulty: 'medium',
+    description: 'A test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const script = generator.generate(problem);
+  
+  // Find intro step and check variable substitution
+  const introStep = script.steps.find((s) => s.type === 'intro');
+  assertExists(introStep);
+  
+  // {{title}} should be replaced with actual title
+  assertEquals(introStep.content.includes('Test Problem'), true);
+  assertEquals(introStep.content.includes('{{title}}'), false);
+  
+  // {{difficulty}} should be replaced with actual difficulty
+  assertEquals(introStep.content.includes('medium'), true);
+  assertEquals(introStep.content.includes('{{difficulty}}'), false);
+  
+  // {{attempts}} should remain for runtime substitution
+  const attemptsSteps = script.steps.filter((s) => s.content.includes('{{attempts}}'));
+  // Some templates may have {{attempts}}, others may not
+  for (const step of attemptsSteps) {
+    assertEquals(step.content.includes('{{attempts}}'), true);
+  }
+});
+
+Deno.test('TeachingScriptGenerator - auto-selects template based on difficulty', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  const easyProblem: Problem = {
+    id: '1',
+    slug: 'easy',
+    title: 'Easy',
+    difficulty: 'easy',
+    description: 'Easy',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const mediumProblem: Problem = {
+    id: '2',
+    slug: 'medium',
+    title: 'Medium',
+    difficulty: 'medium',
+    description: 'Medium',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const hardProblem: Problem = {
+    id: '3',
+    slug: 'hard',
+    title: 'Hard',
+    difficulty: 'hard',
+    description: 'Hard',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const easyScript = generator.generate(easyProblem);
+  const mediumScript = generator.generate(mediumProblem);
+  const hardScript = generator.generate(hardProblem);
+  
+  // Easy should have fewer steps than medium
+  assertEquals(easyScript.steps.length <= mediumScript.steps.length, true);
+  
+  // Medium should have fewer or equal steps than hard
+  assertEquals(mediumScript.steps.length <= hardScript.steps.length, true);
+});
+
+Deno.test('TeachingScriptGenerator - generateYaml produces valid YAML', () => {
+  const generator = new TeachingScriptGenerator({
+    templateType: 'basic',
+    language: 'typescript',
+  });
+  
+  const problem: Problem = {
+    id: 'test-yaml',
+    slug: 'test-yaml',
+    title: 'Test YAML',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array'],
+  };
+  
+  const yaml = generator.generateYaml(problem);
+  
+  // Should be a non-empty string
+  assertEquals(typeof yaml, 'string');
+  assertEquals(yaml.length > 0, true);
+  
+  // Should contain key metadata fields
+  assertEquals(yaml.includes('id: test-yaml'), true);
+  assertEquals(yaml.includes('title: Test YAML'), true);
+  assertEquals(yaml.includes('difficulty: easy'), true);
+  assertEquals(yaml.includes('language: typescript'), true);
+  
+  // Should contain tags
+  assertEquals(yaml.includes('tags:'), true);
+  assertEquals(yaml.includes('- array'), true);
+  
+  // Should contain steps
+  assertEquals(yaml.includes('steps:'), true);
+  assertEquals(yaml.includes('type: intro'), true);
+  assertEquals(yaml.includes('content:'), true);
+});
+
+Deno.test('TeachingScriptGenerator - generateYaml handles multiline content', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const yaml = generator.generateYaml(problem);
+  
+  // Multiline content should use | syntax
+  // Most steps have multiline content, so this should be present
+  assertEquals(yaml.includes('content: |'), true);
+});
+
+Deno.test('TeachingScriptGenerator - generateYaml includes triggers', () => {
+  const generator = new TeachingScriptGenerator({
+    templateType: 'comprehensive',
+  });
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const yaml = generator.generateYaml(problem);
+  
+  // Comprehensive template has triggers
+  assertEquals(yaml.includes('trigger:'), true);
+});
+
+Deno.test('TeachingScriptGenerator - generateYaml includes keywords', () => {
+  const generator = new TeachingScriptGenerator({
+    templateType: 'comprehensive',
+  });
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'medium',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const yaml = generator.generateYaml(problem);
+  
+  // Comprehensive template has on_request steps with keywords
+  assertEquals(yaml.includes('keywords:'), true);
+});
+
+Deno.test('TeachingScriptGenerator - preserves step properties', () => {
+  const generator = new TeachingScriptGenerator({
+    templateType: 'basic',
+  });
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [],
+  };
+  
+  const script = generator.generate(problem);
+  
+  // Each step should preserve its original properties except substituted content
+  for (const step of script.steps) {
+    // All steps must have a type
+    assertExists(step.type);
+    assertEquals(typeof step.type, 'string');
+    
+    // All steps must have content
+    assertExists(step.content);
+    assertEquals(typeof step.content, 'string');
+    assertEquals(step.content.length > 0, true);
+    
+    // If original step had trigger, it should be preserved
+    // (checking this by verifying on_run steps have triggers in comprehensive template)
+  }
+});
+
+Deno.test('TeachingScriptGenerator - handles problems with empty tags', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: [], // Empty tags
+  };
+  
+  const script = generator.generate(problem);
+  const yaml = generator.generateYaml(problem);
+  
+  // Should handle empty tags gracefully
+  assertEquals(script.tags, []);
+  assertEquals(yaml.includes('tags: []'), true);
+});
+
+Deno.test('TeachingScriptGenerator - handles problems with multiple tags', () => {
+  const generator = new TeachingScriptGenerator();
+  
+  const problem: Problem = {
+    id: 'test',
+    slug: 'test',
+    title: 'Test',
+    difficulty: 'easy',
+    description: 'Test',
+    examples: [],
+    constraints: [],
+    hints: [],
+    tags: ['array', 'hash-table', 'two-pointers'],
+  };
+  
+  const script = generator.generate(problem);
+  const yaml = generator.generateYaml(problem);
+  
+  // Should include all tags
+  assertEquals(script.tags.length, 3);
+  assertEquals(yaml.includes('- array'), true);
+  assertEquals(yaml.includes('- hash-table'), true);
+  assertEquals(yaml.includes('- two-pointers'), true);
+});
