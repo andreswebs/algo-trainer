@@ -18,6 +18,29 @@ import { getWorkspaceStructure, isWorkspaceInitialized } from '../../core/mod.ts
 import { pathExists } from '../../utils/fs.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { requireProblemManager } from './shared.ts';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'progress',
+    description: 'View progress stats and completion',
+    usage: [
+      'at progress [options]',
+    ],
+    options: [
+      { flags: '-d, --detailed', description: 'Show detailed breakdown' },
+      { flags: '-c, --category', description: 'Group by category' },
+      { flags: '--json', description: 'Output in JSON format' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at progress', description: 'Show overall progress summary' },
+      { command: 'at progress --detailed', description: 'Show detailed breakdown' },
+      { command: 'at progress --category', description: 'Group by category' },
+      { command: 'at progress --json', description: 'Output as JSON' },
+    ],
+  });
+}
 
 /**
  * Options extracted from command arguments
@@ -313,6 +336,12 @@ function formatProgressTable(stats: ProgressStats, options: ProgressOptions): st
  * and optionally by category. Supports JSON output for scripting.
  */
 export async function progressCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   try {
     // Extract options
     const options = extractProgressOptions(args);

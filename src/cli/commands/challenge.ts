@@ -25,6 +25,35 @@ import { logError, logInfo, logSuccess, logWarning } from '../../utils/output.ts
 import { confirmAction, formatProblemSummary, requireProblemManager } from './shared.ts';
 import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { promptDifficulty, promptLanguage } from '../prompts.ts';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'challenge',
+    description: 'Start a new coding challenge',
+    usage: [
+      'at challenge [difficulty]',
+      'at challenge <slug>',
+      'at challenge --random',
+    ],
+    options: [
+      { flags: '-d, --difficulty <level>', description: 'Filter by difficulty (easy, medium, hard)' },
+      { flags: '-c, --category <cat>', description: 'Filter by category' },
+      { flags: '-t, --topic <topic>', description: 'Filter by topic' },
+      { flags: '-l, --language <lang>', description: 'Override default language' },
+      { flags: '-f, --force', description: 'Overwrite existing files' },
+      { flags: '--random', description: 'Start random problem (any difficulty)' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at challenge easy', description: 'Start an easy random challenge' },
+      { command: 'at challenge two-sum', description: 'Start the "two-sum" problem' },
+      { command: 'at challenge -d medium', description: 'Start a medium difficulty challenge' },
+      { command: 'at challenge -d hard -c arrays', description: 'Start a hard array problem' },
+      { command: 'at challenge --random', description: 'Start any random problem' },
+    ],
+  });
+}
 
 export interface ChallengeOptions {
   slug: string | undefined;
@@ -56,6 +85,12 @@ export function extractChallengeOptions(args: Args): ChallengeOptions {
 }
 
 export async function challengeCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   try {
     const options = extractChallengeOptions(args);
     const config = configManager.getConfig();

@@ -16,6 +16,29 @@ import { logError, logInfo, logSuccess } from '../../utils/output.ts';
 import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
 import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { promptSelect, promptText } from '../prompts.ts';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'complete',
+    description: 'Mark a problem as completed and archive it',
+    usage: [
+      'at complete <slug>',
+      'at complete',
+    ],
+    options: [
+      { flags: '-n, --notes <text>', description: 'Add completion notes' },
+      { flags: '--no-archive', description: 'Keep files in current (don\'t move)' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at complete two-sum', description: 'Mark "two-sum" as completed' },
+      { command: 'at complete', description: 'Complete current problem (interactive)' },
+      { command: 'at complete two-sum -n "Great problem!"', description: 'Complete with notes' },
+      { command: 'at complete --no-archive', description: 'Mark as complete without archiving' },
+    ],
+  });
+}
 
 export interface CompleteOptions {
   problemSlug: string | undefined;
@@ -33,6 +56,12 @@ export function extractCompleteOptions(args: Args): CompleteOptions {
 }
 
 export async function completeCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   try {
     const options = extractCompleteOptions(args);
     const config = configManager.getConfig();

@@ -17,6 +17,29 @@ import {
   updateProblemMetadata,
 } from '../../core/workspace/generation.ts';
 import { requireProblemManager, resolveProblem } from './shared.ts';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'hint',
+    description: 'Get progressive hints for a problem',
+    usage: [
+      'at hint <slug>',
+      'at hint <id>',
+    ],
+    options: [
+      { flags: '--level <n>', description: 'Get specific hint level (1-3)' },
+      { flags: '-a, --all', description: 'Show all available hints' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at hint two-sum', description: 'Get next hint for "two-sum"' },
+      { command: 'at hint 1', description: 'Get next hint by problem ID' },
+      { command: 'at hint two-sum --level 2', description: 'Get hint level 2' },
+      { command: 'at hint two-sum --all', description: 'Show all hints' },
+    ],
+  });
+}
 
 export interface HintOptions {
   problemSlug: string | undefined;
@@ -118,6 +141,12 @@ function displayHints(
 }
 
 export async function hintCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   try {
     const options = extractHintOptions(args);
     const config = configManager.getConfig();

@@ -11,6 +11,35 @@ import type { Args } from '@std/cli/parse-args';
 import type { CommandResult, Difficulty, ProblemQuery } from '../../types/global.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { requireProblemManager } from './shared.ts';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'list',
+    description: 'List and filter available problems',
+    usage: [
+      'at list [options]',
+    ],
+    options: [
+      { flags: '-d, --difficulty <level>', description: 'Filter by difficulty (easy, medium, hard)' },
+      { flags: '-c, --category <cat>', description: 'Filter by category' },
+      { flags: '-s, --search <text>', description: 'Search in title/description' },
+      { flags: '-l, --limit <n>', description: 'Limit results (default: 20)' },
+      { flags: '--json', description: 'Output in JSON format' },
+      { flags: '--verbose', description: 'Show full descriptions' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at list', description: 'List first 20 problems' },
+      { command: 'at list -d easy', description: 'List easy problems' },
+      { command: 'at list -c arrays', description: 'List array problems' },
+      { command: 'at list -s "two sum"', description: 'Search for problems' },
+      { command: 'at list -l 50', description: 'List first 50 problems' },
+      { command: 'at list --verbose', description: 'Show detailed descriptions' },
+      { command: 'at list --json', description: 'Output as JSON' },
+    ],
+  });
+}
 
 /**
  * Options extracted from command arguments
@@ -108,6 +137,12 @@ function formatAsTable(
  * Supports JSON output and verbose mode for detailed information.
  */
 export async function listCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   try {
     // Extract options
     const options = extractListOptions(args);

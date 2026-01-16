@@ -13,6 +13,33 @@ import { ExitCode } from '../exit-codes.ts';
 import { logError, logInfo, logSuccess, outputData } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import { DEFAULT_CONFIG } from '../../config/types.ts';
+import { showCommandHelp } from './help.ts';
+
+function showHelp(): void {
+  showCommandHelp({
+    name: 'config',
+    description: 'Manage configuration settings',
+    usage: [
+      'at config list',
+      'at config get <key>',
+      'at config set <key> <value>',
+      'at config reset [key]',
+    ],
+    options: [
+      { flags: '--json', description: 'Output in JSON format' },
+      { flags: '-h, --help', description: 'Show this help message' },
+    ],
+    examples: [
+      { command: 'at config list', description: 'List all configuration values' },
+      { command: 'at config get language', description: 'Get the language setting' },
+      { command: 'at config set language python', description: 'Set default language to Python' },
+      { command: 'at config set preferences.theme dark', description: 'Set theme preference' },
+      { command: 'at config reset language', description: 'Reset language to default' },
+      { command: 'at config reset', description: 'Reset all settings to defaults' },
+      { command: 'at config list --json', description: 'Get config as JSON' },
+    ],
+  });
+}
 
 export type ConfigSubcommand = 'get' | 'set' | 'list' | 'reset';
 
@@ -294,6 +321,12 @@ async function configReset(key?: string): Promise<CommandResult> {
  * Main config command handler
  */
 export async function configCommand(args: Args): Promise<CommandResult> {
+  // Handle help flag
+  if (args.help || args.h) {
+    showHelp();
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
   const options = extractConfigOptions(args);
 
   // Default to 'list' if no subcommand provided
