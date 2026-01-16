@@ -6,73 +6,19 @@ An offline LeetCode practice environment.
 
 ## The story
 
-This is a work-in-progress. I started this repo to test the capabilities of Cursor with the `Claude Opus 4.5` model and investigate orchestrating agents in parallel. This is essentially an experiment for `$WORK`, but may turn out to be a useful pedagogical tool. I recently started on a project which gave me access to Cursor and `Claude Opus 4.5`, and I felt I needed a deep dive into their capabilities.
+This is a work-in-progress. I started this repo to test the capabilities of Cursor with the `Claude Opus 4.5` model and investigate orchestrating agents in parallel. This is essentially an experiment for `$WORK`, but may turn out to be a useful pedagogical tool. The story is as follows.
 
-This repo was originally a fork of [karote00/local-leetcode-trainer](https://github.com/karote00/local-leetcode-trainer). I'm testing how well Cursor with `Opus 4.5` can convert it to Deno + TypeScript and implement various improvements to the CLI.
+I had recently started on a project which gave me access to Cursor and `Claude Opus 4.5`, and I felt I needed a deep dive into their capabilities.
 
-## Shell Completions
+This repo was originally a fork of [karote00/local-leetcode-trainer](https://github.com/karote00/local-leetcode-trainer), which I found when looking for a way to run LeetCode problems locally.
 
-Bash shell completions are available to enhance the CLI experience with auto-completion of commands, flags, and values.
+I begun testing how well Cursor with `Opus 4.5` can convert it to Deno + TypeScript and implement various improvements to the CLI. I begun with a couple of careful planning and research sessions, creating new specs as output. When I was ready, I started to spin up agents in parallel in YOLO mode. This approach quickly exhausted my available credits for the model, and at this point I switched tools. The experience was boring and tiring, watching the agents grind through my task list, and then reviewing a lot of output. I soon lost focus. This was day 2 of the experiment.
 
-### Installation
+On the next day, after I had exhausted my tokens for Cursor, I switched to other tools. First I briefly tried `Gemini 3 Pro` through the Goose CLI. It gave me slightly worse results than `Opus 4.5` (for example, it insisted on overwriting the Serena memory files with crap related to the current task), and I was quickly rate-limited.
 
-#### Bash
+Then I went on with GitHub Copilot using `Claude Sonnet 4`, but the output even worse than the two previous models (it made more mistakes, more failed tests, backed itself into a corner and made me start from scratch on a feature one time). At this point, I stopped caring and stopped reading attentively through generated code, and just started vibing the whole thing. I started a new approach:
 
-**Option 1: User installation (recommended)**
-
-Add the following line to your `~/.bashrc` or `~/.bash_profile`:
-
-```bash
-source /path/to/algo-trainer/completions/at.bash
-```
-
-Then reload your shell configuration:
-
-```bash
-source ~/.bashrc
-```
-
-**Option 2: System-wide installation**
-
-Copy the completion script to your system's bash completion directory:
-
-```bash
-# On most Linux systems
-sudo cp completions/at.bash /etc/bash_completion.d/at
-
-# On macOS with bash-completion installed via Homebrew
-cp completions/at.bash $(brew --prefix)/etc/bash_completion.d/at
-
-# Or to user's local completion directory
-mkdir -p ~/.local/share/bash-completion/completions
-cp completions/at.bash ~/.local/share/bash-completion/completions/at
-```
-
-### Features
-
-The bash completion script provides:
-
-- **Command completion**: All available commands (`challenge`, `complete`, `config`, `hint`, `init`, `list`, `progress`)
-- **Flag completion**: Global flags (`--help`, `--version`, `--verbose`, etc.) and command-specific flags
-- **Value completion**:
-  - Languages: `typescript`, `javascript`, `python`, `java`, `cpp`, `rust`, `go`
-  - Difficulties: `easy`, `medium`, `hard`
-  - Config keys and their valid values
-  - Template styles: `minimal`, `documented`, `comprehensive`
-  - And more contextual completions
-
-### Usage Examples
-
-After installation, you can use tab completion:
-
-```bash
-at <TAB>                    # Shows all commands
-at ch<TAB>                  # Completes to "challenge"
-at challenge --<TAB>        # Shows challenge flags
-at challenge -d <TAB>       # Shows difficulty options
-at config set <TAB>         # Shows config keys
-at config set language <TAB> # Shows language options
-```
+I did a deep planning session for each major sub-system, before starting the implementation of it. For those sessions I used `Opus 4.5` again. This gave me a tasks.md file for each sub-system, with small tasks that could be parallelized. Then I started assigning those as issues directly to the Copilot remote agent on GitHub. I made sure everything passed linting and had some test coverage, but didn't bother to read the details. I just briefly skimmed the PRs before merging.
 
 ## AI Development Workflow
 
@@ -92,12 +38,6 @@ This project serves as a testbed for various AI-assisted development strategies.
 2. **Agent Deployment**: One container is created per worktree, with a separate agent context
 3. **Parallel Execution**: Multiple agents work simultaneously on tasks
 4. **AI reviews**: PRs are reviewed separately by GitHub Copilot
-
-## Features
-
-- **Shell Completions**: Tab completion for Zsh (Bash and Fish coming soon). See [docs/SHELL_COMPLETIONS.md](docs/SHELL_COMPLETIONS.md) for installation instructions.
-- **Environment Variables**: Configure via environment variables. See [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
-- **Interactive Prompts**: User-friendly interactive prompts. See [docs/INTERACTIVE_PROMPTS.md](docs/INTERACTIVE_PROMPTS.md).
 
 ## Authors
 

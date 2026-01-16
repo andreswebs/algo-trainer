@@ -4,20 +4,17 @@ Algo Trainer provides shell completion scripts for popular shells, enabling tab 
 
 ## Supported Shells
 
-- **Zsh** (`completions/_at`)
-- Bash (coming soon)
-- Fish (coming soon)
+- Zsh
+- Bash
+- Fish
 
 ## Features
 
-The completion scripts provide intelligent tab completion for:
-
-- **Commands**: `challenge`, `complete`, `config`, `hint`, `init`, `list`, `progress`
-- **Global flags**: `--help`, `--version`, `--verbose`, `--quiet`, `--no-color`, `--no-emoji`, `--config`
-- **Command-specific flags**: Each command has its own set of flags and options
-- **Dynamic values**: Completion of difficulty levels, languages, categories, and more
-- **Subcommands**: Config subcommands (`get`, `set`, `list`, `reset`)
-- **Config keys**: Completion of valid configuration keys and their values
+- Command completion for all CLI commands (challenge, complete, config, hint, init, list, progress)
+- Flag completion with descriptions
+- Config subcommand completion
+- Difficulty and language option completion with predefined values
+- Help flag completion for each command
 
 ## Zsh Installation
 
@@ -85,41 +82,58 @@ rm -f ~/.zcompdump
 exec zsh
 ```
 
-## Usage Examples
+## Bash Shell
 
-Once installed, you can use tab completion for all commands and options:
+### Installation
+
+#### Bash
+
+**Option 1: User installation (recommended)**
+
+Add the following line to your `~/.bashrc` or `~/.bash_profile`:
 
 ```bash
-# Command completion
-at <TAB>
-# Shows: challenge  complete  config  hint  init  list  progress
+source /path/to/algo-trainer/completions/at.bash
+```
 
-# Difficulty completion
-at challenge <TAB>
-# Shows: easy  medium  hard
+Then reload your shell configuration:
 
-# Flag completion
-at challenge --<TAB>
-# Shows: --category  --difficulty  --force  --help  --language  --random  --topic
+```bash
+source ~/.bashrc
+```
 
-# Language completion
-at challenge --language <TAB>
-# Shows: typescript  javascript  python  java  cpp  rust  go
+**Option 2: System-wide installation**
 
-# Config subcommand completion
-at config <TAB>
-# Shows: get  list  reset  set
+Copy the completion script to your system's bash completion directory:
 
-# Config key completion
-at config get <TAB>
-# Shows: language  workspace  aiEnabled  companies  preferences.theme  ...
+```bash
+# On most Linux systems
+sudo cp completions/at.bash /etc/bash_completion.d/at
 
-# Config value completion (for set)
-at config set language <TAB>
-# Shows: typescript  javascript  python  java  cpp  rust  go
+# On macOS with bash-completion installed via Homebrew
+cp completions/at.bash $(brew --prefix)/etc/bash_completion.d/at
 
-at config set preferences.theme <TAB>
-# Shows: light  dark  auto
+# Or to user's local completion directory
+mkdir -p ~/.local/share/bash-completion/completions
+cp completions/at.bash ~/.local/share/bash-completion/completions/at
+```
+
+## Fish Shell
+
+### Installation
+
+#### Option 1: Copy to Fish completions directory
+
+```bash
+cp completions/at.fish ~/.config/fish/completions/
+```
+
+#### Option 2: Add to fish_complete_path
+
+Add the completions directory to your Fish configuration:
+
+```bash
+set -g fish_complete_path $fish_complete_path /path/to/algo-trainer/completions
 ```
 
 ## Troubleshooting
@@ -149,6 +163,12 @@ at config set preferences.theme <TAB>
    zsh -n completions/_at
    # Should not show any errors
    ```
+
+For Fish:
+
+1. Make sure Fish is restarted or run `source ~/.config/fish/config.fish`
+2. Verify the completion file is in the correct location: `ls ~/.config/fish/completions/at.fish`
+3. Test if Fish can find the completions: `complete -C"at " | grep challenge`
 
 ### Completions Are Slow
 
@@ -204,55 +224,6 @@ Found a bug or want to add completion for a new command? Contributions are welco
 - [Interactive Prompts](./INTERACTIVE_PROMPTS.md) - Interactive command prompts
   Algo Trainer provides shell completion scripts to enhance your command-line experience with auto-completion for commands, subcommands, and options.
 
-## Bash Shell
-
-_Coming soon - CLI-041_
-
-## Fish Shell
-
-### Installation
-
-#### Option 1: Copy to Fish completions directory
-
-```bash
-cp completions/at.fish ~/.config/fish/completions/
-```
-
-#### Option 2: Add to fish_complete_path
-
-Add the completions directory to your Fish configuration:
-
-```bash
-set -g fish_complete_path $fish_complete_path /path/to/algo-trainer/completions
-```
-
-### Usage
-
-After installation, you can use Tab completion with the `at` command:
-
-```bash
-at <Tab>              # Shows all available commands
-at challenge -<Tab>   # Shows all available flags for challenge command
-at config <Tab>       # Shows config subcommands (list, get, set, reset)
-at config get <Tab>   # Shows available configuration keys
-```
-
-### Features
-
-- Command completion for all CLI commands (challenge, complete, config, hint, init, list, progress)
-- Flag completion with descriptions
-- Config subcommand completion
-- Difficulty and language option completion with predefined values
-- Help flag completion for each command
-
-## Troubleshooting
-
-### Completions not working
-
-1. Make sure Fish is restarted or run `source ~/.config/fish/config.fish`
-2. Verify the completion file is in the correct location: `ls ~/.config/fish/completions/at.fish`
-3. Test if Fish can find the completions: `complete -C"at " | grep challenge`
-
-### Updating completions
+## Updating completions
 
 If you update the Algo Trainer CLI, you may need to reinstall the completion scripts to get the latest commands and options.
