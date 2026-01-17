@@ -20,6 +20,8 @@ import {
   isWorkspaceInitialized,
   problemExists,
 } from '../../core/mod.ts';
+import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
+import { join } from '@std/path';
 import { ExitCode } from '../exit-codes.ts';
 import { logError, logInfo, logSuccess, logWarning } from '../../utils/output.ts';
 import { confirmAction, formatProblemSummary, requireProblemManager } from './shared.ts';
@@ -236,6 +238,49 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     }
     if (result.filesSkipped.length > 0) {
       logInfo(`Skipped ${result.filesSkipped.length} existing file(s)`);
+    }
+
+    // Load and display teaching script if AI is enabled
+    if (config.aiEnabled) {
+      try {
+        const session = new TeachingSession(problem.slug);
+        const engine = new TeachingEngine(session);
+
+        // Try to load teaching script from problem directory
+        const problemDir = join(workspaceRoot, 'problems', problem.slug);
+        const loaded = await engine.loadScript(problemDir);
+
+        if (loaded) {
+          console.error(''); // Empty line for spacing
+
+          // Display introduction message
+          const intro = engine.getIntroduction();
+          if (intro) {
+            console.error('📚 Teaching Guide');
+            console.error('═'.repeat(50));
+            console.error('');
+            console.error(intro);
+            console.error('');
+          }
+
+          // Display pre-prompt guidance
+          const prePrompt = engine.getPrePrompt();
+          if (prePrompt) {
+            console.error('💡 Getting Started');
+            console.error('═'.repeat(50));
+            console.error('');
+            console.error(prePrompt);
+            console.error('');
+          }
+
+          if (intro || prePrompt) {
+            logInfo('💬 Use \'at hint\' for contextual hints during coding');
+          }
+        }
+      } catch (error) {
+        // Teaching system errors are non-fatal, just log a warning
+        console.warn('Note: Could not load teaching guidance:', error instanceof Error ? error.message : String(error));
+      }
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
