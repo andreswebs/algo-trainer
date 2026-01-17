@@ -18,6 +18,8 @@ import {
 } from '../../core/workspace/generation.ts';
 import { requireProblemManager, resolveProblem } from './shared.ts';
 import { showCommandHelp } from './help.ts';
+import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
+import { join } from '@std/path';
 
 function showHelp(): void {
   showCommandHelp({
@@ -202,25 +204,59 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     // Display problem information
     console.log(`\n📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
 
-    // Display hints
-    const updatedHintsUsed = displayHints(
-      problem.hints,
-      hintsUsed,
-      options.level,
-      options.all,
-    );
+    // Try to get AI contextual hint if enabled and problem exists in workspace
+    let aiHintShown = false;
+    if (config.aiEnabled && exists && !options.all && options.level === undefined) {
+      try {
+        const session = new TeachingSession(problem.slug);
+        const engine = new TeachingEngine(session);
 
-    // Update metadata if problem exists in workspace and hints were viewed
-    if (exists && updatedHintsUsed.length > hintsUsed.length) {
-      const updated = await updateProblemMetadata(
-        config.workspace,
-        problem.slug,
-        config.language,
-        { hintsUsed: updatedHintsUsed },
+        // Load teaching script from workspace problem directory
+        const problemDir = join(config.workspace, 'problems', problem.slug);
+        const loaded = await engine.loadScript(problemDir);
+
+        if (loaded) {
+          // Try to get user's current code for contextual hints
+          // For now, we'll use empty code - in the future this could read the solution file
+          const userCode = '';
+          const aiHint = engine.getHint(userCode);
+
+          if (aiHint) {
+            console.log('\n🤖 AI Teaching Assistant\n');
+            console.log('─'.repeat(50));
+            console.log(aiHint);
+            console.log('─'.repeat(50));
+            console.log('\n💬 For more structured hints, use --all or --level flags\n');
+            aiHintShown = true;
+          }
+        }
+      } catch (error) {
+        // Teaching system errors are non-fatal, fall back to regular hints
+        console.warn('Note: Could not load AI hints:', error instanceof Error ? error.message : String(error));
+      }
+    }
+
+    // Display regular hints if AI hint wasn't shown or if specific options were used
+    if (!aiHintShown) {
+      const updatedHintsUsed = displayHints(
+        problem.hints,
+        hintsUsed,
+        options.level,
+        options.all,
       );
 
-      if (!updated) {
-        logError('Warning: Could not update hint tracking metadata.');
+      // Update metadata if problem exists in workspace and hints were viewed
+      if (exists && updatedHintsUsed.length > hintsUsed.length) {
+        const updated = await updateProblemMetadata(
+          config.workspace,
+          problem.slug,
+          config.language,
+          { hintsUsed: updatedHintsUsed },
+        );
+
+        if (!updated) {
+          logError('Warning: Could not update hint tracking metadata.');
+        }
       }
     }
 
