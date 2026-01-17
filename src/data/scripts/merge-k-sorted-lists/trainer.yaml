@@ -1,0 +1,225 @@
+id: merge-k-sorted-lists
+title: Merge K Sorted Lists
+difficulty: hard
+tags:
+  - linked-list
+  - divide-and-conquer
+  - heap
+  - merge-sort
+language: typescript
+steps:
+  - type: intro
+    content: |
+      # Merge K Sorted Lists
+      
+      Welcome to an advanced linked list problem! 🎯
+      
+      **The challenge:** Merge K sorted linked lists into one sorted list.
+      
+      **Example:**
+      - Input: [[1,4,5], [1,3,4], [2,6]]
+      - Output: [1,1,2,3,4,4,5,6]
+      
+      This is a hard problem with multiple sophisticated approaches!
+
+  - type: pre_prompt
+    content: |
+      Think about how to efficiently merge multiple sorted lists:
+      
+      **Three approaches:**
+      
+      **1. Brute Force:** Compare all heads, pick minimum - O(kN) where k=lists, N=total nodes ❌
+      
+      **2. Min-Heap/Priority Queue:** Keep all heads in a min-heap - O(N log k) ✨
+      
+      **3. Divide & Conquer:** Pair-wise merge like merge sort - O(N log k) ✨
+      
+      **Recommended approaches:**
+      - **Min-Heap** if you're comfortable with heaps
+      - **Divide & Conquer** using your merge-two-lists solution repeatedly
+      
+      Both are O(N log k) and optimal!
+
+  - type: hint
+    trigger: '!code.includes(''heap'') && !code.includes(''Heap'') && !code.includes(''merge'')'
+    content: |
+      **Hint:** Think about extending "Merge Two Sorted Lists"!
+      
+      **Divide & Conquer approach:**
+      1. Merge lists in pairs
+      2. Repeat until only one list remains
+      3. Like merge sort's merge phase!
+      
+      **Example with 4 lists:**
+      ```
+      Round 1: [L1, L2, L3, L4] → merge pairs → [L1+L2, L3+L4]
+      Round 2: [L1+L2, L3+L4] → merge pair → [Final]
+      ```
+      
+      **Why efficient?** Each node is merged log k times (k = number of lists)
+      
+      Try implementing a helper function to merge two lists, then use it repeatedly!
+
+  - type: hint
+    trigger: code.includes('mergeTwoLists') || code.includes('merge')
+    content: |
+      Great! You're using the merge approach! 🎉
+      
+      **Divide & Conquer strategy:**
+      
+      ```typescript
+      function mergeKLists(lists) {
+        if (lists.length === 0) return null;
+        
+        // Keep merging pairs until one list remains
+        while (lists.length > 1) {
+          const merged = [];
+          
+          for (let i = 0; i < lists.length; i += 2) {
+            const l1 = lists[i];
+            const l2 = i + 1 < lists.length ? lists[i + 1] : null;
+            merged.push(mergeTwoLists(l1, l2));
+          }
+          
+          lists = merged;
+        }
+        
+        return lists[0];
+      }
+      ```
+      
+      Reuse your merge-two-lists logic!
+
+  - type: on_run
+    trigger: '!passed && attempts > 1'
+    content: |
+      Let me help you debug:
+      
+      **Divide & Conquer checklist:**
+      1. ✅ Handle edge cases:
+         - Empty lists array → return null
+         - Single list → return that list
+      2. ✅ Merge in pairs:
+         - Take lists[i] and lists[i+1]
+         - Merge them using mergeTwoLists
+         - Add merged result to new array
+      3. ✅ Repeat until one list:
+         - Replace lists array with merged array
+         - Continue until lists.length === 1
+      
+      **Common mistakes:**
+      - Not handling odd number of lists (last one has no pair)
+      - Infinite loop (not reducing list count)
+      - Not handling null lists properly
+
+  - type: on_run
+    trigger: '!passed && attempts > 2'
+    content: |
+      Let's trace through an example with 4 lists:
+      
+      **Initial:** [[1,4,7], [2,5], [3,6], [8,9]]
+      
+      **Round 1 - Merge pairs:**
+      - Merge [1,4,7] + [2,5] → [1,2,4,5,7]
+      - Merge [3,6] + [8,9] → [3,6,8,9]
+      - Result: [[1,2,4,5,7], [3,6,8,9]]
+      
+      **Round 2 - Merge pairs:**
+      - Merge [1,2,4,5,7] + [3,6,8,9] → [1,2,3,4,5,6,7,8,9]
+      - Result: [[1,2,3,4,5,6,7,8,9]]
+      
+      **Done!** Only one list remains.
+      
+      **Key:** Each round reduces the number of lists by half!
+
+  - type: on_request
+    keywords:
+      - hint
+      - help
+      - heap
+      - priority
+    content: |
+      **Min-Heap approach (alternative):**
+      
+      If you have a min-heap implementation:
+      
+      ```typescript
+      function mergeKLists(lists) {
+        const heap = new MinHeap(); // Min-heap by node value
+        const dummy = new ListNode(0);
+        let current = dummy;
+        
+        // Add all list heads to heap
+        for (const list of lists) {
+          if (list) heap.push(list);
+        }
+        
+        // Extract min, add to result, add next node to heap
+        while (!heap.isEmpty()) {
+          const node = heap.pop();
+          current.next = node;
+          current = current.next;
+          
+          if (node.next) {
+            heap.push(node.next);
+          }
+        }
+        
+        return dummy.next;
+      }
+      ```
+      
+      **Advantage:** Always picks global minimum efficiently!
+
+  - type: on_request
+    keywords:
+      - complexity
+      - optimization
+    content: |
+      **Complexity Analysis:**
+      
+      Let N = total number of nodes, k = number of lists
+      
+      **Brute Force (compare all k heads):**
+      - Time: O(kN) - for each node, check k lists ❌
+      - Space: O(1)
+      
+      **Divide & Conquer:**
+      - Time: O(N log k) - log k rounds, merge all N nodes each round ✅
+      - Space: O(1) iterative, O(log k) recursive call stack
+      
+      **Min-Heap:**
+      - Time: O(N log k) - N insertions/deletions, each O(log k) ✅
+      - Space: O(k) - heap stores at most k nodes
+      
+      **Both optimal approaches are O(N log k)!**
+      
+      Choose based on:
+      - Divide & Conquer: Reuses merge-two-lists, easier if no heap available
+      - Min-Heap: More elegant, but requires heap implementation
+
+  - type: after_success
+    content: |
+      🎉 Outstanding! You solved Merge K Sorted Lists!
+      
+      **What you learned:**
+      - Divide and conquer strategy
+      - Extending two-way merge to k-way merge
+      - Efficient algorithms for merging multiple sorted sequences
+      
+      **Complexity:** O(N log k) time, O(1) or O(log k) space ✨
+      
+      **This pattern appears in:**
+      - Merge Sorted Array
+      - K-Way Merge problems
+      - External sorting algorithms
+      - Distributed system merging
+      
+      **Key lesson:** Divide & conquer reduces O(kN) to O(N log k) by merging in pairs!
+      
+      **Interview tips:**
+      - Mention both divide & conquer and min-heap approaches
+      - Explain why O(N log k) is better than O(kN)
+      - Show you can reuse simpler solutions (merge-two-lists)
+      
+      Phenomenal work on this hard problem! 🚀

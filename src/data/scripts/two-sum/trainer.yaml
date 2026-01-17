@@ -1,0 +1,179 @@
+id: two-sum
+title: Two Sum
+difficulty: easy
+tags:
+  - array
+  - hash-table
+language: typescript
+steps:
+  - type: intro
+    content: |
+      # Two Sum
+      
+      Welcome! This is one of the most famous algorithmic problems - a great starting point! 🎯
+      
+      **What makes this problem special:**
+      - It's commonly asked in interviews
+      - It demonstrates the power of hash tables
+      - It has both brute force and optimal solutions
+      
+      **The challenge:** Given an array and a target, find two numbers that add up to the target.
+      
+      Take your time to understand the problem before diving into code!
+
+  - type: pre_prompt
+    content: |
+      Before coding, let's think about approaches:
+      
+      **Approach 1 - Brute Force (O(n²))**:
+      - Check every pair of numbers
+      - Works, but slow for large arrays
+      
+      **Approach 2 - Hash Table (O(n))** ✨:
+      - As you iterate, store each number in a Map
+      - For each number, check if (target - number) exists in the Map
+      - If yes, you found your pair!
+      
+      **Key insight:** Instead of checking all pairs, we can check if the "complement" exists.
+      
+      Try implementing the hash table approach - it's elegant and efficient!
+
+  - type: hint
+    trigger: code.includes('for') && code.includes('for') && !code.includes('Map')
+    content: |
+      I see you're using nested loops - that's the brute force approach (O(n²)).
+      
+      **Can you optimize this?**
+      
+      Think about using a hash table (Map in TypeScript/JavaScript):
+      - Store numbers you've seen with their indices
+      - For each number, check if (target - number) is already in the Map
+      - This reduces time complexity to O(n)!
+
+  - type: hint
+    trigger: code.includes('Map') && !code.includes('has')
+    content: |
+      Great job using a Map! 🎉
+      
+      **Quick tip:** Don't forget to check if the complement exists in your Map using `.has()` before trying to access it.
+      
+      The pattern is:
+      ```typescript
+      const complement = target - nums[i];
+      if (map.has(complement)) {
+        // Found it!
+      }
+      ```
+
+  - type: on_run
+    trigger: stderr.includes('undefined') || stderr.includes('null')
+    content: |
+      Looks like you're accessing a value that doesn't exist. Common causes:
+      
+      - Trying to access `map.get()` without checking `map.has()` first
+      - Array index out of bounds
+      - Undefined variable
+      
+      **Debug tip:** Add console.log statements to check variable values before accessing them.
+
+  - type: on_run
+    trigger: '!passed && attempts > 1 && code.includes(''Map'')'
+    content: |
+      You're on the right track with the Map approach! 
+      
+      **Common mistakes to check:**
+      1. Are you storing the index or the value? (You need the index!)
+      2. Are you checking for the complement BEFORE adding the current number to the Map?
+      3. Are you returning [index1, index2] in the correct format?
+      
+      **Test with a simple example:** 
+      - nums = [2, 7], target = 9
+      - When you see 2, no complement (7) exists yet
+      - When you see 7, complement (2) exists in Map → return indices!
+
+  - type: on_run
+    trigger: '!passed && attempts > 2'
+    content: |
+      Still debugging? That's normal! Let me help you think through the algorithm:
+      
+      **Step-by-step logic:**
+      ```
+      1. Create empty Map
+      2. For each number at index i:
+         a. Calculate complement = target - nums[i]
+         b. If complement exists in Map:
+            - Return [map.get(complement), i]
+         c. Otherwise:
+            - Store nums[i] → i in Map
+      3. Continue until pair found
+      ```
+      
+      **Why this works:** When we see a number, we check if we've already seen its complement.
+      
+      Try tracing through [2,7,11,15] with target=9 on paper!
+
+  - type: on_request
+    keywords:
+      - hint
+      - help
+      - stuck
+      - approach
+    content: |
+      **The Hash Table Pattern:**
+      
+      This problem teaches a fundamental pattern: using a hash table to find complements.
+      
+      **Core idea:**
+      - Store what you've seen
+      - For each new element, check if its "pair" was seen before
+      
+      **For Two Sum specifically:**
+      ```
+      Map structure: number → index
+      For each nums[i]:
+        complement = target - nums[i]
+        if Map.has(complement):
+          return [Map.get(complement), i]
+        Map.set(nums[i], i)
+      ```
+      
+      This pattern appears in many problems (like finding pairs, triplets, etc.)!
+
+  - type: on_request
+    keywords:
+      - complexity
+      - optimization
+      - faster
+    content: |
+      **Time & Space Complexity Analysis:**
+      
+      **Brute Force (nested loops):**
+      - Time: O(n²) - check every pair
+      - Space: O(1) - no extra space needed
+      
+      **Hash Table (optimal):**
+      - Time: O(n) - single pass through array
+      - Space: O(n) - store up to n elements in Map
+      
+      **Trade-off:** We use extra space (Map) to achieve faster time!
+      
+      For most interview situations, O(n) time is expected. The space trade-off is worth it!
+
+  - type: after_success
+    content: |
+      🎉 Excellent work! You solved Two Sum!
+      
+      **What you learned:**
+      - Hash tables can reduce O(n²) to O(n) for pair-finding problems
+      - The "complement" pattern: store items and look for their pair
+      - Space-time trade-offs: using O(n) space for O(n) time
+      
+      **Complexity of your solution:**
+      - With Map: O(n) time, O(n) space ✨
+      - With nested loops: O(n²) time, O(1) space
+      
+      **Interview tip:** Always start by explaining the brute force, then optimize!
+      
+      **Similar problems to try:** 3Sum, 4Sum, Two Sum II
+      
+      Great job! 🚀
