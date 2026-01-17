@@ -86,7 +86,11 @@
  * ### Loading and Validating Scripts
  *
  * ```ts
- * import { loadAndValidateScript, validateTeachingScript } from './core/ai/mod.ts';
+ * import {
+ *   loadAndValidateScript,
+ *   validateTeachingScript,
+ *   isValidTeachingScript
+ * } from './core/ai/mod.ts';
  *
  * // Load from file
  * const script = await loadAndValidateScript('./problems/two-sum/trainer.yaml');
@@ -96,16 +100,35 @@
  * if (!result.valid) {
  *   console.error('Validation errors:', result.errors);
  * }
+ *
+ * // Type guard for validation
+ * if (isValidTeachingScript(unknownValue)) {
+ *   // TypeScript now knows unknownValue is a TeachingScript
+ *   console.log(unknownValue.title);
+ * }
  * ```
  *
  * ### Generating Scripts
  *
  * ```ts
- * import { TeachingScriptGenerator } from './core/ai/mod.ts';
+ * import {
+ *   TeachingScriptGenerator,
+ *   type ScriptGeneratorOptions,
+ *   type ScriptTemplateType
+ * } from './core/ai/mod.ts';
  *
+ * // Basic usage with defaults
  * const generator = new TeachingScriptGenerator();
  * const script = generator.generate(problem);
  * const yaml = generator.generateYaml(problem);
+ *
+ * // Advanced usage with custom options
+ * const customGenerator = new TeachingScriptGenerator({
+ *   templateType: 'advanced',
+ *   language: 'typescript',
+ *   includeTopicHints: true,
+ * });
+ * const advancedScript = customGenerator.generate(problem);
  * ```
  *
  * ## Key Exports
@@ -121,6 +144,7 @@
  * - **loadTeachingScript** - Load teaching script without validation
  * - **parseTeachingScript** - Parse YAML content into TeachingScript
  * - **validateTeachingScript** - Validate teaching script
+ * - **isValidTeachingScript** - Type guard for TeachingScript validation
  * - **findScriptPath** - Find trainer.yaml in problem directory
  * - **findTeachingScript** - Find teaching script by problem slug (searches user custom and built-in)
  *
@@ -133,6 +157,9 @@
  * - **ExecutionResult** - Code execution results
  * - **TestResult** - Individual test case results
  * - **ScriptInfo** - Script metadata
+ * - **ScriptTemplateType** - Template types for script generation
+ * - **ScriptGeneratorOptions** - Configuration options for script generator
+ * - **ScriptTemplate** - Template structure for teaching scripts
  *
  * @module core/ai
  */
@@ -152,13 +179,18 @@ export {
   loadTeachingScript,
   parseTeachingScript,
 } from './parser.ts';
-export { validateTeachingScript } from './validator.ts';
+export { isValidTeachingScript, validateTeachingScript } from './validator.ts';
 
 // Trigger evaluator
 export { evaluateTrigger } from './triggers.ts';
 
 // Generator
 export { TeachingScriptGenerator } from './generator.ts';
+export type {
+  ScriptGeneratorOptions,
+  ScriptTemplate,
+  ScriptTemplateType,
+} from './generator.ts';
 
 // Types
 export * from './types.ts';
