@@ -143,7 +143,7 @@ steps:
     assertEquals(attemptsHint?.includes('different approach'), true);
   });
 
-  it('should track teaching session state', async () => {
+  it('should track teaching session state', () => {
     const session = new TeachingSession('state-test');
     const state = session.getState();
 
