@@ -9,7 +9,7 @@
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
-import { logError, logInfo } from '../../utils/output.ts';
+import { logError, logInfo, logWarning } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import {
   getProblemMetadata,
@@ -88,7 +88,9 @@ function displayHints(
 
   if (showAll) {
     // Show all hints
-    console.log('\n📚 All Available Hints:\n');
+    console.error('');
+    console.error('📚 All Available Hints:');
+    console.error('');
     hints.forEach((hint, index) => {
       displayHint(index, hint, hintsUsed.includes(index));
       if (!hintsUsed.includes(index)) {
@@ -106,7 +108,9 @@ function displayHints(
       return hintsUsed;
     }
 
-    console.log(`\n💡 Hint Level ${requestedLevel}:\n`);
+    console.error('');
+    console.error(`💡 Hint Level ${requestedLevel}:`);
+    console.error('');
     displayHint(index, hints[index], hintsUsed.includes(index));
     if (!hintsUsed.includes(index)) {
       newHintsUsed.push(index);
@@ -119,7 +123,9 @@ function displayHints(
 
   if (nextHintIndex === -1) {
     // All hints have been used, show summary
-    console.log('\n✨ All hints have been viewed!\n');
+    console.error('');
+    console.error('✨ All hints have been viewed!');
+    console.error('');
     hints.forEach((hint, index) => {
       displayHint(index, hint, true);
     });
@@ -127,16 +133,20 @@ function displayHints(
   }
 
   // Show the next hint
-  console.log(`\n💡 Next Hint (Level ${nextHintIndex + 1} of ${hints.length}):\n`);
+  console.error('');
+  console.error(`💡 Next Hint (Level ${nextHintIndex + 1} of ${hints.length}):`);
+  console.error('');
   displayHint(nextHintIndex, hints[nextHintIndex], false);
   newHintsUsed.push(nextHintIndex);
 
   // Show progress
   const progressBar = hints.map((_, i) => newHintsUsed.includes(i) ? '█' : '░').join('');
-  console.log(`\nProgress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
+  console.error('');
+  console.error(`Progress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
 
   if (newHintsUsed.length < hints.length) {
-    console.log(`\n💬 Use 'at hint --level ${nextHintIndex + 2}' for the next hint`);
+    console.error('');
+    console.error(`💬 Use 'at hint --level ${nextHintIndex + 2}' for the next hint`);
   }
 
   return newHintsUsed.sort((a, b) => a - b);
@@ -202,7 +212,8 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const hintsUsed = metadata?.hintsUsed ?? [];
 
     // Display problem information
-    console.log(`\n📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
+    console.error('');
+    console.error(`📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
 
     // Try to get AI contextual hint if enabled and problem exists in workspace
     let aiHintShown = false;
@@ -222,17 +233,21 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
           const aiHint = engine.getHint(userCode);
 
           if (aiHint) {
-            console.log('\n🤖 AI Teaching Assistant\n');
-            console.log('─'.repeat(50));
-            console.log(aiHint);
-            console.log('─'.repeat(50));
-            console.log('\n💬 For more structured hints, use --all or --level flags\n');
+            console.error('');
+            console.error('🤖 AI Teaching Assistant');
+            console.error('');
+            console.error('─'.repeat(50));
+            console.error(aiHint);
+            console.error('─'.repeat(50));
+            console.error('');
+            console.error('💬 For more structured hints, use --all or --level flags');
+            console.error('');
             aiHintShown = true;
           }
         }
       } catch (error) {
         // Teaching system errors are non-fatal, fall back to regular hints
-        console.warn('Note: Could not load AI hints:', error instanceof Error ? error.message : String(error));
+        logWarning('Note: Could not load AI hints: ' + (error instanceof Error ? error.message : String(error)));
       }
     }
 
@@ -260,7 +275,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
       }
     }
 
-    console.log(); // Empty line for spacing
+    console.error(''); // Empty line for spacing
 
     return {
       success: true,

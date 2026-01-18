@@ -12,6 +12,7 @@ import type { CommandResult, Difficulty, ProblemQuery } from '../../types/global
 import { ExitCode } from '../exit-codes.ts';
 import { requireProblemManager } from './shared.ts';
 import { showCommandHelp } from './help.ts';
+import { outputData, logError } from '../../utils/output.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -185,19 +186,15 @@ export async function listCommand(args: Args): Promise<CommandResult> {
     // Output results
     if (options.json) {
       // JSON output
-      console.log(JSON.stringify(
-        {
-          problems: result.problems,
-          total: result.total,
-          hasMore: result.hasMore,
-        },
-        null,
-        2,
-      ));
+      outputData({
+        problems: result.problems,
+        total: result.total,
+        hasMore: result.hasMore,
+      });
     } else {
       // Table output
       const table = formatAsTable(result.problems, { verbose: options.verbose });
-      console.log(table);
+      outputData(table);
     }
 
     return {
@@ -206,7 +203,7 @@ export async function listCommand(args: Args): Promise<CommandResult> {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`Error listing problems: ${message}`);
+    logError('Error listing problems', message);
     return {
       success: false,
       error: message,
