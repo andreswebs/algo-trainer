@@ -22,7 +22,9 @@ import { createDirectory } from '../../../src/utils/fs.ts';
  * Create a temporary test workspace
  */
 async function createTestWorkspace(): Promise<string> {
-  const tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-watcher-test-' });
+  const tempDir = await Deno.makeTempDir({
+    prefix: 'algo-trainer-watcher-test-',
+  });
   const workspace = join(tempDir, 'workspace');
 
   // Create workspace structure
@@ -56,7 +58,10 @@ function delay(ms: number): Promise<void> {
 /**
  * Create a test problem directory
  */
-async function createTestProblem(workspace: string, slug: string): Promise<void> {
+async function createTestProblem(
+  workspace: string,
+  slug: string,
+): Promise<void> {
   const problemDir = join(workspace, 'problems', slug);
   await createDirectory(problemDir);
   await Deno.writeTextFile(join(problemDir, 'solution.ts'), '// Solution code');
@@ -166,7 +171,10 @@ Deno.test('FileWatcher - throws error if started twice', async () => {
     } catch (error) {
       errorThrown = true;
       assertEquals(error instanceof WorkspaceError, true);
-      assertEquals((error as WorkspaceError).message.includes('already running'), true);
+      assertEquals(
+        (error as WorkspaceError).message.includes('already running'),
+        true,
+      );
     }
 
     assertEquals(errorThrown, true);
@@ -205,37 +213,40 @@ Deno.test('FileWatcher - can stop without starting', () => {
 // FileWatcher - Event Detection
 // =============================================================================
 
-Deno.test('FileWatcher - detects file creation in problems directory', async () => {
-  const workspace = await createTestWorkspace();
-  try {
-    const watcher = new FileWatcher(join(workspace, 'problems'));
-    const events: WatchEvent[] = [];
+Deno.test(
+  'FileWatcher - detects file creation in problems directory',
+  async () => {
+    const workspace = await createTestWorkspace();
+    try {
+      const watcher = new FileWatcher(join(workspace, 'problems'));
+      const events: WatchEvent[] = [];
 
-    watcher.on('problem-changed', (event) => {
-      events.push(event);
-    });
+      watcher.on('problem-changed', (event) => {
+        events.push(event);
+      });
 
-    watcher.start();
+      watcher.start();
 
-    // Create a new file
-    const testFile = join(workspace, 'problems', 'test.txt');
-    await Deno.writeTextFile(testFile, 'test content');
+      // Create a new file
+      const testFile = join(workspace, 'problems', 'test.txt');
+      await Deno.writeTextFile(testFile, 'test content');
 
-    // Wait for debounce + event processing (increased for test reliability)
-    await delay(800);
+      // Wait for debounce + event processing (increased for test reliability)
+      await delay(800);
 
-    watcher.stop();
+      watcher.stop();
 
-    // Should have detected the creation
-    assertEquals(events.length > 0, true);
-    const event = events[0];
-    assertExists(event);
-    assertEquals(event.category, 'problem-changed');
-    assertEquals(event.path.includes('test.txt'), true);
-  } finally {
-    await cleanupWorkspace(workspace);
-  }
-});
+      // Should have detected the creation
+      assertEquals(events.length > 0, true);
+      const event = events[0];
+      assertExists(event);
+      assertEquals(event.category, 'problem-changed');
+      assertEquals(event.path.includes('test.txt'), true);
+    } finally {
+      await cleanupWorkspace(workspace);
+    }
+  },
+);
 
 Deno.test('FileWatcher - detects file modification', async () => {
   const workspace = await createTestWorkspace();
@@ -576,53 +587,62 @@ Deno.test('FileWatcher - handles async handler errors gracefully', async () => {
 // createWorkspaceWatcher - Helper Function
 // =============================================================================
 
-Deno.test('createWorkspaceWatcher - creates watcher for workspace', async () => {
-  const workspace = await createTestWorkspace();
-  try {
-    const watcher = createWorkspaceWatcher(workspace);
-    assertExists(watcher);
-    assertEquals(watcher.isRunning(), false);
+Deno.test(
+  'createWorkspaceWatcher - creates watcher for workspace',
+  async () => {
+    const workspace = await createTestWorkspace();
+    try {
+      const watcher = createWorkspaceWatcher(workspace);
+      assertExists(watcher);
+      assertEquals(watcher.isRunning(), false);
 
-    // Should be able to start and stop
-    watcher.start();
-    assertEquals(watcher.isRunning(), true);
-    watcher.stop();
-    assertEquals(watcher.isRunning(), false);
-  } finally {
-    await cleanupWorkspace(workspace);
-  }
-});
+      // Should be able to start and stop
+      watcher.start();
+      assertEquals(watcher.isRunning(), true);
+      watcher.stop();
+      assertEquals(watcher.isRunning(), false);
+    } finally {
+      await cleanupWorkspace(workspace);
+    }
+  },
+);
 
-Deno.test('createWorkspaceWatcher - watches both problems and templates', async () => {
-  const workspace = await createTestWorkspace();
-  try {
-    const watcher = createWorkspaceWatcher(workspace);
-    const problemEvents: WatchEvent[] = [];
-    const templateEvents: WatchEvent[] = [];
+Deno.test(
+  'createWorkspaceWatcher - watches both problems and templates',
+  async () => {
+    const workspace = await createTestWorkspace();
+    try {
+      const watcher = createWorkspaceWatcher(workspace);
+      const problemEvents: WatchEvent[] = [];
+      const templateEvents: WatchEvent[] = [];
 
-    watcher.on('problem-changed', (event) => {
-      problemEvents.push(event);
-    });
-    watcher.on('template-changed', (event) => {
-      templateEvents.push(event);
-    });
+      watcher.on('problem-changed', (event) => {
+        problemEvents.push(event);
+      });
+      watcher.on('template-changed', (event) => {
+        templateEvents.push(event);
+      });
 
-    watcher.start();
+      watcher.start();
 
-    // Create files in both directories
-    await Deno.writeTextFile(join(workspace, 'problems', 'test.txt'), 'test');
-    await Deno.writeTextFile(join(workspace, 'templates', 'template.txt'), 'template');
+      // Create files in both directories
+      await Deno.writeTextFile(join(workspace, 'problems', 'test.txt'), 'test');
+      await Deno.writeTextFile(
+        join(workspace, 'templates', 'template.txt'),
+        'template',
+      );
 
-    await delay(500);
-    watcher.stop();
+      await delay(500);
+      watcher.stop();
 
-    // Should have detected events in both directories
-    assertEquals(problemEvents.length > 0, true);
-    assertEquals(templateEvents.length > 0, true);
-  } finally {
-    await cleanupWorkspace(workspace);
-  }
-});
+      // Should have detected events in both directories
+      assertEquals(problemEvents.length > 0, true);
+      assertEquals(templateEvents.length > 0, true);
+    } finally {
+      await cleanupWorkspace(workspace);
+    }
+  },
+);
 
 Deno.test('createWorkspaceWatcher - accepts custom options', async () => {
   const workspace = await createTestWorkspace();
@@ -643,40 +663,52 @@ Deno.test('createWorkspaceWatcher - accepts custom options', async () => {
 // Integration Tests
 // =============================================================================
 
-Deno.test('FileWatcher - real-world scenario: problem file editing', async () => {
-  const workspace = await createTestWorkspace();
-  try {
-    await createTestProblem(workspace, 'two-sum');
+Deno.test(
+  'FileWatcher - real-world scenario: problem file editing',
+  async () => {
+    const workspace = await createTestWorkspace();
+    try {
+      await createTestProblem(workspace, 'two-sum');
 
-    const watcher = new FileWatcher(join(workspace, 'problems'));
-    const events: WatchEvent[] = [];
+      const watcher = new FileWatcher(join(workspace, 'problems'));
+      const events: WatchEvent[] = [];
 
-    watcher.on('problem-changed', (event) => {
-      events.push(event);
-    });
+      watcher.on('problem-changed', (event) => {
+        events.push(event);
+      });
 
-    watcher.start();
+      watcher.start();
 
-    // Give the watcher time to initialize
-    await delay(100);
+      // Give the watcher time to initialize and capture any initial events
+      await delay(500);
 
-    // Simulate editing solution file
-    const solutionFile = join(workspace, 'problems', 'two-sum', 'solution.ts');
-    await Deno.writeTextFile(solutionFile, '// Updated solution');
+      // Clear any events from the initial file creation
+      events.length = 0;
 
-    await delay(800);
-    watcher.stop();
+      // Simulate editing solution file
+      const solutionFile = join(
+        workspace,
+        'problems',
+        'two-sum',
+        'solution.ts',
+      );
+      await Deno.writeTextFile(solutionFile, '// Updated solution');
 
-    // Should detect the modification
-    assertEquals(events.length > 0, true);
-    const event = events[0];
-    assertExists(event);
-    assertEquals(event.category, 'problem-changed');
-    assertEquals(event.path.includes('solution.ts'), true);
-  } finally {
-    await cleanupWorkspace(workspace);
-  }
-});
+      // Wait for the debounced event to fire
+      await delay(800);
+      watcher.stop();
+
+      // Should detect the modification
+      assertEquals(events.length > 0, true);
+      const event = events[0];
+      assertExists(event);
+      assertEquals(event.category, 'problem-changed');
+      assertEquals(event.path.includes('solution.ts'), true);
+    } finally {
+      await cleanupWorkspace(workspace);
+    }
+  },
+);
 
 Deno.test('FileWatcher - cleanup prevents memory leaks', async () => {
   const workspace = await createTestWorkspace();
@@ -689,7 +721,10 @@ Deno.test('FileWatcher - cleanup prevents memory leaks', async () => {
 
     // Create some events
     for (let i = 0; i < 5; i++) {
-      await Deno.writeTextFile(join(workspace, 'problems', `test${i}.txt`), 'test');
+      await Deno.writeTextFile(
+        join(workspace, 'problems', `test${i}.txt`),
+        'test',
+      );
       await delay(50); // Rapid changes
     }
 
