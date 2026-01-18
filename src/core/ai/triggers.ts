@@ -23,6 +23,7 @@
 
 import type { TriggerContext } from './types.ts';
 import { TriggerError } from '../../utils/errors.ts';
+import { logger } from '../../utils/output.ts';
 
 /**
  * Evaluate a trigger expression against a context.
@@ -56,14 +57,14 @@ export function evaluateTrigger(
   try {
     // Validate input
     if (!trigger || typeof trigger !== 'string') {
-      console.warn('[triggers] Invalid trigger expression (not a string)');
+      logger.warn('[triggers] Invalid trigger expression (not a string)');
       return false;
     }
 
     // Normalize whitespace
     const normalized = trigger.trim();
     if (normalized === '') {
-      console.warn('[triggers] Empty trigger expression');
+      logger.warn('[triggers] Empty trigger expression');
       return false;
     }
 
@@ -71,7 +72,7 @@ export function evaluateTrigger(
     return evaluateExpression(normalized, context);
   } catch (error) {
     // Fail safely - log warning and return false
-    console.warn(
+    logger.warn(
       `[triggers] Failed to evaluate trigger "${trigger}": ${
         error instanceof Error ? error.message : String(error)
       }`,
