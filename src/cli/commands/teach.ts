@@ -9,7 +9,7 @@
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
-import { logError, logInfo, logSuccess } from '../../utils/output.ts';
+import { logger } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import {
   TeachingScriptGenerator,
@@ -71,7 +71,7 @@ export async function teachCommand(args: Args): Promise<CommandResult> {
     const config = configManager.getConfig();
 
     if (!options.subcommand) {
-      logError('Subcommand required. Usage: at teach <generate|validate|info>');
+      logger.error('Subcommand required. Usage: at teach <generate|validate|info>');
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
@@ -83,14 +83,14 @@ export async function teachCommand(args: Args): Promise<CommandResult> {
       case 'info':
         return handleInfo(config);
       default:
-        logError(`Unknown subcommand: ${options.subcommand}`);
-        logInfo('Valid subcommands: generate, validate, info');
+        logger.error(`Unknown subcommand: ${options.subcommand}`);
+        logger.info('Valid subcommands: generate, validate, info');
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
   } catch (error) {
     const exitCode = getExitCodeForError(error);
     const message = error instanceof Error ? error.message : String(error);
-    logError(`Error: ${message}`);
+    logger.error(`Error: ${message}`);
     return {
       success: false,
       exitCode,
@@ -104,7 +104,7 @@ async function handleGenerate(
   config: ReturnType<typeof configManager.getConfig>,
 ): Promise<CommandResult> {
   if (!options.problemSlug) {
-    logError('Problem slug required. Usage: at teach generate <slug>');
+    logger.error('Problem slug required. Usage: at teach generate <slug>');
     return { success: false, exitCode: ExitCode.USAGE_ERROR };
   }
 
@@ -112,12 +112,12 @@ async function handleGenerate(
   const manager = await requireProblemManager();
   const problem = resolveProblem(options.problemSlug, manager);
   if (!problem) {
-    logError(`Problem '${options.problemSlug}' not found.`);
+    logger.error(`Problem '${options.problemSlug}' not found.`);
     return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
   }
 
   // Generate script
-  logInfo(`Generating teaching script for: ${problem.title}`);
+  logger.info(`Generating teaching script for: ${problem.title}`);
   const generator = new TeachingScriptGenerator();
   const yamlContent = generator.generateYaml(problem);
 
@@ -134,21 +134,21 @@ async function handleGenerate(
   // Write file
   await Deno.writeTextFile(outputPath, yamlContent);
 
-  logSuccess(`Teaching script generated: ${outputPath}`);
-  logInfo(`Language: ${problem.difficulty}`);
-  logInfo(`Topics: ${problem.tags.join(', ')}`);
+  logger.success(`Teaching script generated: ${outputPath}`);
+  logger.info(`Language: ${problem.difficulty}`);
+  logger.info(`Topics: ${problem.tags.join(', ')}`);
 
   return { success: true, exitCode: ExitCode.SUCCESS };
 }
 
 async function handleValidate(options: TeachOptions): Promise<CommandResult> {
   if (!options.path) {
-    logError('Path required. Usage: at teach validate <path>');
+    logger.error('Path required. Usage: at teach validate <path>');
     return { success: false, exitCode: ExitCode.USAGE_ERROR };
   }
 
   // Read and parse YAML file
-  logInfo(`Validating teaching script: ${options.path}`);
+  logger.info(`Validating teaching script: ${options.path}`);
   const content = await Deno.readTextFile(options.path);
   const script = parseYaml(content);
 
@@ -156,14 +156,14 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
   const result = validateTeachingScript(script);
 
   if (!result.valid) {
-    logError('Validation failed:');
+    logger.error('Validation failed:');
     for (const error of result.errors) {
-      console.error(`  ❌ ${error}`);
+      logger.log(`  ❌ ${error}`);
     }
     return { success: false, exitCode: ExitCode.GENERAL_ERROR };
   }
 
-  logSuccess('✅ Teaching script is valid');
+  logger.success('✅ Teaching script is valid');
 
   return { success: true, exitCode: ExitCode.SUCCESS };
 }
@@ -171,14 +171,14 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
 function handleInfo(
   config: ReturnType<typeof configManager.getConfig>,
 ): CommandResult {
-  console.log('\n📚 Teaching System Information\n');
-  console.log(`AI Enabled: ${config.aiEnabled ? '✅ Yes' : '❌ No'}`);
-  console.log(`Workspace: ${config.workspace || '(not set)'}`);
+  logger.log('\n📚 Teaching System Information\n');
+  logger.log(`AI Enabled: ${config.aiEnabled ? '✅ Yes' : '❌ No'}`);
+  logger.log(`Workspace: ${config.workspace || '(not set)'}`);
 
   if (!config.aiEnabled) {
-    console.log('\n💡 Enable AI features with: at config set aiEnabled true');
+    logger.log('\n💡 Enable AI features with: at config set aiEnabled true');
   }
 
-  console.log('');
+  logger.log('');
   return { success: true, exitCode: ExitCode.SUCCESS };
 }
