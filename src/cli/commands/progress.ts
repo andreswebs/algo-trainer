@@ -16,6 +16,7 @@ import type { CommandResult, Difficulty } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized } from '../../core/mod.ts';
 import { pathExists } from '../../utils/fs.ts';
+import { logger, outputData } from '../../utils/output.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { requireProblemManager } from './shared.ts';
 import { showCommandHelp } from './help.ts';
@@ -352,7 +353,7 @@ export async function progressCommand(args: Args): Promise<CommandResult> {
 
     // Check if workspace is initialized
     if (!await isWorkspaceInitialized(workspaceRoot)) {
-      console.error('Workspace not initialized. Run "at init" first.');
+      logger.error('Workspace not initialized. Run "at init" first.');
       return {
         success: false,
         error: 'Workspace not initialized',
@@ -366,11 +367,11 @@ export async function progressCommand(args: Args): Promise<CommandResult> {
     // Output results
     if (options.json) {
       // JSON output
-      console.log(JSON.stringify(stats, null, 2));
+      outputData(stats);
     } else {
       // Table output
       const table = formatProgressTable(stats, options);
-      console.log(table);
+      logger.log(table);
     }
 
     return {
@@ -379,7 +380,7 @@ export async function progressCommand(args: Args): Promise<CommandResult> {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`Error calculating progress: ${message}`);
+    logger.error(`Error calculating progress: ${message}`);
     return {
       success: false,
       error: message,
