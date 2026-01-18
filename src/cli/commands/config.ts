@@ -10,7 +10,7 @@ import type { Args } from '@std/cli/parse-args';
 import type { Config, SupportedLanguage, UserPreferences } from '../../types/global.ts';
 import type { CommandResult } from '../../types/global.ts';
 import { ExitCode } from '../exit-codes.ts';
-import { logError, logInfo, logSuccess, outputData } from '../../utils/output.ts';
+import { logError, logInfo, logSuccess, outputData, writeStderr } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import { DEFAULT_CONFIG } from '../../config/types.ts';
 import { showCommandHelp } from './help.ts';
@@ -185,21 +185,21 @@ function configList(json: boolean): CommandResult {
     } else {
       // Human-readable table format - write to stderr (human-readable messages)
       logInfo('Current configuration:');
-      console.error('');
-      console.error(`  language:            ${config.language}`);
-      console.error(`  workspace:           ${config.workspace || '(not set)'}`);
-      console.error(`  aiEnabled:           ${config.aiEnabled}`);
-      console.error(`  companies:           ${config.companies.length > 0 ? config.companies.join(', ') : '(none)'}`);
-      console.error('');
-      console.error('  Preferences:');
-      console.error(`    theme:             ${config.preferences.theme}`);
-      console.error(`    verbosity:         ${config.preferences.verbosity}`);
-      console.error(`    autoSave:          ${config.preferences.autoSave}`);
-      console.error(`    templateStyle:     ${config.preferences.templateStyle}`);
-      console.error(`    useEmoji:          ${config.preferences.useEmoji}`);
-      console.error(`    useColors:         ${config.preferences.useColors}`);
-      console.error('');
-      console.error(`  version:             ${config.version}`);
+      writeStderr('');
+      writeStderr(`  language:            ${config.language}`);
+      writeStderr(`  workspace:           ${config.workspace || '(not set)'}`);
+      writeStderr(`  aiEnabled:           ${config.aiEnabled}`);
+      writeStderr(`  companies:           ${config.companies.length > 0 ? config.companies.join(', ') : '(none)'}`);
+      writeStderr('');
+      writeStderr('  Preferences:');
+      writeStderr(`    theme:             ${config.preferences.theme}`);
+      writeStderr(`    verbosity:         ${config.preferences.verbosity}`);
+      writeStderr(`    autoSave:          ${config.preferences.autoSave}`);
+      writeStderr(`    templateStyle:     ${config.preferences.templateStyle}`);
+      writeStderr(`    useEmoji:          ${config.preferences.useEmoji}`);
+      writeStderr(`    useColors:         ${config.preferences.useColors}`);
+      writeStderr('');
+      writeStderr(`  version:             ${config.version}`);
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };

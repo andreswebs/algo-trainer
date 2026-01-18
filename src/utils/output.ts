@@ -146,13 +146,6 @@ export function logError(messageOrError: string | unknown, details?: string): vo
 }
 
 /**
- * @deprecated Use logError() instead - it now handles both strings and error objects
- */
-export function logErrorObject(error: unknown): void {
-  logError(error);
-}
-
-/**
  * Log warning message to stderr
  */
 export function logWarning(message: string): void {
@@ -201,6 +194,14 @@ export function logProgress(message: string): void {
 }
 
 /**
+ * Output raw text to stderr (for formatted output without log prefixes)
+ * Use this for displaying formatted information like tables, config output, etc.
+ */
+export function writeStderr(text: string): void {
+  console.error(text);
+}
+
+/**
  * Exit with error message
  */
 export function exitWithError(message: string, code = 1): never {
@@ -212,7 +213,7 @@ export function exitWithError(message: string, code = 1): never {
  * Exit with error object
  */
 export function exitWithErrorObject(error: unknown, code = 1): never {
-  logErrorObject(error);
+  logError(error);
   Deno.exit(code);
 }
 
