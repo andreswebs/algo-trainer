@@ -8,6 +8,7 @@
  */
 
 import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
+import { logger } from '../utils/output.ts';
 
 /**
  * Environment configuration with partial preferences
@@ -141,7 +142,7 @@ export function loadEnvConfig(): EnvConfig {
   if (language) {
     envConfig.language = language;
   } else if (Deno.env.get(ENV_VARS.LANGUAGE)) {
-    console.warn(
+    logger.warn(
       `Warning: Invalid ${ENV_VARS.LANGUAGE} value. Supported: ${SUPPORTED_LANGUAGES.join(', ')}`,
     );
   }
@@ -151,7 +152,7 @@ export function loadEnvConfig(): EnvConfig {
   if (templateStyle) {
     preferences.templateStyle = templateStyle;
   } else if (Deno.env.get(ENV_VARS.TEMPLATE_STYLE)) {
-    console.warn(
+    logger.warn(
       `Warning: Invalid ${ENV_VARS.TEMPLATE_STYLE} value. Supported: ${
         SUPPORTED_TEMPLATE_STYLES.join(', ')
       }`,
@@ -163,7 +164,7 @@ export function loadEnvConfig(): EnvConfig {
   const quiet = parseBooleanEnv(Deno.env.get(ENV_VARS.QUIET));
 
   if (verbose !== undefined && quiet !== undefined && verbose && quiet) {
-    console.warn(
+    logger.warn(
       `Warning: Both ${ENV_VARS.VERBOSE} and ${ENV_VARS.QUIET} are set. Using ${ENV_VARS.VERBOSE}.`,
     );
   }
