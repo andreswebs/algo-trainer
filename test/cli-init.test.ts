@@ -182,6 +182,57 @@ describe('initCommand', () => {
     }
   });
 
+  it('should initialize workspace with --force even if root directory is not empty', async () => {
+    const args: Args = {
+      _: ['init', tempDir],
+      force: true,
+    };
+
+    // Add some existing files to make the directory non-empty
+    await Deno.writeTextFile(
+      `${tempDir}/existing-file.txt`,
+      'This is an existing file',
+    );
+    await Deno.mkdir(`${tempDir}/existing-folder`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/existing-folder/another-file.js`,
+      'console.log("existing");',
+    );
+
+    const result = await initCommand(args);
+
+    assertEquals(result.success, true);
+    assertEquals(result.exitCode, ExitCode.SUCCESS);
+
+    // Verify workspace was initialized
+    const initialized = await isWorkspaceInitialized(tempDir);
+    assertEquals(initialized, true);
+
+    // Verify existing files are still there
+    const existingFile = await Deno.readTextFile(
+      `${tempDir}/existing-file.txt`,
+    );
+    assertEquals(existingFile, 'This is an existing file');
+
+    const existingFolderFile = await Deno.readTextFile(
+      `${tempDir}/existing-folder/another-file.js`,
+    );
+    assertEquals(existingFolderFile, 'console.log("existing");');
+
+    // Verify all workspace directories were created
+    const problemsDir = await Deno.stat(`${tempDir}/problems`);
+    assertEquals(problemsDir.isDirectory, true);
+
+    const completedDir = await Deno.stat(`${tempDir}/completed`);
+    assertEquals(completedDir.isDirectory, true);
+
+    const templatesDir = await Deno.stat(`${tempDir}/templates`);
+    assertEquals(templatesDir.isDirectory, true);
+
+    const configDir = await Deno.stat(`${tempDir}/config`);
+    assertEquals(configDir.isDirectory, true);
+  });
+
   it('should handle errors gracefully for permission denied paths', async () => {
     // Try to initialize at a path that will fail due to permissions
     // Note: This test might succeed or fail depending on permissions

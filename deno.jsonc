@@ -51,7 +51,8 @@
     "rules": {
       "tags": ["recommended"],
       "include": ["ban-untagged-todo"]
-    }
+    },
+    "exclude": ["_.local-leetcode-trainer.legacy/**/*"]
   },
   "exclude": ["_.local-leetcode-trainer.legacy/"],
   "lock": true
