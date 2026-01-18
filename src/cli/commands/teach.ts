@@ -171,14 +171,18 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
 function handleInfo(
   config: ReturnType<typeof configManager.getConfig>,
 ): CommandResult {
-  console.log('\n📚 Teaching System Information\n');
-  console.log(`AI Enabled: ${config.aiEnabled ? '✅ Yes' : '❌ No'}`);
-  console.log(`Workspace: ${config.workspace || '(not set)'}`);
+  console.error('');
+  console.error('📚 Teaching System Information');
+  console.error('');
+  console.error(`AI Enabled: ${config.aiEnabled ? '✅ Yes' : '❌ No'}`);
+  console.error(`Workspace: ${config.workspace || '(not set)'}`);
 
   if (!config.aiEnabled) {
-    console.log('\n💡 Enable AI features with: at config set aiEnabled true');
+    console.error('');
+    console.error('💡 Enable AI features with: at config set aiEnabled true');
   }
 
-  console.log('');
+  console.error('');
+  
   return { success: true, exitCode: ExitCode.SUCCESS };
 }

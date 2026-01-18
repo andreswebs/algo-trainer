@@ -183,32 +183,23 @@ function configList(json: boolean): CommandResult {
       // Output as JSON for machine consumption
       outputData(config);
     } else {
-      // Human-readable table format
+      // Human-readable table format - write to stderr (human-readable messages)
       logInfo('Current configuration:');
-      console.error(''); // Empty line
-
-      // Top-level settings
-      console.error('  language:            ' + config.language);
-      console.error('  workspace:           ' + (config.workspace || '(not set)'));
-      console.error('  aiEnabled:           ' + config.aiEnabled);
-      console.error(
-        '  companies:           ' +
-          (config.companies.length > 0 ? config.companies.join(', ') : '(none)'),
-      );
       console.error('');
-
-      // Preferences
+      console.error(`  language:            ${config.language}`);
+      console.error(`  workspace:           ${config.workspace || '(not set)'}`);
+      console.error(`  aiEnabled:           ${config.aiEnabled}`);
+      console.error(`  companies:           ${config.companies.length > 0 ? config.companies.join(', ') : '(none)'}`);
+      console.error('');
       console.error('  Preferences:');
-      console.error('    theme:             ' + config.preferences.theme);
-      console.error('    verbosity:         ' + config.preferences.verbosity);
-      console.error('    autoSave:          ' + config.preferences.autoSave);
-      console.error('    templateStyle:     ' + config.preferences.templateStyle);
-      console.error('    useEmoji:          ' + config.preferences.useEmoji);
-      console.error('    useColors:         ' + config.preferences.useColors);
+      console.error(`    theme:             ${config.preferences.theme}`);
+      console.error(`    verbosity:         ${config.preferences.verbosity}`);
+      console.error(`    autoSave:          ${config.preferences.autoSave}`);
+      console.error(`    templateStyle:     ${config.preferences.templateStyle}`);
+      console.error(`    useEmoji:          ${config.preferences.useEmoji}`);
+      console.error(`    useColors:         ${config.preferences.useColors}`);
       console.error('');
-
-      // Version info
-      console.error('  version:             ' + config.version);
+      console.error(`  version:             ${config.version}`);
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
@@ -242,7 +233,7 @@ function configGet(key: string, json: boolean): CommandResult {
     } else {
       // Human-readable format
       const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
-      console.log(`${key} = ${displayValue}`);
+      outputData(`${key} = ${displayValue}`);
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
