@@ -1,0 +1,27 @@
+id: "two-sum"
+title: "Two Sum"
+difficulty: "easy"
+tags: ["array", "hash-table"]
+language: "typescript"
+steps:
+  - type: intro
+    content: "Welcome to Two Sum! This classic problem teaches you about hash tables and array manipulation. Given an array of integers and a target sum, find two numbers that add up to the target."
+  - type: pre_prompt
+    content: "Before you start coding, consider using a hash table (Map or object) for O(1) lookups. This can help you achieve O(n) time complexity instead of O(n²)."
+  - type: hint
+    trigger: "code.includes('for') && code.includes('for')"
+    content: "You're using nested loops which gives O(n²) time complexity. Consider using a hash table to store numbers you've seen and check for complements in O(1) time."
+  - type: hint
+    trigger: "attempts > 2"
+    content: "Don't give up! Think about what you need to find: for each number, you need its complement (target - number). A hash table can store numbers as you iterate, allowing instant lookups."
+  - type: on_run
+    trigger: "!passed && stderr.includes('Error')"
+    content: "Your code has an error. Review the error message and check your logic carefully."
+  - type: after_success
+    content: "Congratulations! You solved Two Sum! This problem demonstrates the power of hash tables for optimization. Time complexity: O(n), Space complexity: O(n)."
+  - type: on_request
+    keywords: ["optimize", "complexity", "faster"]
+    content: "To optimize, use a hash table (Map) to store numbers as you iterate. For each number, check if its complement (target - number) exists in the map. This achieves O(n) time complexity."
+  - type: on_request
+    keywords: ["hint", "help", "stuck"]
+    content: "Try this approach: create a Map to store numbers. For each number in the array, calculate complement = target - number. If complement exists in the map, you found your answer!"

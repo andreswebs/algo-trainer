@@ -1,0 +1,27 @@
+id: "valid-parentheses"
+title: "Valid Parentheses"
+difficulty: "easy"
+tags: ["string", "stack"]
+language: "typescript"
+steps:
+  - type: intro
+    content: "Welcome to Valid Parentheses! This problem teaches you about stack data structures. Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid."
+  - type: pre_prompt
+    content: "Think about using a stack data structure. When you see an opening bracket, push it. When you see a closing bracket, check if it matches the top of the stack."
+  - type: hint
+    trigger: "!code.includes('stack') && !code.includes('push') && !code.includes('pop')"
+    content: "Consider using a stack! Push opening brackets onto the stack, and when you encounter a closing bracket, pop from the stack and check if they match."
+  - type: hint
+    trigger: "attempts > 2"
+    content: "Remember: every opening bracket must have a corresponding closing bracket in the correct order. A stack naturally handles this last-in-first-out (LIFO) behavior."
+  - type: on_run
+    trigger: "!passed && attempts >= 2"
+    content: "Keep trying! Make sure to handle edge cases: empty strings, strings with only opening or only closing brackets, and mismatched pairs."
+  - type: after_success
+    content: "Excellent work! You've mastered the stack-based approach to validating parentheses. Time complexity: O(n), Space complexity: O(n)."
+  - type: on_request
+    keywords: ["stack", "how", "approach"]
+    content: "Use an array as a stack. Iterate through the string: push opening brackets '(', '{', '[' onto the stack. For closing brackets ')', '}', ']', pop from stack and verify they match. At the end, the stack should be empty."
+  - type: on_request
+    keywords: ["hint", "help", "stuck"]
+    content: "Create a map of closing to opening brackets: { ')': '(', '}': '{', ']': '[' }. Use a stack (array). For each character, if it's opening, push it. If closing, check if stack.pop() matches."

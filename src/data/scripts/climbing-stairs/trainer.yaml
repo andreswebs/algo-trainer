@@ -1,0 +1,27 @@
+id: "climbing-stairs"
+title: "Climbing Stairs"
+difficulty: "easy"
+tags: ["dynamic-programming", "math"]
+language: "typescript"
+steps:
+  - type: intro
+    content: "Welcome to Climbing Stairs! This is a classic dynamic programming problem. You are climbing a staircase with n steps. Each time you can climb 1 or 2 steps. How many distinct ways can you climb to the top?"
+  - type: pre_prompt
+    content: "Think about the problem recursively: to reach step n, you could come from step n-1 (taking 1 step) or step n-2 (taking 2 steps). This is similar to the Fibonacci sequence!"
+  - type: hint
+    trigger: "code.includes('function') && code.includes('return') && !code.includes('memo') && !code.includes('dp')"
+    content: "If you're using plain recursion, it will be very slow for large n due to repeated calculations. Consider using dynamic programming with memoization or bottom-up approach."
+  - type: hint
+    trigger: "attempts > 2"
+    content: "Break it down: ways(n) = ways(n-1) + ways(n-2). Base cases: ways(1) = 1, ways(2) = 2. You can solve this with an array to store computed values, or even with just two variables!"
+  - type: on_run
+    trigger: "!passed && stderr.includes('timeout')"
+    content: "Your solution might be too slow. Plain recursion has exponential time complexity. Use dynamic programming to achieve O(n) time!"
+  - type: after_success
+    content: "Great job! You've solved a fundamental dynamic programming problem. The pattern you learned here (combining solutions to subproblems) appears in many other problems!"
+  - type: on_request
+    keywords: ["optimize", "faster", "improve"]
+    content: "The optimal solution uses dynamic programming. Bottom-up approach: use an array where dp[i] = dp[i-1] + dp[i-2]. Or optimize space to O(1) by keeping only the last two values."
+  - type: on_request
+    keywords: ["hint", "help", "stuck", "dp", "dynamic"]
+    content: "Start with base cases: 1 step = 1 way, 2 steps = 2 ways. For n steps, you can either take 1 step from (n-1) or 2 steps from (n-2). So answer = ways(n-1) + ways(n-2). Build up from bottom!"
