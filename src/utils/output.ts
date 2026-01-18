@@ -109,11 +109,35 @@ export function logSuccess(message: string): void {
 }
 
 /**
- * Log error message to stderr
+ * Log error message or error object to stderr
+ * 
+ * @param messageOrError - Error message string, or an error object to be formatted
+ * @param details - Optional additional details (only used when first param is a string)
  */
-export function logError(message: string, details?: string): void {
+export function logError(messageOrError: string | unknown, details?: string): void {
   const prefix = options.useEmoji ? '❌ ' : 'ERROR: ';
-  const formatted = colorize(`${prefix}${message}`, 'red');
+  
+  // Handle error objects
+  if (typeof messageOrError !== 'string') {
+    const message = isAlgoTrainerError(messageOrError) 
+      ? messageOrError.getFormattedMessage() 
+      : formatError(messageOrError);
+    const formatted = colorize(`${prefix}${message}`, 'red');
+    console.error(formatted);
+
+    // Show stack trace in verbose mode
+    if (
+      options.verbosity === 'verbose' &&
+      messageOrError instanceof Error &&
+      messageOrError.stack
+    ) {
+      console.error(colorize(messageOrError.stack, 'dim'));
+    }
+    return;
+  }
+  
+  // Handle string messages
+  const formatted = colorize(`${prefix}${messageOrError}`, 'red');
   console.error(formatted);
 
   if (details) {
@@ -122,19 +146,10 @@ export function logError(message: string, details?: string): void {
 }
 
 /**
- * Log error object to stderr
+ * @deprecated Use logError() instead - it now handles both strings and error objects
  */
 export function logErrorObject(error: unknown): void {
-  const message = isAlgoTrainerError(error) ? error.getFormattedMessage() : formatError(error);
-  logError(message);
-
-  if (
-    options.verbosity === 'verbose' &&
-    error instanceof Error &&
-    error.stack
-  ) {
-    console.error(colorize(error.stack, 'dim'));
-  }
+  logError(error);
 }
 
 /**
