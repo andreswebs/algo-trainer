@@ -10,7 +10,7 @@ import type { Args } from '@std/cli/parse-args';
 import type { Config, SupportedLanguage, UserPreferences } from '../../types/global.ts';
 import type { CommandResult } from '../../types/global.ts';
 import { ExitCode } from '../exit-codes.ts';
-import { logError, logInfo, logSuccess, outputData } from '../../utils/output.ts';
+import { logger, outputData } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import { DEFAULT_CONFIG } from '../../config/types.ts';
 import { showCommandHelp } from './help.ts';
@@ -184,36 +184,39 @@ function configList(json: boolean): CommandResult {
       outputData(config);
     } else {
       // Human-readable table format
-      logInfo('Current configuration:');
-      console.error(''); // Empty line
+      logger.info('Current configuration:');
+      logger.newline();
 
       // Top-level settings
-      console.error('  language:            ' + config.language);
-      console.error('  workspace:           ' + (config.workspace || '(not set)'));
-      console.error('  aiEnabled:           ' + config.aiEnabled);
-      console.error(
-        '  companies:           ' +
-          (config.companies.length > 0 ? config.companies.join(', ') : '(none)'),
+      logger.keyValue('language', config.language, 20);
+      logger.keyValue('workspace', config.workspace || '(not set)', 20);
+      logger.keyValue('aiEnabled', config.aiEnabled, 20);
+      logger.keyValue(
+        'companies',
+        config.companies.length > 0 ? config.companies.join(', ') : '(none)',
+        20,
       );
-      console.error('');
+      logger.newline();
 
       // Preferences
-      console.error('  Preferences:');
-      console.error('    theme:             ' + config.preferences.theme);
-      console.error('    verbosity:         ' + config.preferences.verbosity);
-      console.error('    autoSave:          ' + config.preferences.autoSave);
-      console.error('    templateStyle:     ' + config.preferences.templateStyle);
-      console.error('    useEmoji:          ' + config.preferences.useEmoji);
-      console.error('    useColors:         ' + config.preferences.useColors);
-      console.error('');
+      logger.section('Preferences', 2);
+      logger.group();
+      logger.keyValue('theme', config.preferences.theme, 20);
+      logger.keyValue('verbosity', config.preferences.verbosity, 20);
+      logger.keyValue('autoSave', config.preferences.autoSave, 20);
+      logger.keyValue('templateStyle', config.preferences.templateStyle, 20);
+      logger.keyValue('useEmoji', config.preferences.useEmoji, 20);
+      logger.keyValue('useColors', config.preferences.useColors, 20);
+      logger.groupEnd();
+      logger.newline();
 
       // Version info
-      console.error('  version:             ' + config.version);
+      logger.keyValue('version', config.version, 20);
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError(
+    logger.error(
       'Failed to list configuration',
       error instanceof Error ? error.message : String(error),
     );
@@ -228,8 +231,8 @@ function configGet(key: string, json: boolean): CommandResult {
   try {
     // Validate key
     if (!VALID_KEYS.includes(key as ValidConfigKey)) {
-      logError(`Invalid configuration key: ${key}`);
-      logInfo(`Valid keys: ${VALID_KEYS.join(', ')}`);
+      logger.error(`Invalid configuration key: ${key}`);
+      logger.info(`Valid keys: ${VALID_KEYS.join(', ')}`);
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
@@ -242,12 +245,12 @@ function configGet(key: string, json: boolean): CommandResult {
     } else {
       // Human-readable format
       const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
-      console.log(`${key} = ${displayValue}`);
+      logger.log(`${key} = ${displayValue}`);
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError(
+    logger.error(
       'Failed to get configuration value',
       error instanceof Error ? error.message : String(error),
     );
@@ -262,8 +265,8 @@ async function configSet(key: string, value: string): Promise<CommandResult> {
   try {
     // Validate key
     if (!VALID_KEYS.includes(key as ValidConfigKey)) {
-      logError(`Invalid configuration key: ${key}`);
-      logInfo(`Valid keys: ${VALID_KEYS.join(', ')}`);
+      logger.error(`Invalid configuration key: ${key}`);
+      logger.info(`Valid keys: ${VALID_KEYS.join(', ')}`);
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
@@ -273,10 +276,10 @@ async function configSet(key: string, value: string): Promise<CommandResult> {
     // Set the value
     await setConfigValue(key, parsedValue);
 
-    logSuccess(`Set ${key} = ${value}`);
+    logger.success(`Set ${key} = ${value}`);
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError(
+    logger.error(
       'Failed to set configuration value',
       error instanceof Error ? error.message : String(error),
     );
@@ -292,24 +295,24 @@ async function configReset(key?: string): Promise<CommandResult> {
     if (key) {
       // Reset specific key
       if (!VALID_KEYS.includes(key as ValidConfigKey)) {
-        logError(`Invalid configuration key: ${key}`);
-        logInfo(`Valid keys: ${VALID_KEYS.join(', ')}`);
+        logger.error(`Invalid configuration key: ${key}`);
+        logger.info(`Valid keys: ${VALID_KEYS.join(', ')}`);
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
 
       const defaultValue = getConfigValue(DEFAULT_CONFIG, key);
       await setConfigValue(key, defaultValue);
 
-      logSuccess(`Reset ${key} to default value`);
+      logger.success(`Reset ${key} to default value`);
     } else {
       // Reset all configuration
       await configManager.reset();
-      logSuccess('Configuration reset to defaults');
+      logger.success('Configuration reset to defaults');
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
-    logError(
+    logger.error(
       'Failed to reset configuration',
       error instanceof Error ? error.message : String(error),
     );
@@ -338,16 +341,16 @@ export async function configCommand(args: Args): Promise<CommandResult> {
 
     case 'get':
       if (!options.key) {
-        logError('Key is required for "get" subcommand');
-        logInfo('Usage: at config get <key>');
+        logger.error('Key is required for "get" subcommand');
+        logger.info('Usage: at config get <key>');
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
       return configGet(options.key, options.json);
 
     case 'set':
       if (!options.key || !options.value) {
-        logError('Key and value are required for "set" subcommand');
-        logInfo('Usage: at config set <key> <value>');
+        logger.error('Key and value are required for "set" subcommand');
+        logger.info('Usage: at config set <key> <value>');
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
       return await configSet(options.key, options.value);
@@ -356,8 +359,8 @@ export async function configCommand(args: Args): Promise<CommandResult> {
       return await configReset(options.key);
 
     default:
-      logError(`Unknown subcommand: ${subcommand}`);
-      logInfo('Valid subcommands: list, get, set, reset');
+      logger.error(`Unknown subcommand: ${subcommand}`);
+      logger.info('Valid subcommands: list, get, set, reset');
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
   }
 }
