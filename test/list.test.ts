@@ -160,8 +160,8 @@ describe('listCommand', () => {
 
     assertEquals(result.success, true);
     assertEquals(result.exitCode, ExitCode.SUCCESS);
-    assertEquals(stdoutOutput.length > 0, true);
-    assertEquals(stderrOutput.length, 0);
+    assertEquals(stderrOutput.length > 0, true);
+    assertEquals(stdoutOutput.length, 0);
   });
 
   it('should filter by difficulty', async () => {
@@ -221,7 +221,7 @@ describe('listCommand', () => {
     assertEquals(result.exitCode, ExitCode.SUCCESS);
 
     // Verbose mode should include more details (we can't check exact content)
-    assertEquals(stdoutOutput.length > 0, true);
+    assertEquals(stderrOutput.length > 0, true);
   });
 
   it('should combine multiple filters', async () => {
@@ -245,8 +245,8 @@ describe('listCommand', () => {
     assertEquals(result.success, true);
     assertEquals(result.exitCode, ExitCode.SUCCESS);
 
-    // Should indicate no results
-    const output = stdoutOutput.join('\n');
+    // Should indicate no results (in stderr for table format)
+    const output = stderrOutput.join('\n');
     assertEquals(output.includes('No problems found') || output.includes('"total": 0'), true);
   });
 
@@ -256,7 +256,7 @@ describe('listCommand', () => {
     assertEquals(result.success, true);
     assertEquals(result.exitCode, ExitCode.SUCCESS);
 
-    const output = stdoutOutput.join('\n');
+    const output = stderrOutput.join('\n');
     // Table should have headers
     assertEquals(output.includes('Difficulty'), true);
     assertEquals(output.includes('Title'), true);
