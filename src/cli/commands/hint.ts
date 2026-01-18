@@ -9,7 +9,7 @@
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
-import { logError, logInfo } from '../../utils/output.ts';
+import { logger } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import {
   getProblemMetadata,
@@ -65,9 +65,10 @@ function displayHint(level: number, hint: string, isUsed: boolean): void {
   const levelLabel = ['General Approach', 'Algorithm/Data Structure', 'Solution Strategy'][level];
   const usedIndicator = isUsed ? '✓' : '•';
 
-  console.log(`\n${usedIndicator} Hint ${level + 1}: ${levelLabel}`);
-  console.log(`${'─'.repeat(50)}`);
-  console.log(hint);
+  logger.newline();
+  logger.log(`${usedIndicator} Hint ${level + 1}: ${levelLabel}`);
+  logger.separator(50);
+  logger.log(hint);
 }
 
 /**
@@ -80,7 +81,7 @@ function displayHints(
   showAll?: boolean,
 ): number[] {
   if (hints.length === 0) {
-    logInfo('No hints available for this problem.');
+    logger.info('No hints available for this problem.');
     return hintsUsed;
   }
 
@@ -88,7 +89,9 @@ function displayHints(
 
   if (showAll) {
     // Show all hints
-    console.log('\n📚 All Available Hints:\n');
+    logger.newline();
+    logger.log('📚 All Available Hints:');
+    logger.newline();
     hints.forEach((hint, index) => {
       displayHint(index, hint, hintsUsed.includes(index));
       if (!hintsUsed.includes(index)) {
@@ -102,11 +105,13 @@ function displayHints(
     // Show specific level
     const index = requestedLevel - 1; // Convert 1-based to 0-based
     if (index < 0 || index >= hints.length) {
-      logError(`Invalid hint level. Available levels: 1-${hints.length}`);
+      logger.error(`Invalid hint level. Available levels: 1-${hints.length}`);
       return hintsUsed;
     }
 
-    console.log(`\n💡 Hint Level ${requestedLevel}:\n`);
+    logger.newline();
+    logger.log(`💡 Hint Level ${requestedLevel}:`);
+    logger.newline();
     displayHint(index, hints[index], hintsUsed.includes(index));
     if (!hintsUsed.includes(index)) {
       newHintsUsed.push(index);
@@ -119,7 +124,9 @@ function displayHints(
 
   if (nextHintIndex === -1) {
     // All hints have been used, show summary
-    console.log('\n✨ All hints have been viewed!\n');
+    logger.newline();
+    logger.log('✨ All hints have been viewed!');
+    logger.newline();
     hints.forEach((hint, index) => {
       displayHint(index, hint, true);
     });
@@ -127,16 +134,20 @@ function displayHints(
   }
 
   // Show the next hint
-  console.log(`\n💡 Next Hint (Level ${nextHintIndex + 1} of ${hints.length}):\n`);
+  logger.newline();
+  logger.log(`💡 Next Hint (Level ${nextHintIndex + 1} of ${hints.length}):`);
+  logger.newline();
   displayHint(nextHintIndex, hints[nextHintIndex], false);
   newHintsUsed.push(nextHintIndex);
 
   // Show progress
   const progressBar = hints.map((_, i) => newHintsUsed.includes(i) ? '█' : '░').join('');
-  console.log(`\nProgress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
+  logger.newline();
+  logger.log(`Progress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
 
   if (newHintsUsed.length < hints.length) {
-    console.log(`\n💬 Use 'at hint --level ${nextHintIndex + 2}' for the next hint`);
+    logger.newline();
+    logger.log(`💬 Use 'at hint --level ${nextHintIndex + 2}' for the next hint`);
   }
 
   return newHintsUsed.sort((a, b) => a - b);
@@ -163,7 +174,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     if (!problemSlug) {
       // TODO(CLI-021): For now, we require explicit slug
       // In the future, this could detect the current problem from workspace
-      logError('Problem slug is required. Usage: at hint <slug>');
+      logger.error('Problem slug is required. Usage: at hint <slug>');
       return {
         success: false,
         exitCode: ExitCode.USAGE_ERROR,
@@ -174,7 +185,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     // Resolve problem
     const problem = resolveProblem(problemSlug, manager);
     if (!problem) {
-      logError(`Problem '${problemSlug}' not found.`);
+      logger.error(`Problem '${problemSlug}' not found.`);
       return {
         success: false,
         exitCode: ExitCode.PROBLEM_ERROR,
@@ -202,7 +213,8 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const hintsUsed = metadata?.hintsUsed ?? [];
 
     // Display problem information
-    console.log(`\n📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
+    logger.newline();
+    logger.log(`📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
 
     // Try to get AI contextual hint if enabled and problem exists in workspace
     let aiHintShown = false;
@@ -222,17 +234,22 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
           const aiHint = engine.getHint(userCode);
 
           if (aiHint) {
-            console.log('\n🤖 AI Teaching Assistant\n');
-            console.log('─'.repeat(50));
-            console.log(aiHint);
-            console.log('─'.repeat(50));
-            console.log('\n💬 For more structured hints, use --all or --level flags\n');
+            logger.newline();
+            logger.log('🤖 AI Teaching Assistant');
+            logger.newline();
+            logger.separator(50);
+            logger.log(aiHint);
+            logger.separator(50);
+            logger.newline();
+            logger.log('💬 For more structured hints, use --all or --level flags');
+            logger.newline();
             aiHintShown = true;
           }
         }
       } catch (error) {
         // Teaching system errors are non-fatal, fall back to regular hints
-        console.warn('Note: Could not load AI hints:', error instanceof Error ? error.message : String(error));
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.warn(`Note: Could not load AI hints: ${errorMsg}`);
       }
     }
 
@@ -255,12 +272,12 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
         );
 
         if (!updated) {
-          logError('Warning: Could not update hint tracking metadata.');
+          logger.warn('Could not update hint tracking metadata.');
         }
       }
     }
 
-    console.log(); // Empty line for spacing
+    logger.newline(); // Empty line for spacing
 
     return {
       success: true,
@@ -269,7 +286,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
   } catch (error) {
     const exitCode = getExitCodeForError(error);
     const message = error instanceof Error ? error.message : String(error);
-    logError(`Error: ${message}`);
+    logger.error(`Error: ${message}`);
     return {
       success: false,
       exitCode,
