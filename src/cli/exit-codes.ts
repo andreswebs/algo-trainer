@@ -7,6 +7,8 @@
  * @module cli/exit-codes
  */
 
+import { logger } from '../utils/output.ts';
+
 /**
  * Standard exit codes for CLI commands
  *
@@ -71,7 +73,7 @@ export type ExitCodeValue = typeof ExitCode[keyof typeof ExitCode];
 export function exitWithCode(code: ExitCodeValue, message?: string): never {
   if (message) {
     // Use stderr for error messages
-    console.error(message);
+    logger.error(message);
   }
   Deno.exit(code);
 }

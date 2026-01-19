@@ -6,6 +6,8 @@
  * @module cli/commands/help
  */
 
+import { logger } from '../../utils/output.ts';
+
 export interface CommandHelp {
   name: string;
   description: string;
@@ -49,5 +51,5 @@ export function showCommandHelp(help: CommandHelp): void {
     lines.push('');
   }
 
-  console.error(lines.join('\n').trim());
+  logger.log(lines.join('\n').trim());
 }

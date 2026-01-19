@@ -38,6 +38,7 @@
 
 import { join } from '@std/path';
 import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
+import { logger } from '../../utils/output.ts';
 
 /**
  * Type of file system event
@@ -217,7 +218,7 @@ export class FileWatcher {
         // If the watcher stops due to an error, mark as not running
         this.running = false;
         // Log error but don't throw (already started successfully)
-        console.error('File watcher error:', error);
+        logger.error('File watcher error', String(error));
       });
     } catch (error) {
       throw new WorkspaceError(
@@ -386,11 +387,11 @@ export class FileWatcher {
       // If handler returns a promise, catch any errors
       if (result instanceof Promise) {
         result.catch((error) => {
-          console.error('File watcher handler error:', error);
+          logger.error('File watcher handler error', String(error));
         });
       }
     } catch (error) {
-      console.error('File watcher handler error:', error);
+      logger.error('File watcher handler error', String(error));
     }
   }
 

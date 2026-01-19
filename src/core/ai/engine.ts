@@ -20,6 +20,7 @@ import { TeachingSession } from './session.ts';
 import { evaluateTrigger } from './triggers.ts';
 import { findScriptPath, loadAndValidateScript } from './parser.ts';
 import { createErrorContext, TeachingError } from '../../utils/errors.ts';
+import { logger } from '../../utils/output.ts';
 
 /**
  * Script metadata information returned by getScriptInfo.
@@ -437,9 +438,8 @@ export class TeachingEngine {
         }
       } catch (error) {
         // Log warning but continue checking other steps
-        console.warn(
-          `Failed to evaluate trigger: ${step.trigger}`,
-          error instanceof Error ? error.message : String(error),
+        logger.warn(
+          `Failed to evaluate trigger: ${step.trigger} - ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }

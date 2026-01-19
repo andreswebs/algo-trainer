@@ -12,7 +12,7 @@ import type { CommandResult, ProblemQuery, SupportedLanguage } from '../../types
 import { configManager } from '../../config/manager.ts';
 import { archiveProblem, problemExists, ProblemManager } from '../../core/mod.ts';
 import { ExitCode } from '../exit-codes.ts';
-import { logError, logInfo, logSuccess } from '../../utils/output.ts';
+import { logger } from '../../utils/output.ts';
 import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
 import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { promptSelect, promptText } from '../prompts.ts';
@@ -86,15 +86,15 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
         }
 
         if (entries.length === 0) {
-          logError('No problems found in workspace');
-          logInfo('Start a challenge with: at challenge');
+          logger.error('No problems found in workspace');
+          logger.info('Start a challenge with: at challenge');
           return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
         }
 
         if (entries.length === 1) {
           // Only one problem, use it
           problemSlug = entries[0];
-          logInfo(`Auto-selected problem: ${problemSlug}`);
+          logger.info(`Auto-selected problem: ${problemSlug}`);
         } else {
           // Multiple problems, prompt user to select
           const selected = await promptSelect(
@@ -102,14 +102,14 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
             entries,
           );
           if (!selected) {
-            logError('No problem selected');
+            logger.error('No problem selected');
             return { success: false, exitCode: ExitCode.USAGE_ERROR };
           }
           problemSlug = selected;
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        logError(`Failed to read problems directory: ${errorMessage}`);
+        logger.error(`Failed to read problems directory: ${errorMessage}`);
         return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
       }
     } else {
@@ -130,8 +130,8 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     // Verify problem exists in workspace
     const exists = await problemExists(structure.root, problemSlug, language);
     if (!exists) {
-      logError(`Problem '${problemSlug}' not found in workspace`);
-      logInfo('Available problems are in: ' + structure.problems);
+      logger.error(`Problem '${problemSlug}' not found in workspace`);
+      logger.info('Available problems are in: ' + structure.problems);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     }
 
@@ -148,7 +148,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
 
     // Archive the problem unless --no-archive is set
     if (!options.noArchive) {
-      logInfo(`Archiving problem: ${problemSlug}`);
+      logger.info(`Archiving problem: ${problemSlug}`);
       const archiveResult = await archiveProblem({
         workspaceRoot: structure.root,
         slug: problemSlug,
@@ -156,23 +156,23 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
       });
 
       if (!archiveResult.success) {
-        logError(`Failed to archive problem: ${archiveResult.error}`);
+        logger.error(`Failed to archive problem: ${archiveResult.error}`);
         return { success: false, exitCode: ExitCode.GENERAL_ERROR };
       }
 
-      logSuccess(`Completed and archived: ${problemSlug}`);
+      logger.success(`Completed and archived: ${problemSlug}`);
       if (archiveResult.collisionHandled) {
-        logInfo('Note: A previous completion exists. Archived with timestamp.');
+        logger.info('Note: A previous completion exists. Archived with timestamp.');
       }
-      logInfo(`Archived to: ${archiveResult.archivedTo}`);
+      logger.info(`Archived to: ${archiveResult.archivedTo}`);
     } else {
-      logSuccess(`Marked as completed: ${problemSlug}`);
-      logInfo('Files kept in current workspace (--no-archive)');
+      logger.success(`Marked as completed: ${problemSlug}`);
+      logger.info('Files kept in current workspace (--no-archive)');
     }
 
     // Show notes if provided
     if (notes) {
-      logInfo(`Notes: ${notes}`);
+      logger.info(`Notes: ${notes}`);
     }
 
     // Get problem info for detailed display and suggestions
@@ -183,12 +183,12 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
 
       if (problem) {
         // Display problem summary
-        console.error(''); // Empty line for spacing
-        console.error(formatProblemSummary(problem));
-        console.error(''); // Empty line for spacing
+        logger.newline();
+        logger.log(formatProblemSummary(problem));
+        logger.newline();
 
         // Suggest next problems of similar difficulty
-        logInfo('Looking for next challenge...');
+        logger.info('Looking for next challenge...');
         const query: ProblemQuery = {
           difficulty: problem.difficulty,
           limit: 3,
@@ -202,9 +202,9 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
           );
           if (suggestions.length > 0) {
             for (const p of suggestions) {
-              logInfo(`  - ${p.title} (${p.slug})`);
+              logger.info(`  - ${p.title} (${p.slug})`);
             }
-            logInfo(`\nStart with: at challenge ${suggestions[0].slug}`);
+            logger.info(`\nStart with: at challenge ${suggestions[0].slug}`);
           }
         }
       }
@@ -215,13 +215,13 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
     if (error instanceof WorkspaceError) {
-      logError('Workspace error:', error.message);
+      logger.error('Workspace error:', error.message);
       return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
     } else if (error instanceof ProblemError) {
-      logError('Problem error:', error.message);
+      logger.error('Problem error:', error.message);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     } else {
-      logError('Unexpected error:', error instanceof Error ? error.message : String(error));
+      logger.error('Unexpected error:', error instanceof Error ? error.message : String(error));
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
   }

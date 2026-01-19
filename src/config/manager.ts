@@ -10,7 +10,7 @@
 import { createDirectory, pathExists, readJsonFile, writeJsonFile } from '../utils/fs.ts';
 import { validateConfig, validateOrThrow } from '../utils/validation.ts';
 import { ConfigError, createErrorContext } from '../utils/errors.ts';
-import { logInfo } from '../utils/output.ts';
+import { logger } from '../utils/output.ts';
 import { getConfigFilePaths, getConfigPaths } from './paths.ts';
 import { DEFAULT_CONFIG } from './types.ts';
 import { getEnvConfigPath, loadEnvConfig } from '../cli/env.ts';
@@ -65,7 +65,7 @@ export class ConfigManager {
         };
       } else {
         // Create default config file
-        logInfo('No configuration found, creating default configuration');
+        logger.info('No configuration found, creating default configuration');
         // Set config before saving
         this.config = mergedConfig;
         await this.save();
@@ -126,7 +126,7 @@ export class ConfigManager {
         indent: 2,
       });
 
-      logInfo('Configuration saved successfully');
+      logger.info('Configuration saved successfully');
     } catch (error) {
       if (error instanceof ConfigError) {
         throw error;
@@ -232,7 +232,7 @@ export class ConfigManager {
   async reset(): Promise<void> {
     this.config = { ...DEFAULT_CONFIG };
     await this.save();
-    logInfo('Configuration reset to defaults');
+    logger.info('Configuration reset to defaults');
   }
 }
 

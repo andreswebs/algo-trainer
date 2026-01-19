@@ -21,6 +21,7 @@ import { getCustomProblemsPath, ProblemDatabase, type ProblemDatabaseOptions } f
 import { createErrorContext, ProblemError } from '../../utils/errors.ts';
 import { pathExists, remove as removeFile, writeTextFile } from '../../utils/fs.ts';
 import { validateProblem } from '../../utils/validation.ts';
+import { logger } from '../../utils/output.ts';
 
 /**
  * Problem Manager class
@@ -502,9 +503,8 @@ export class ProblemManager {
       } catch (cleanupError) {
         // Log cleanup failure for debugging, but do not mask the original error
         try {
-          console.error(
-            'Failed to clean up temporary problem file',
-            { tempPath, cleanupError: String(cleanupError) },
+          logger.warn(
+            'Failed to clean up temporary problem file: ' + tempPath + ' - ' + String(cleanupError)
           );
         } catch {
           // If logging fails, swallow to avoid interfering with the original error

@@ -23,7 +23,7 @@ import {
 import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import { join } from '@std/path';
 import { ExitCode } from '../exit-codes.ts';
-import { logError, logInfo, logSuccess, logWarning } from '../../utils/output.ts';
+import { logger } from '../../utils/output.ts';
 import { confirmAction, formatProblemSummary, requireProblemManager } from './shared.ts';
 import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { promptDifficulty, promptLanguage } from '../prompts.ts';
@@ -104,10 +104,10 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const workspaceRoot = config.workspace || Deno.cwd();
     if (!await isWorkspaceInitialized(workspaceRoot)) {
       // Initialize workspace if it doesn't exist
-      logInfo(`Workspace not initialized at: ${workspaceRoot}`);
-      logInfo('Initializing workspace...');
+      logger.info(`Workspace not initialized at: ${workspaceRoot}`);
+      logger.info('Initializing workspace...');
       await initWorkspace(workspaceRoot);
-      logSuccess('Workspace initialized');
+      logger.success('Workspace initialized');
     }
 
     // Initialize problem manager
@@ -119,7 +119,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       // Get specific problem by slug
       problem = manager.getBySlug(options.slug);
       if (!problem) {
-        logError(`Problem not found: ${options.slug}`);
+        logger.error(`Problem not found: ${options.slug}`);
         return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
       }
     } else {
@@ -134,15 +134,15 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
         const prompted = await promptDifficulty();
         if (prompted) {
           difficulty = prompted;
-          logInfo(`Selected difficulty: ${difficulty}`);
+          logger.info(`Selected difficulty: ${difficulty}`);
         }
       }
 
       if (difficulty) {
         const diffLower = difficulty.toLowerCase();
         if (!['easy', 'medium', 'hard'].includes(diffLower)) {
-          logError(`Invalid difficulty: ${difficulty}`);
-          logInfo('Valid difficulties: easy, medium, hard');
+          logger.error(`Invalid difficulty: ${difficulty}`);
+          logger.info('Valid difficulties: easy, medium, hard');
           return { success: false, exitCode: ExitCode.USAGE_ERROR };
         }
         query.difficulty = diffLower as Difficulty;
@@ -158,7 +158,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
 
       problem = manager.getRandom(query);
       if (!problem) {
-        logError('No problems found matching the specified filters');
+        logger.error('No problems found matching the specified filters');
         return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
       }
     }
@@ -170,7 +170,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       const prompted = await promptLanguage('typescript');
       if (prompted) {
         language = prompted;
-        logInfo(`Selected language: ${language}`);
+        logger.info(`Selected language: ${language}`);
       } else {
         // Use default if prompt returns null (non-interactive)
         language = 'typescript';
@@ -190,26 +190,26 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       'go',
     ];
     if (!validLanguages.includes(language)) {
-      logError(`Invalid language: ${configLanguage}`);
-      logInfo(`Valid languages: ${validLanguages.join(', ')}`);
+      logger.error(`Invalid language: ${configLanguage}`);
+      logger.info(`Valid languages: ${validLanguages.join(', ')}`);
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
     // Check if problem already exists
     const exists = await problemExists(workspaceRoot, problem.slug, language);
     if (exists && !options.force) {
-      logWarning(`Problem '${problem.slug}' already exists in workspace`);
-      logInfo('Use --force to overwrite existing files');
+      logger.warn(`Problem '${problem.slug}' already exists in workspace`);
+      logger.info('Use --force to overwrite existing files');
 
       const confirmed = await confirmAction('Do you want to overwrite existing files?', false);
       if (!confirmed) {
-        logInfo('Operation cancelled');
+        logger.info('Operation cancelled');
         return { success: true, exitCode: ExitCode.SUCCESS };
       }
     }
 
     // Generate problem files
-    logInfo(`Generating files for: ${problem.title}`);
+    logger.info(`Generating files for: ${problem.title}`);
     const result = await generateProblemFiles({
       problem,
       workspaceRoot,
@@ -219,25 +219,25 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     });
 
     if (!result.success) {
-      logError(`Failed to generate problem files: ${result.error}`);
+      logger.error(`Failed to generate problem files: ${result.error}`);
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
 
     // Display success message with problem summary
-    logSuccess(`Started challenge: ${problem.title}`);
-    console.error(''); // Empty line for spacing
-    console.error(formatProblemSummary(problem));
-    console.error(''); // Empty line for spacing
+    logger.success(`Started challenge: ${problem.title}`);
+    logger.newline();
+    logger.log(formatProblemSummary(problem));
+    logger.newline();
 
-    logInfo(`Language: ${language}`);
-    logInfo(`Template style: ${config.preferences.templateStyle}`);
-    logInfo(`Problem directory: ${result.problemDir}`);
+    logger.info(`Language: ${language}`);
+    logger.info(`Template style: ${config.preferences.templateStyle}`);
+    logger.info(`Problem directory: ${result.problemDir}`);
 
     if (result.filesCreated.length > 0) {
-      logInfo(`Created ${result.filesCreated.length} file(s)`);
+      logger.info(`Created ${result.filesCreated.length} file(s)`);
     }
     if (result.filesSkipped.length > 0) {
-      logInfo(`Skipped ${result.filesSkipped.length} existing file(s)`);
+      logger.info(`Skipped ${result.filesSkipped.length} existing file(s)`);
     }
 
     // Load and display teaching script if AI is enabled
@@ -251,48 +251,48 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
         const loaded = await engine.loadScript(problemDir);
 
         if (loaded) {
-          console.error(''); // Empty line for spacing
+          logger.newline();
 
           // Display introduction message
           const intro = engine.getIntroduction();
           if (intro) {
-            console.error('📚 Teaching Guide');
-            console.error('═'.repeat(50));
-            console.error('');
-            console.error(intro);
-            console.error('');
+            logger.log('📚 Teaching Guide');
+            logger.separator(50, '═');
+            logger.newline();
+            logger.log(intro);
+            logger.newline();
           }
 
           // Display pre-prompt guidance
           const prePrompt = engine.getPrePrompt();
           if (prePrompt) {
-            console.error('💡 Getting Started');
-            console.error('═'.repeat(50));
-            console.error('');
-            console.error(prePrompt);
-            console.error('');
+            logger.log('💡 Getting Started');
+            logger.separator(50, '═');
+            logger.newline();
+            logger.log(prePrompt);
+            logger.newline();
           }
 
           if (intro || prePrompt) {
-            logInfo('💬 Use \'at hint\' for contextual hints during coding');
+            logger.info('💬 Use \'at hint\' for contextual hints during coding');
           }
         }
       } catch (error) {
         // Teaching system errors are non-fatal, just log a warning
-        console.warn('Note: Could not load teaching guidance:', error instanceof Error ? error.message : String(error));
+        logger.warn('Note: Could not load teaching guidance: ' + (error instanceof Error ? error.message : String(error)));
       }
     }
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
     if (error instanceof WorkspaceError) {
-      logError('Workspace error:', error.message);
+      logger.error('Workspace error:', error.message);
       return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
     } else if (error instanceof ProblemError) {
-      logError('Problem error:', error.message);
+      logger.error('Problem error:', error.message);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     } else {
-      logError('Unexpected error:', error instanceof Error ? error.message : String(error));
+      logger.error('Unexpected error:', error instanceof Error ? error.message : String(error));
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
   }

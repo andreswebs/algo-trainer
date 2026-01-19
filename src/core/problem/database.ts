@@ -13,7 +13,7 @@ import type { Difficulty, Problem } from '../../types/global.ts';
 import { createErrorContext, ProblemError } from '../../utils/errors.ts';
 import { listDirectory, pathExists } from '../../utils/fs.ts';
 import { getConfigPaths } from '../../config/paths.ts';
-import { logWarning } from '../../utils/output.ts';
+import { logger } from '../../utils/output.ts';
 import { parseProblemFromFile } from './parser.ts';
 
 /**
@@ -188,7 +188,7 @@ export class ProblemDatabase {
         }
 
         if (customProblemErrorBehavior === 'warn') {
-          logWarning(`Skipping invalid custom problem: ${path} - ${errorMsg}`);
+          logger.warn(`Skipping invalid custom problem: ${path} - ${errorMsg}`);
         }
 
         skipped.push({ path, error: errorMsg });

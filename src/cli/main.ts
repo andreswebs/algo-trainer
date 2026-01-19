@@ -7,7 +7,7 @@
  */
 
 import { parseArgs } from '@std/cli/parse-args';
-import { exitWithError, logError, setOutputOptions } from '../utils/output.ts';
+import { exitWithError, logger, outputData, setOutputOptions } from '../utils/output.ts';
 import { formatError } from '../utils/errors.ts';
 import { getExitCodeForError } from './exit-codes.ts';
 import { initializeConfig } from '../config/manager.ts';
@@ -81,7 +81,7 @@ For more information about a specific command, run:
     at <command> --help
 `;
 
-  console.error(help.trim());
+  logger.log(help.trim());
 }
 
 export async function main(inputArgs: string[] = Deno.args): Promise<void> {
@@ -90,7 +90,7 @@ export async function main(inputArgs: string[] = Deno.args): Promise<void> {
     const globalFlags = extractGlobalFlags(args);
 
     if (globalFlags.version) {
-      console.log(`Algo Trainer v${VERSION}`);
+      outputData(`Algo Trainer v${VERSION}`);
       return;
     }
 
@@ -122,7 +122,7 @@ export async function main(inputArgs: string[] = Deno.args): Promise<void> {
     }
   } catch (error) {
     const errorMessage = formatError(error);
-    logError('Unexpected error occurred', errorMessage);
+    logger.error('Unexpected error occurred', errorMessage);
     const exitCode = getExitCodeForError(error);
     Deno.exit(exitCode);
   }

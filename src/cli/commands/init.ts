@@ -11,7 +11,7 @@ import type { CommandResult } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, initWorkspace, isWorkspaceInitialized } from '../../core/mod.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
-import { logError, logInfo, logSuccess } from '../../utils/output.ts';
+import { logger } from '../../utils/output.ts';
 import { resolve } from '@std/path';
 import { showCommandHelp } from './help.ts';
 
@@ -76,8 +76,8 @@ export async function initCommand(args: Args): Promise<CommandResult> {
     const alreadyInitialized = await isWorkspaceInitialized(workspaceRoot);
 
     if (alreadyInitialized && !options.force) {
-      logInfo(`Workspace already initialized at: ${workspaceRoot}`);
-      logInfo('Use --force to reinitialize');
+      logger.info(`Workspace already initialized at: ${workspaceRoot}`);
+      logger.info('Use --force to reinitialize');
       return {
         success: true,
         exitCode: ExitCode.SUCCESS,
@@ -85,7 +85,7 @@ export async function initCommand(args: Args): Promise<CommandResult> {
     }
 
     if (alreadyInitialized && options.force) {
-      logInfo('Reinitializing existing workspace...');
+      logger.info('Reinitializing existing workspace...');
     }
 
     // Initialize workspace
@@ -95,21 +95,22 @@ export async function initCommand(args: Args): Promise<CommandResult> {
     const structure = getWorkspaceStructure(workspaceRoot);
 
     // Display success message with directory structure
-    logSuccess(`Workspace initialized at: ${workspaceRoot}`);
-    console.error('\nDirectory structure:');
-    console.error(`  ${structure.problems}/     - Current challenges`);
-    console.error(`  ${structure.completed}/   - Completed problems`);
-    console.error(`  ${structure.templates}/   - Code templates`);
-    console.error(`  ${structure.config}/      - Workspace config`);
+    logger.success(`Workspace initialized at: ${workspaceRoot}`);
+    logger.newline();
+    logger.log('Directory structure:');
+    logger.log(`  ${structure.problems}/     - Current challenges`);
+    logger.log(`  ${structure.completed}/   - Completed problems`);
+    logger.log(`  ${structure.templates}/   - Code templates`);
+    logger.log(`  ${structure.config}/      - Workspace config`);
 
     // Update config with new workspace path if it was explicitly provided
     if (options.path) {
       try {
         await configManager.updateConfig({ workspace: workspaceRoot });
-        logInfo('Configuration updated with new workspace path');
+        logger.info('Configuration updated with new workspace path');
       } catch (error) {
         // Log but don't fail if config update fails
-        logInfo(
+        logger.info(
           `Note: Could not update configuration: ${
             error instanceof Error ? error.message : String(error)
           }`,
@@ -122,7 +123,7 @@ export async function initCommand(args: Args): Promise<CommandResult> {
       exitCode: ExitCode.SUCCESS,
     };
   } catch (error) {
-    logError(
+    logger.error(
       'Failed to initialize workspace',
       error instanceof Error ? error.message : String(error),
     );
