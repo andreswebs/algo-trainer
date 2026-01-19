@@ -120,6 +120,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       problem = manager.getBySlug(options.slug);
       if (!problem) {
         logger.error(`Problem not found: ${options.slug}`);
+        logger.info('Use "at list" to see available problems, or try a search with "at list -s <term>"');
         return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
       }
     } else {

@@ -57,14 +57,18 @@ export function evaluateTrigger(
   try {
     // Validate input
     if (!trigger || typeof trigger !== 'string') {
-      logger.warn('[triggers] Invalid trigger expression (not a string)');
+      logger.warn(
+        `[triggers] Invalid trigger expression: expected string, got ${typeof trigger}. Check your teaching script trigger format.`,
+      );
       return false;
     }
 
     // Normalize whitespace
     const normalized = trigger.trim();
     if (normalized === '') {
-      logger.warn('[triggers] Empty trigger expression');
+      logger.warn(
+        '[triggers] Empty trigger expression. Provide a valid condition like "attempts > 2" or "code.includes(\'for\')".',
+      );
       return false;
     }
 

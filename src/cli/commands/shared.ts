@@ -11,7 +11,7 @@
 import type { Problem, WorkspaceStructure } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized, ProblemManager } from '../../core/mod.ts';
-import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
+import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/errors.ts';
 
 /**
  * Validates that the workspace is initialized and returns its structure.
@@ -81,7 +81,7 @@ export async function requireWorkspace(
  * errors gracefully.
  *
  * @returns Promise resolving to initialized ProblemManager instance
- * @throws {Error} If initialization fails
+ * @throws {ProblemError} If initialization fails
  *
  * @example
  * ```ts
@@ -95,10 +95,11 @@ export async function requireProblemManager(): Promise<ProblemManager> {
     await manager.init();
     return manager;
   } catch (error) {
-    throw new Error(
-      `Failed to initialize problem manager: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+    throw new ProblemError(
+      `Failed to initialize problem database. Ensure the problem data files are accessible and properly formatted.`,
+      createErrorContext('requireProblemManager', {
+        error: error instanceof Error ? error.message : String(error),
+      }),
     );
   }
 }

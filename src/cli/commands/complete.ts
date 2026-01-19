@@ -131,7 +131,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     const exists = await problemExists(structure.root, problemSlug, language);
     if (!exists) {
       logger.error(`Problem '${problemSlug}' not found in workspace`);
-      logger.info('Available problems are in: ' + structure.problems);
+      logger.info('Use "at challenge <slug>" to start working on this problem first');
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     }
 

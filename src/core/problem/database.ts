@@ -126,33 +126,31 @@ export class ProblemDatabase {
         const problem = await parseProblemFromFile(path);
 
         if (loadedIds.has(problem.id)) {
-          const errorMsg = `Duplicate problem ID: '${problem.id}' in ${path}`;
-          if (isBuiltIn) {
-            throw new ProblemError(
-              errorMsg,
-              createErrorContext('loadProblemDatabase', {
-                path,
-                reason: 'duplicate_id',
-                duplicateId: problem.id,
-              }),
-            );
-          }
-          throw new Error(errorMsg);
+          const errorMsg = isBuiltIn
+            ? `Duplicate problem ID: '${problem.id}' in ${path}`
+            : `Duplicate problem ID: '${problem.id}' in ${path}. Each problem must have a unique ID.`;
+          throw new ProblemError(
+            errorMsg,
+            createErrorContext('loadProblemDatabase', {
+              path,
+              reason: 'duplicate_id',
+              duplicateId: problem.id,
+            }),
+          );
         }
 
         if (loadedSlugs.has(problem.slug)) {
-          const errorMsg = `Duplicate problem slug: '${problem.slug}' in ${path}`;
-          if (isBuiltIn) {
-            throw new ProblemError(
-              errorMsg,
-              createErrorContext('loadProblemDatabase', {
-                path,
-                reason: 'duplicate_slug',
-                duplicateSlug: problem.slug,
-              }),
-            );
-          }
-          throw new Error(errorMsg);
+          const errorMsg = isBuiltIn
+            ? `Duplicate problem slug: '${problem.slug}' in ${path}`
+            : `Duplicate problem slug: '${problem.slug}' in ${path}. Each problem must have a unique slug.`;
+          throw new ProblemError(
+            errorMsg,
+            createErrorContext('loadProblemDatabase', {
+              path,
+              reason: 'duplicate_slug',
+              duplicateSlug: problem.slug,
+            }),
+          );
         }
 
         loadedIds.add(problem.id);

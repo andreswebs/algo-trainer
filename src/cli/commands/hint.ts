@@ -188,6 +188,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const problem = resolveProblem(problemSlug, manager);
     if (!problem) {
       logger.error(`Problem '${problemSlug}' not found.`);
+      logger.info('Use "at list" to see available problems, or provide a valid problem ID or slug');
       return {
         success: false,
         exitCode: ExitCode.PROBLEM_ERROR,

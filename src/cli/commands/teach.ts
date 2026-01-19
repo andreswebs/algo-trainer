@@ -113,6 +113,7 @@ async function handleGenerate(
   const problem = resolveProblem(options.problemSlug, manager);
   if (!problem) {
     logger.error(`Problem '${options.problemSlug}' not found.`);
+    logger.info('Use "at list" to see available problems, or provide a valid problem ID or slug');
     return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
   }
 

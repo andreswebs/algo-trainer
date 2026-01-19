@@ -14,6 +14,7 @@ import { logger, outputData } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import { DEFAULT_CONFIG } from '../../config/types.ts';
 import { showCommandHelp } from './help.ts';
+import { ConfigError, ValidationError } from '../../utils/errors.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -106,7 +107,10 @@ function parseConfigValue(key: string, value: string): unknown {
     const lower = value.toLowerCase();
     if (lower === 'true' || lower === '1' || lower === 'yes') return true;
     if (lower === 'false' || lower === '0' || lower === 'no') return false;
-    throw new Error(`Invalid boolean value: ${value}. Use true/false, 1/0, or yes/no.`);
+    throw new ValidationError(
+      `Invalid boolean value: ${value}. Valid options: true, false, 1, 0, yes, no`,
+      { key, value, validOptions: ['true', 'false', '1', '0', 'yes', 'no'] },
+    );
   }
 
   // String arrays
@@ -126,31 +130,42 @@ function parseConfigValue(key: string, value: string): unknown {
       'go',
     ];
     if (!validLanguages.includes(value as SupportedLanguage)) {
-      throw new Error(
-        `Invalid language: ${value}. Supported: ${validLanguages.join(', ')}`,
+      throw new ValidationError(
+        `Invalid language: ${value}. Valid options: ${validLanguages.join(', ')}`,
+        { key, value, validOptions: validLanguages },
       );
     }
     return value;
   }
 
   if (key === 'preferences.theme') {
-    if (!['light', 'dark', 'auto'].includes(value)) {
-      throw new Error(`Invalid theme: ${value}. Supported: light, dark, auto`);
+    const validOptions = ['light', 'dark', 'auto'];
+    if (!validOptions.includes(value)) {
+      throw new ValidationError(
+        `Invalid theme: ${value}. Valid options: ${validOptions.join(', ')}`,
+        { key, value, validOptions },
+      );
     }
     return value;
   }
 
   if (key === 'preferences.verbosity') {
-    if (!['quiet', 'normal', 'verbose'].includes(value)) {
-      throw new Error(`Invalid verbosity: ${value}. Supported: quiet, normal, verbose`);
+    const validOptions = ['quiet', 'normal', 'verbose'];
+    if (!validOptions.includes(value)) {
+      throw new ValidationError(
+        `Invalid verbosity: ${value}. Valid options: ${validOptions.join(', ')}`,
+        { key, value, validOptions },
+      );
     }
     return value;
   }
 
   if (key === 'preferences.templateStyle') {
-    if (!['minimal', 'documented', 'comprehensive'].includes(value)) {
-      throw new Error(
-        `Invalid template style: ${value}. Supported: minimal, documented, comprehensive`,
+    const validOptions = ['minimal', 'documented', 'comprehensive'];
+    if (!validOptions.includes(value)) {
+      throw new ValidationError(
+        `Invalid template style: ${value}. Valid options: ${validOptions.join(', ')}`,
+        { key, value, validOptions },
       );
     }
     return value;
