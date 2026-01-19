@@ -145,7 +145,7 @@ describe('progressCommand', () => {
     assertEquals(result.success, true);
     assertEquals(result.exitCode, ExitCode.SUCCESS);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'Progress Summary');
     assertStringIncludes(output, 'Problems Completed: 0');
     assertStringIncludes(output, 'Problems In Progress: 0');
@@ -161,7 +161,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'By Difficulty');
     assertStringIncludes(output, 'easy');
     assertStringIncludes(output, 'medium');
@@ -178,7 +178,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'By Category');
   });
 
@@ -192,7 +192,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'By Category');
     assertStringIncludes(output, 'By Difficulty');
   });
@@ -243,7 +243,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'Problems In Progress: 1');
   });
 
@@ -273,7 +273,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'Problems Completed: 1');
   });
 
@@ -321,7 +321,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'Problems In Progress: 1');
     assertStringIncludes(output, 'Problems Completed: 1');
   });
@@ -336,7 +336,7 @@ describe('progressCommand', () => {
 
     assertEquals(result.success, true);
 
-    const output = capture.getLog();
+    const output = capture.getError();
     assertStringIncludes(output, 'Overall Completion:');
     assertStringIncludes(output, '%');
   });
