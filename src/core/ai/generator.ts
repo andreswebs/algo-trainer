@@ -8,6 +8,7 @@
  * @module core/ai/generator
  */
 
+import { stringify as stringifyYaml } from '@std/yaml';
 import type { Problem, SupportedLanguage } from '../../types/global.ts';
 import type { TeachingScript, TeachingStep } from './types.ts';
 
@@ -638,59 +639,7 @@ export class TeachingScriptGenerator {
    * @returns YAML string representation
    */
   private serializeToYaml(script: TeachingScript): string {
-    // Import stringify dynamically to avoid circular dependency issues
-    // Note: Using a simple implementation here for now
-    // TODO(ATS-011): Replace with @std/yaml when integrated with parser
-
-    const lines: string[] = [];
-
-    // Add metadata
-    lines.push(`id: ${script.id}`);
-    lines.push(`title: ${script.title}`);
-    lines.push(`difficulty: ${script.difficulty}`);
-    lines.push(`language: ${script.language}`);
-
-    // Add tags
-    if (script.tags.length > 0) {
-      lines.push('tags:');
-      for (const tag of script.tags) {
-        lines.push(`  - ${tag}`);
-      }
-    } else {
-      lines.push('tags: []');
-    }
-
-    // Add steps
-    lines.push('steps:');
-    for (const step of script.steps) {
-      lines.push(`  - type: ${step.type}`);
-
-      // Handle multiline content with proper YAML formatting
-      if (step.content.includes('\n')) {
-        lines.push('    content: |');
-        const contentLines = step.content.split('\n');
-        for (const line of contentLines) {
-          lines.push(`      ${line}`);
-        }
-      } else {
-        lines.push(`    content: ${JSON.stringify(step.content)}`);
-      }
-
-      // Add trigger if present
-      if (step.trigger) {
-        lines.push(`    trigger: ${JSON.stringify(step.trigger)}`);
-      }
-
-      // Add keywords if present
-      if (step.keywords && step.keywords.length > 0) {
-        lines.push('    keywords:');
-        for (const keyword of step.keywords) {
-          lines.push(`      - ${keyword}`);
-        }
-      }
-    }
-
-    return lines.join('\n') + '\n';
+    return stringifyYaml(script as unknown as Record<string, unknown>);
   }
 
   /**

@@ -172,8 +172,10 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
 
     // If no slug provided, try to detect from workspace
     if (!problemSlug) {
-      // TODO(CLI-021): For now, we require explicit slug
-      // In the future, this could detect the current problem from workspace
+      // FUTURE ENHANCEMENT(CLI-021): Auto-detect current problem from workspace
+      // This would use the same detection mechanism as CLI-001 in shared.ts
+      // to identify which problem the user is currently working on
+      // Decision: Deferred to post-v1.0 as explicit problem identifiers work well
       logger.error('Problem slug is required. Usage: at hint <slug>');
       return {
         success: false,

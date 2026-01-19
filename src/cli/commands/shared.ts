@@ -138,9 +138,12 @@ export function resolveProblem(
 ): Problem | null {
   // Default to 'current' if no identifier provided
   if (identifier === undefined || identifier === 'current') {
-    // TODO(CLI-001): Implement current problem detection from workspace
-    // For now, return null as 'current' is not yet implemented
-    // In future, this would scan the workspace for active problems
+    // FUTURE ENHANCEMENT(CLI-001): Auto-detect current problem from workspace
+    // This feature would scan the workspace to identify the active problem based on:
+    // - Most recently modified problem directory
+    // - Presence of a .current marker file
+    // - Workspace state tracking
+    // Decision: Deferred to post-v1.0 as explicit problem identifiers work well
     return null;
   }
 
