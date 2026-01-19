@@ -88,50 +88,55 @@ export function extractListOptions(args: Args): ListOptions {
 }
 
 /**
- * Format problems as a table for display
+ * Display problems as a table
  */
-function formatAsTable(
+function displayProblemsTable(
   problems: Array<
     { id: string; difficulty: string; title: string; description: string; tags: string[] }
   >,
   options: { verbose: boolean },
-): string {
+): void {
   if (problems.length === 0) {
-    return 'No problems found.';
+    logger.info('No problems found.');
+    return;
   }
 
-  const lines: string[] = [];
+  logger.newline();
 
-  // Header
-  lines.push('');
-  lines.push('ID     | Difficulty | Title');
-  lines.push('-------|------------|------');
+  // Display main table using logger.table()
+  logger.table(problems, {
+    columns: [
+      { key: 'id', label: 'ID', width: 6, align: 'left' },
+      { key: 'difficulty', label: 'Difficulty', width: 10, align: 'left' },
+      { key: 'title', label: 'Title', align: 'left' },
+    ],
+  });
 
-  // Rows
-  for (const problem of problems) {
-    const id = problem.id.padEnd(6);
-    const difficulty = problem.difficulty.padEnd(10);
-    lines.push(`${id} | ${difficulty} | ${problem.title}`);
+  // Show verbose details if requested
+  if (options.verbose) {
+    logger.newline();
+    for (const problem of problems) {
+      logger.log(`${problem.id}:`);
+      logger.group();
 
-    if (options.verbose) {
       // Show description (truncated)
       const desc = problem.description.length > 100
         ? problem.description.substring(0, 100) + '...'
         : problem.description;
-      lines.push(`       |            | ${desc}`);
+      logger.log(`Description: ${desc}`);
 
       // Show tags
       if (problem.tags.length > 0) {
-        lines.push(`       |            | Tags: ${problem.tags.join(', ')}`);
+        logger.log(`Tags: ${problem.tags.join(', ')}`);
       }
-      lines.push('');
+
+      logger.groupEnd();
+      logger.newline();
     }
   }
 
-  lines.push('');
-  lines.push(`Total: ${problems.length} problem${problems.length === 1 ? '' : 's'}`);
-
-  return lines.join('\n');
+  logger.newline();
+  logger.log(`Total: ${problems.length} problem${problems.length === 1 ? '' : 's'}`);
 }
 
 /**
@@ -193,8 +198,7 @@ export async function listCommand(args: Args): Promise<CommandResult> {
       });
     } else {
       // Table output
-      const table = formatAsTable(result.problems, { verbose: options.verbose });
-      logger.log(table);
+      displayProblemsTable(result.problems, { verbose: options.verbose });
     }
 
     return {

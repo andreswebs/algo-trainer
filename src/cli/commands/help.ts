@@ -20,36 +20,42 @@ export interface CommandHelp {
  * Format and display command help
  */
 export function showCommandHelp(help: CommandHelp): void {
-  const lines: string[] = [];
-
   // Header
-  lines.push(`at ${help.name} - ${help.description}`);
-  lines.push('');
+  logger.log(`at ${help.name} - ${help.description}`);
+  logger.newline();
 
   // Usage
-  lines.push('USAGE:');
+  logger.log('USAGE:');
   help.usage.forEach((usage) => {
-    lines.push(`    ${usage}`);
+    logger.log(`    ${usage}`);
   });
-  lines.push('');
+  logger.newline();
 
   // Options
   if (help.options.length > 0) {
-    lines.push('OPTIONS:');
+    logger.log('OPTIONS:');
+
+    // Calculate the maximum width needed for flags column
+    const maxFlagWidth = Math.max(...help.options.map(opt => opt.flags.length));
+    const flagWidth = Math.min(maxFlagWidth + 2, 35); // Cap at 35 for very long flags
+
     help.options.forEach((opt) => {
-      lines.push(`    ${opt.flags.padEnd(30)} ${opt.description}`);
+      logger.log(`    ${opt.flags.padEnd(flagWidth)} ${opt.description}`);
     });
-    lines.push('');
+    logger.newline();
   }
 
   // Examples
   if (help.examples.length > 0) {
-    lines.push('EXAMPLES:');
-    help.examples.forEach((example) => {
-      lines.push(`    ${example.command.padEnd(40)} ${example.description}`);
-    });
-    lines.push('');
-  }
+    logger.log('EXAMPLES:');
 
-  logger.log(lines.join('\n').trim());
+    // Calculate the maximum width needed for command column
+    const maxCommandWidth = Math.max(...help.examples.map(ex => ex.command.length));
+    const commandWidth = Math.min(maxCommandWidth + 2, 50); // Cap at 50 for very long commands
+
+    help.examples.forEach((example) => {
+      logger.log(`    ${example.command.padEnd(commandWidth)} ${example.description}`);
+    });
+    logger.newline();
+  }
 }

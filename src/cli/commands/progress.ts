@@ -256,45 +256,43 @@ async function calculateProgressStats(
 }
 
 /**
- * Format progress statistics as a table
+ * Display progress statistics as formatted tables
  */
-function formatProgressTable(stats: ProgressStats, options: ProgressOptions): string {
-  const lines: string[] = [];
-
-  lines.push('');
-  lines.push('=== Progress Summary ===');
-  lines.push('');
+function displayProgressTable(stats: ProgressStats, options: ProgressOptions): void {
+  logger.newline();
+  logger.log('=== Progress Summary ===');
+  logger.newline();
 
   // Overall stats
   const completionRate = stats.totalProblems > 0
     ? ((stats.completedProblems / stats.totalProblems) * 100).toFixed(1)
     : '0.0';
 
-  lines.push(`Total Problems Available: ${stats.totalProblems}`);
-  lines.push(`Problems Completed: ${stats.completedProblems}`);
-  lines.push(`Problems In Progress: ${stats.currentProblems}`);
-  lines.push(`Overall Completion: ${completionRate}%`);
-  lines.push('');
+  logger.log(`Total Problems Available: ${stats.totalProblems}`);
+  logger.log(`Problems Completed: ${stats.completedProblems}`);
+  logger.log(`Problems In Progress: ${stats.currentProblems}`);
+  logger.log(`Overall Completion: ${completionRate}%`);
+  logger.newline();
 
   // By difficulty
-  lines.push('=== By Difficulty ===');
-  lines.push('');
-  lines.push('Difficulty | In Progress | Completed | Total');
-  lines.push('-----------|-------------|-----------|------');
+  logger.log('=== By Difficulty ===');
+  logger.newline();
 
-  for (const diff of stats.byDifficulty) {
-    const difficulty = diff.difficulty.padEnd(10);
-    const current = diff.current.toString().padStart(11);
-    const completed = diff.completed.toString().padStart(9);
-    const total = diff.total.toString().padStart(5);
-    lines.push(`${difficulty} | ${current} | ${completed} | ${total}`);
-  }
-  lines.push('');
+  logger.table(stats.byDifficulty as unknown as Record<string, unknown>[], {
+    columns: [
+      { key: 'difficulty', label: 'Difficulty', width: 10, align: 'left' },
+      { key: 'current', label: 'In Progress', width: 11, align: 'right' },
+      { key: 'completed', label: 'Completed', width: 9, align: 'right' },
+      { key: 'total', label: 'Total', width: 5, align: 'right' },
+    ],
+  });
+
+  logger.newline();
 
   // By category (if requested or detailed)
   if (options.byCategory || options.detailed) {
-    lines.push('=== By Category ===');
-    lines.push('');
+    logger.log('=== By Category ===');
+    logger.newline();
 
     // Filter to only show categories with activity
     const activeCategories = stats.byCategory.filter(
@@ -302,32 +300,28 @@ function formatProgressTable(stats: ProgressStats, options: ProgressOptions): st
     );
 
     if (activeCategories.length > 0) {
-      lines.push('Category           | In Progress | Completed | Total');
-      lines.push('-------------------|-------------|-----------|------');
-
       // Limit to top 10 if not detailed
       const displayCategories = options.detailed ? activeCategories : activeCategories.slice(0, 10);
 
-      for (const cat of displayCategories) {
-        const category = cat.category.padEnd(18);
-        const current = cat.current.toString().padStart(11);
-        const completed = cat.completed.toString().padStart(9);
-        const total = cat.total.toString().padStart(5);
-        lines.push(`${category} | ${current} | ${completed} | ${total}`);
-      }
+      logger.table(displayCategories as unknown as Record<string, unknown>[], {
+        columns: [
+          { key: 'category', label: 'Category', width: 18, align: 'left' },
+          { key: 'current', label: 'In Progress', width: 11, align: 'right' },
+          { key: 'completed', label: 'Completed', width: 9, align: 'right' },
+          { key: 'total', label: 'Total', width: 5, align: 'right' },
+        ],
+      });
 
       if (!options.detailed && activeCategories.length > 10) {
-        lines.push('');
-        lines.push(`... and ${activeCategories.length - 10} more categories`);
-        lines.push('Use --detailed to see all categories');
+        logger.newline();
+        logger.log(`... and ${activeCategories.length - 10} more categories`);
+        logger.log('Use --detailed to see all categories');
       }
     } else {
-      lines.push('No problems attempted yet in any category.');
+      logger.log('No problems attempted yet in any category.');
     }
-    lines.push('');
+    logger.newline();
   }
-
-  return lines.join('\n');
 }
 
 /**
@@ -370,8 +364,7 @@ export async function progressCommand(args: Args): Promise<CommandResult> {
       outputData(stats);
     } else {
       // Table output
-      const table = formatProgressTable(stats, options);
-      logger.log(table);
+      displayProgressTable(stats, options);
     }
 
     return {
