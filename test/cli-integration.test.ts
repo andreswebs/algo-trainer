@@ -467,6 +467,9 @@ describe('CLI Integration Tests - CLI-051', () => {
     });
 
     it('should support configuration workflow', async () => {
+      // 0. Initialize workspace
+      await initCommand({ _: ['init', tempDir] });
+
       // 1. Set language
       const setResult = await configCommand({
         _: ['config', 'set', 'language', 'python'],

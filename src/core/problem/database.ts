@@ -195,55 +195,71 @@ export class ProblemDatabase {
       }
     };
 
-    // Load built-in problems from generated TypeScript module
-    // This allows the data to be bundled with `deno compile`
-    const builtInSlugs = getAllProblemSlugs();
-    for (const slug of builtInSlugs) {
-      const jsonData = getProblemJson(slug);
-      if (!jsonData) continue;
+    // Load built-in problems
+    // If builtInPath is specified (e.g., for testing), load from directory
+    // Otherwise, load from generated TypeScript module (for bundling with `deno compile`)
+    if (builtInPath !== 'src/data/problems') {
+      // Load from custom directory (for testing)
+      if (await pathExists(builtInPath)) {
+        const builtInProblems = await loadProblemsFromDirectory(builtInPath);
+        for (const filePath of builtInProblems) {
+          const problem = await loadProblem(filePath, true);
+          if (problem) {
+            problems.push(problem);
+            builtInCount++;
+          }
+        }
+      }
+    } else {
+      // Load from generated TypeScript module (default for production)
+      const builtInSlugs = getAllProblemSlugs();
+      for (const slug of builtInSlugs) {
+        const jsonData = getProblemJson(slug);
+        if (!jsonData) continue;
 
-      try {
-        const problem = parseProblemFromJson(jsonData, `${slug}.json`);
+        try {
+          const problem = parseProblemFromJson(jsonData, `${slug}.json`);
 
-        if (loadedIds.has(problem.id)) {
+          if (loadedIds.has(problem.id)) {
+            throw new ProblemError(
+              `Duplicate problem ID: '${problem.id}' in ${slug}.json`,
+              createErrorContext('loadProblemDatabase', {
+                path: `${slug}.json`,
+                reason: 'duplicate_id',
+                duplicateId: problem.id,
+              }),
+            );
+          }
+
+          if (loadedSlugs.has(problem.slug)) {
+            throw new ProblemError(
+              `Duplicate problem slug: '${problem.slug}' in ${slug}.json`,
+              createErrorContext('loadProblemDatabase', {
+                path: `${slug}.json`,
+                reason: 'duplicate_slug',
+                duplicateSlug: problem.slug,
+              }),
+            );
+          }
+
+          loadedIds.add(problem.id);
+          loadedSlugs.add(problem.slug);
+
+          problems.push(problem);
+          builtInCount++;
+        } catch (error) {
+          if (error instanceof ProblemError) {
+            throw error;
+          }
           throw new ProblemError(
-            `Duplicate problem ID: '${problem.id}' in ${slug}.json`,
+            `Failed to load built-in problem: ${slug}.json`,
             createErrorContext('loadProblemDatabase', {
               path: `${slug}.json`,
-              reason: 'duplicate_id',
-              duplicateId: problem.id,
+              reason: 'parse_error',
+              originalError: String(error),
             }),
           );
         }
-
-        if (loadedSlugs.has(problem.slug)) {
-          throw new ProblemError(
-            `Duplicate problem slug: '${problem.slug}' in ${slug}.json`,
-            createErrorContext('loadProblemDatabase', {
-              path: `${slug}.json`,
-              reason: 'duplicate_slug',
-              duplicateSlug: problem.slug,
-            }),
-          );
-        }
-
-        loadedIds.add(problem.id);
-        loadedSlugs.add(problem.slug);
-
-        problems.push(problem);
-        builtInCount++;
-      } catch (error) {
-        if (error instanceof ProblemError) {
-          throw error;
-        }
-        throw new ProblemError(
-          `Failed to load built-in problem: ${slug}.json`,
-          createErrorContext('loadProblemDatabase', {
-            path: `${slug}.json`,
-            reason: 'parse_error',
-            originalError: String(error),
-          }),
-        );
       }
     }
 

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { completeCommand, extractCompleteOptions } from '../src/cli/commands/complete.ts';
 import { challengeCommand } from '../src/cli/commands/challenge.ts';
 import { configManager } from '../src/config/manager.ts';
+import { initWorkspace } from '../src/core/mod.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import type { Args } from '@std/cli/parse-args';
 
@@ -69,6 +70,8 @@ describe('completeCommand', () => {
     // Initialize config for testing
     await configManager.load();
     await configManager.updateConfig({ workspace: tempDir });
+    // Initialize workspace structure
+    await initWorkspace(tempDir);
   });
 
   afterEach(async () => {

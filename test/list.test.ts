@@ -16,7 +16,7 @@ describe('extractListOptions', () => {
     const options = extractListOptions(args);
 
     assertEquals(options.difficulty, undefined);
-    assertEquals(options.category, undefined);
+    assertEquals(options.tag, undefined);
     assertEquals(options.search, undefined);
     assertEquals(options.limit, 20);
     assertEquals(options.json, false);
@@ -41,14 +41,14 @@ describe('extractListOptions', () => {
     const args: Args = { _: ['list'], category: 'arrays' };
     const options = extractListOptions(args);
 
-    assertEquals(options.category, 'arrays');
+    assertEquals(options.tag, 'arrays');
   });
 
   it('should extract category with short flag', () => {
     const args: Args = { _: ['list'], c: 'strings' };
     const options = extractListOptions(args);
 
-    assertEquals(options.category, 'strings');
+    assertEquals(options.tag, 'strings');
   });
 
   it('should extract search with long flag', () => {
@@ -106,7 +106,7 @@ describe('extractListOptions', () => {
     const options = extractListOptions(args);
 
     assertEquals(options.difficulty, 'hard');
-    assertEquals(options.category, 'dynamic-programming');
+    assertEquals(options.tag, 'dynamic-programming');
     assertEquals(options.search, 'longest');
     assertEquals(options.limit, 15);
     assertEquals(options.json, true);

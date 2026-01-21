@@ -79,11 +79,12 @@ export async function initCommand(args: Args): Promise<CommandResult> {
     const alreadyInitialized = await isWorkspaceInitialized(workspaceRoot);
 
     if (alreadyInitialized && !options.force) {
-      logger.warn(`Workspace already initialized at: ${workspaceRoot}`);
+      logger.info(`Workspace already initialized at: ${workspaceRoot}`);
       logger.info('Use --force to reinitialize');
+      // Return success for idempotency - workspace is already in desired state
       return {
-        success: false,
-        exitCode: ExitCode.CONFIG_ERROR,
+        success: true,
+        exitCode: ExitCode.SUCCESS,
       };
     }
 

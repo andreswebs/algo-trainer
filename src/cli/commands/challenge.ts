@@ -17,6 +17,8 @@ import { configManager } from '../../config/manager.ts';
 import {
   generateProblemFiles,
   problemExists,
+  initWorkspace,
+  isWorkspaceInitialized,
 } from '../../core/mod.ts';
 import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import { join } from '@std/path';
@@ -103,9 +105,19 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const options = extractChallengeOptions(args);
     const config = configManager.getConfig();
 
-    // Ensure workspace is initialized (throws WorkspaceError if not)
-    const workspace = await requireWorkspace();
+    // Get workspace root
     const workspaceRoot = config.workspace || Deno.cwd();
+
+    // Check if workspace is initialized, and initialize if not
+    const initialized = await isWorkspaceInitialized(workspaceRoot);
+    if (!initialized) {
+      logger.info('Workspace not initialized. Initializing now...');
+      await initWorkspace(workspaceRoot);
+      logger.info(`Workspace initialized at: ${workspaceRoot}`);
+    }
+
+    // Ensure workspace is valid
+    const workspace = await requireWorkspace();
 
     // Initialize problem manager
     const manager = await requireProblemManager();
