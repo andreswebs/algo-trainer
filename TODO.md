@@ -1,0 +1,2 @@
+- accept env vars and path expansion in the global config
+- support an AT_CONFIG_FILE to override the default path for the config file
