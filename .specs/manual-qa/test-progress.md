@@ -1,7 +1,7 @@
 # Algo-Trainer QA Test Execution Progress
 
 **Test Session Started:** 2026-01-21
-**Binary:** /workspace/bin/at
+**Binary:** /workspace/bin/algo-trainer
 **Tester:** Claude Code Agent
 
 ---
@@ -182,7 +182,7 @@
 6. Config, list, progress, and hint commands work well
 
 ## Notes
-- CRITICAL: Binary at /workspace/bin/at is non-functional due to missing data files
+- CRITICAL: Binary at /workspace/bin/algo-trainer is non-functional due to missing data files
 - Workaround: Used `deno run --allow-all src/main.ts` for all tests
 - Test workspace base: /tmp/at-test-*, /tmp/at-clean, /tmp/at-empty
 - All environment variables cleared before testing

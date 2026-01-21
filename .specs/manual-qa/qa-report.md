@@ -3,7 +3,7 @@
 **Application:** Algo-Trainer v0.0.1
 **Test Date:** 2026-01-21
 **Tester:** Claude Code Agent
-**Binary Tested:** /workspace/bin/at
+**Binary Tested:** /workspace/bin/algo-trainer
 **Platform:** Linux 6.6.116-0-virt
 
 ---
@@ -128,7 +128,7 @@
 ### CRITICAL-001: Data Files Not Embedded in Binary
 **Severity:** Critical
 **Test Cases:** Affects all problem-related commands
-**Description:** The compiled binary at `/workspace/bin/at` does not include the problem database files from `src/data/problems/*.json`.
+**Description:** The compiled binary at `/workspace/bin/algo-trainer` does not include the problem database files from `src/data/problems/*.json`.
 **Expected:** Binary should embed all data files and work standalone
 **Actual:** Binary reports "No problems found" for any challenge/list/hint command
 **Impact:** Binary is unusable for its primary purpose

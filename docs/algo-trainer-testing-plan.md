@@ -55,8 +55,8 @@ This document provides a complete manual testing plan for Algo-Trainer, a CLI to
 
 ```bash
 # Create fresh test directory for each session
-mkdir ~/at-test-workspace
-cd ~/at-test-workspace
+mkdir ~/algo-trainer-test-workspace
+cd ~/algo-trainer-test-workspace
 
 # Ensure no existing config
 rm -rf ~/.config/algo-trainer
@@ -76,7 +76,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at --help`
+  1. Run `algo-trainer--help`
 - **Expected Result**:
   - Shows application name and version
   - Lists all available commands with descriptions
@@ -88,7 +88,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at --version`
+  1. Run `algo-trainer--version`
 - **Expected Result**:
   - Displays version number (0.0.1)
   - Exit code: 0
@@ -98,7 +98,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at unknowncommand`
+  1. Run `algo-trainer unknowncommand`
 - **Expected Result**:
   - Shows error message about unknown command
   - Suggests similar commands or shows help
@@ -106,7 +106,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 
 ---
 
-### 3.2 Workspace Initialization (at init)
+### 3.2 Workspace Initialization (algo-trainer init)
 
 #### TC-010: Initialize new workspace in current directory
 
@@ -114,7 +114,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: Empty directory, no existing workspace
 - **Steps**:
   1. Create and enter empty directory: `mkdir test-ws && cd test-ws`
-  2. Run `at init`
+  2. Run `algo-trainer init`
 - **Expected Result**:
   - Creates `problems/` directory
   - Creates `completed/` directory
@@ -123,14 +123,14 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
   - Shows success message
   - Exit code: 0
 
-#### TC-011: Initialize workspace at specified path
+#### TC-011: Initialize workspace algo-trainer specified path
 
 - **Priority**: Critical
 - **Preconditions**: Target path doesn't exist
 - **Steps**:
-  1. Run `at init ~/my-algo-practice`
+  1. Run `algo-trainer init ~/my-algo-practice`
 - **Expected Result**:
-  - Creates directory at specified path
+  - Creates directory algo-trainer specified path
   - Creates all subdirectories
   - Shows success message with path
   - Exit code: 0
@@ -138,9 +138,9 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 #### TC-012: Initialize in existing workspace (no force)
 
 - **Priority**: High
-- **Preconditions**: Workspace already initialized at path
+- **Preconditions**: Workspace already initialized algo-trainer path
 - **Steps**:
-  1. Run `at init` in initialized workspace
+  1. Run `algo-trainer init` in initialized workspace
 - **Expected Result**:
   - Shows error/warning about existing workspace
   - Does NOT overwrite existing files
@@ -151,7 +151,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace already initialized
 - **Steps**:
-  1. Run `at init --force`
+  1. Run `algo-trainer init --force`
 - **Expected Result**:
   - Reinitializes workspace
   - Preserves or recreates directory structure
@@ -163,9 +163,9 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at init "/tmp/my test workspace"`
+  1. Run `algo-trainer init "/tmp/my test workspace"`
 - **Expected Result**:
-  - Creates workspace at path with spaces
+  - Creates workspace algo-trainer path with spaces
   - All operations work correctly
   - Exit code: 0
 
@@ -175,7 +175,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: Read-only directory
 - **Steps**:
   1. Create read-only directory: `mkdir /tmp/readonly && chmod 444 /tmp/readonly`
-  2. Run `at init /tmp/readonly/workspace`
+  2. Run `algo-trainer init /tmp/readonly/workspace`
 - **Expected Result**:
   - Shows permission denied error
   - Exit code: 7
@@ -185,7 +185,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at init --help`
+  1. Run `algo-trainer init --help`
 - **Expected Result**:
   - Shows init command usage
   - Lists available options (-f/--force)
@@ -193,14 +193,14 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 
 ---
 
-### 3.3 Challenge Command (at challenge)
+### 3.3 Challenge Command (algo-trainer challenge)
 
 #### TC-020: Start challenge by slug
 
 - **Priority**: Critical
 - **Preconditions**: Workspace initialized, default language configured
 - **Steps**:
-  1. Run `at challenge two-sum`
+  1. Run `algo-trainer challenge two-sum`
 - **Expected Result**:
   - Creates problem file in `problems/` directory
   - Creates solution template file
@@ -214,7 +214,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Critical
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge -d easy`
+  1. Run `algo-trainer challenge -d easy`
   2. When prompted, select a language
 - **Expected Result**:
   - Prompts for language selection (if not configured)
@@ -227,7 +227,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge --random`
+  1. Run `algo-trainer challenge --random`
 - **Expected Result**:
   - Selects a random problem
   - Creates problem and solution files
@@ -239,7 +239,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge -d medium -c arrays -l python`
+  1. Run `algo-trainer challenge -d medium -c arrays -l python`
 - **Expected Result**:
   - Filters by difficulty AND category
   - Uses specified language for template
@@ -251,19 +251,19 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized, default language is TypeScript
 - **Steps**:
-  1. Run `at challenge two-sum -l python`
+  1. Run `algo-trainer challenge two-sum -l python`
 - **Expected Result**:
   - Creates Python solution template (not TypeScript)
   - Template has .py extension
   - Template contains Python syntax
   - Exit code: 0
 
-#### TC-025: Start challenge that already exists (no force)
+#### TC-025: Start challenge thalgo-trainer already exists (no force)
 
 - **Priority**: High
 - **Preconditions**: two-sum challenge already started
 - **Steps**:
-  1. Run `at challenge two-sum`
+  1. Run `algo-trainer challenge two-sum`
 - **Expected Result**:
   - Prompts for confirmation to overwrite
   - If declined: exits without changes
@@ -274,7 +274,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: two-sum challenge already started
 - **Steps**:
-  1. Run `at challenge two-sum --force`
+  1. Run `algo-trainer challenge two-sum --force`
 - **Expected Result**:
   - Overwrites existing files without prompting
   - Creates fresh problem and solution files
@@ -285,10 +285,10 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge nonexistent-problem`
+  1. Run `algo-trainer challenge nonexistent-problem`
 - **Expected Result**:
   - Shows "Problem not found" error
-  - Suggests using `at list` to find problems
+  - Suggests using `algo-trainer list` to find problems
   - Exit code: 5
 
 #### TC-028: Challenge with invalid difficulty
@@ -296,7 +296,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge -d impossible`
+  1. Run `algo-trainer challenge -d impossible`
 - **Expected Result**:
   - Shows error about invalid difficulty
   - Lists valid options (easy, medium, hard)
@@ -307,7 +307,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge two-sum -l cobol`
+  1. Run `algo-trainer challenge two-sum -l cobol`
 - **Expected Result**:
   - Shows error about invalid language
   - Lists valid options (typescript, javascript, python, java, cpp, rust, go)
@@ -319,10 +319,10 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: No workspace initialized
 - **Steps**:
   1. Navigate to directory without workspace
-  2. Run `at challenge two-sum`
+  2. Run `algo-trainer challenge two-sum`
 - **Expected Result**:
   - Shows "Workspace not initialized" error
-  - Suggests running `at init` first
+  - Suggests running `algo-trainer init` first
   - Exit code: 4
 
 #### TC-031: Verify all 7 languages generate correct templates
@@ -330,16 +330,16 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge two-sum -l typescript` - verify .ts file
-  2. Run `at challenge two-sum -l javascript --force` - verify .js file
-  3. Run `at challenge two-sum -l python --force` - verify .py file
-  4. Run `at challenge two-sum -l java --force` - verify .java file
-  5. Run `at challenge two-sum -l cpp --force` - verify .cpp file
-  6. Run `at challenge two-sum -l rust --force` - verify .rs file
-  7. Run `at challenge two-sum -l go --force` - verify .go file
+  1. Run `algo-trainer challenge two-sum -l typescript` - verify .ts file
+  2. Run `algo-trainer challenge two-sum -l javascript --force` - verify .js file
+  3. Run `algo-trainer challenge two-sum -l python --force` - verify .py file
+  4. Run `algo-trainer challenge two-sum -l java --force` - verify .java file
+  5. Run `algo-trainer challenge two-sum -l cpp --force` - verify .cpp file
+  6. Run `algo-trainer challenge two-sum -l rust --force` - verify .rs file
+  7. Run `algo-trainer challenge two-sum -l go --force` - verify .go file
 - **Expected Result**:
   - Each language creates correct file extension
-  - Each template contains valid syntax for that language
+  - Each template contains valid syntax for thalgo-trainer language
   - Templates include function signature
   - Exit code: 0 for all
 
@@ -348,7 +348,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at challenge -t hash-table`
+  1. Run `algo-trainer challenge -t hash-table`
 - **Expected Result**:
   - Shows problems tagged with hash-table
   - Creates problem and solution files
@@ -356,14 +356,14 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 
 ---
 
-### 3.4 Hint Command (at hint)
+### 3.4 Hint Command (algo-trainer hint)
 
 #### TC-040: Get first hint for problem
 
 - **Priority**: Critical
 - **Preconditions**: two-sum challenge started
 - **Steps**:
-  1. Run `at hint two-sum`
+  1. Run `algo-trainer hint two-sum`
 - **Expected Result**:
   - Displays level 1 hint (General Approach)
   - Shows hint progress indicator (e.g., 1/3)
@@ -375,15 +375,15 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Critical
 - **Preconditions**: two-sum challenge started, no hints used
 - **Steps**:
-  1. Run `at hint two-sum` (first time)
-  2. Run `at hint two-sum` (second time)
-  3. Run `at hint two-sum` (third time)
-  4. Run `at hint two-sum` (fourth time)
+  1. Run `algo-trainer hint two-sum` (first time)
+  2. Run `algo-trainer hint two-sum` (second time)
+  3. Run `algo-trainer hint two-sum` (third time)
+  4. Run `algo-trainer hint two-sum` (fourth time)
 - **Expected Result**:
   - First call: Level 1 hint
   - Second call: Level 2 hint
   - Third call: Level 3 hint
-  - Fourth call: Message that all hints have been viewed
+  - Fourth call: Message thalgo-trainer all hints have been viewed
   - Progress bar updates each time
   - Exit code: 0 for all
 
@@ -392,18 +392,18 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: two-sum challenge started
 - **Steps**:
-  1. Run `at hint two-sum --level 2`
+  1. Run `algo-trainer hint two-sum --level 2`
 - **Expected Result**:
   - Displays level 2 hint directly
   - Skips level 1
   - Exit code: 0
 
-#### TC-043: Get all hints at once
+#### TC-043: Get all hints algo-trainer once
 
 - **Priority**: High
 - **Preconditions**: two-sum challenge started
 - **Steps**:
-  1. Run `at hint two-sum --all`
+  1. Run `algo-trainer hint two-sum --all`
 - **Expected Result**:
   - Displays all 3 hint levels
   - Shows hints in order (1, 2, 3)
@@ -414,7 +414,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at hint nonexistent-problem`
+  1. Run `algo-trainer hint nonexistent-problem`
 - **Expected Result**:
   - Shows "Problem not found" error
   - Exit code: 5
@@ -424,7 +424,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: two-sum challenge started (ID: 1)
 - **Steps**:
-  1. Run `at hint 1`
+  1. Run `algo-trainer hint 1`
 - **Expected Result**:
   - Finds problem by ID
   - Displays hint for two-sum
@@ -435,7 +435,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: two-sum challenge started
 - **Steps**:
-  1. Run `at hint two-sum --level 5`
+  1. Run `algo-trainer hint two-sum --level 5`
 - **Expected Result**:
   - Shows error about invalid hint level
   - Indicates valid range (1-3)
@@ -446,7 +446,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Only one problem in workspace
 - **Steps**:
-  1. Run `at hint`
+  1. Run `algo-trainer hint`
 - **Expected Result**:
   - Auto-detects current problem OR
   - Shows error requesting problem specification
@@ -454,14 +454,14 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 
 ---
 
-### 3.5 Complete Command (at complete)
+### 3.5 Complete Command (algo-trainer complete)
 
 #### TC-050: Complete problem by slug
 
 - **Priority**: Critical
 - **Preconditions**: two-sum challenge started, solution written
 - **Steps**:
-  1. Run `at complete two-sum`
+  1. Run `algo-trainer complete two-sum`
 - **Expected Result**:
   - Moves problem files to `completed/` directory
   - Shows completion summary
@@ -474,7 +474,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: two-sum challenge started
 - **Steps**:
-  1. Run `at complete two-sum -n "Used hash map for O(n) solution"`
+  1. Run `algo-trainer complete two-sum -n "Used hash map for O(n) solution"`
 - **Expected Result**:
   - Archives problem with notes saved
   - Notes stored in problem metadata
@@ -486,7 +486,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: two-sum challenge started
 - **Steps**:
-  1. Run `at complete two-sum --no-archive`
+  1. Run `algo-trainer complete two-sum --no-archive`
 - **Expected Result**:
   - Marks problem as complete
   - Files remain in `problems/` directory
@@ -498,7 +498,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Only one problem in workspace
 - **Steps**:
-  1. Run `at complete`
+  1. Run `algo-trainer complete`
 - **Expected Result**:
   - Auto-detects the single problem
   - Completes it without prompting for selection
@@ -510,7 +510,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: Multiple problems in workspace
 - **Steps**:
   1. Start two-sum and add-two-numbers challenges
-  2. Run `at complete`
+  2. Run `algo-trainer complete`
 - **Expected Result**:
   - Prompts for problem selection
   - Shows list of in-progress problems
@@ -522,9 +522,9 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized, no problems started
 - **Steps**:
-  1. Run `at complete`
+  1. Run `algo-trainer complete`
 - **Expected Result**:
-  - Shows message that no problems are in progress
+  - Shows message thalgo-trainer no problems are in progress
   - Suggests starting a challenge
   - Exit code: appropriate error code
 
@@ -533,7 +533,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at complete nonexistent-problem`
+  1. Run `algo-trainer complete nonexistent-problem`
 - **Expected Result**:
   - Shows "Problem not found" error
   - Exit code: 5
@@ -543,7 +543,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Completed two-sum once already, started it again
 - **Steps**:
-  1. Run `at complete two-sum` again
+  1. Run `algo-trainer complete two-sum` again
 - **Expected Result**:
   - Handles filename collision (timestamp suffix or prompt)
   - Archives without overwriting previous completion
@@ -554,7 +554,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Complete an easy problem
 - **Steps**:
-  1. Run `at complete two-sum`
+  1. Run `algo-trainer complete two-sum`
   2. Observe suggestions
 - **Expected Result**:
   - Suggests problems of similar difficulty
@@ -563,14 +563,14 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 
 ---
 
-### 3.6 List Command (at list)
+### 3.6 List Command (algo-trainer list)
 
 #### TC-060: List all problems (default)
 
 - **Priority**: Critical
 - **Preconditions**: None (uses built-in problem database)
 - **Steps**:
-  1. Run `at list`
+  1. Run `algo-trainer list`
 - **Expected Result**:
   - Shows table with ID, Difficulty, Title
   - Displays up to 20 problems (default limit)
@@ -582,7 +582,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list -d easy`
+  1. Run `algo-trainer list -d easy`
 - **Expected Result**:
   - Shows only easy problems
   - All displayed problems have "Easy" difficulty
@@ -593,7 +593,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list -s "tree"`
+  1. Run `algo-trainer list -s "tree"`
 - **Expected Result**:
   - Shows problems with "tree" in title or description
   - Search is case-insensitive
@@ -604,7 +604,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list -c arrays`
+  1. Run `algo-trainer list -c arrays`
 - **Expected Result**:
   - Shows only problems tagged with "arrays"
   - Exit code: 0
@@ -614,7 +614,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list -l 5`
+  1. Run `algo-trainer list -l 5`
 - **Expected Result**:
   - Shows exactly 5 problems (or less if fewer exist)
   - Exit code: 0
@@ -624,7 +624,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list --verbose`
+  1. Run `algo-trainer list --verbose`
 - **Expected Result**:
   - Shows full descriptions for each problem
   - Shows tags/categories
@@ -635,7 +635,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list --json`
+  1. Run `algo-trainer list --json`
 - **Expected Result**:
   - Outputs valid JSON array
   - Each problem is a JSON object
@@ -647,7 +647,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list -d medium -c arrays -l 10`
+  1. Run `algo-trainer list -d medium -c arrays -l 10`
 - **Expected Result**:
   - Shows medium difficulty problems
   - All are tagged with arrays
@@ -659,21 +659,21 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at list -s "xyznonexistent123"`
+  1. Run `algo-trainer list -s "xyznonexistent123"`
 - **Expected Result**:
   - Shows "No problems found" message
   - Exit code: 0 (not an error)
 
 ---
 
-### 3.7 Progress Command (at progress)
+### 3.7 Progress Command (algo-trainer progress)
 
 #### TC-070: View basic progress
 
 - **Priority**: Critical
 - **Preconditions**: Workspace with some completed problems
 - **Steps**:
-  1. Run `at progress`
+  1. Run `algo-trainer progress`
 - **Expected Result**:
   - Shows total completed count
   - Shows in-progress count
@@ -685,7 +685,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace with completed problems
 - **Steps**:
-  1. Run `at progress --detailed`
+  1. Run `algo-trainer progress --detailed`
 - **Expected Result**:
   - Shows all statistics from basic view
   - Shows breakdown by all categories (not just top 10)
@@ -697,7 +697,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace with completed problems
 - **Steps**:
-  1. Run `at progress --category`
+  1. Run `algo-trainer progress --category`
 - **Expected Result**:
   - Groups progress by problem category/tag
   - Shows count per category
@@ -708,7 +708,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace with some progress
 - **Steps**:
-  1. Run `at progress --json`
+  1. Run `algo-trainer progress --json`
 - **Expected Result**:
   - Outputs valid JSON
   - Contains all progress data
@@ -720,7 +720,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized, no problems completed
 - **Steps**:
-  1. Run `at progress`
+  1. Run `algo-trainer progress`
 - **Expected Result**:
   - Shows 0 completed
   - Shows 0 in progress (or actual count)
@@ -732,22 +732,22 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: No workspace
 - **Steps**:
-  1. Run `at progress`
+  1. Run `algo-trainer progress`
 - **Expected Result**:
   - Shows workspace not initialized error
-  - Suggests running `at init`
+  - Suggests running `algo-trainer init`
   - Exit code: 4
 
 ---
 
-### 3.8 Configuration Command (at config)
+### 3.8 Configuration Command (algo-trainer config)
 
 #### TC-080: List all configuration
 
 - **Priority**: Critical
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config list`
+  1. Run `algo-trainer config list`
 - **Expected Result**:
   - Shows all configuration keys and values
   - Shows language, workspace, aiEnabled, preferences
@@ -758,7 +758,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config get language`
+  1. Run `algo-trainer config get language`
 - **Expected Result**:
   - Shows only the language value
   - Exit code: 0
@@ -768,8 +768,8 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Critical
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config set language python`
-  2. Run `at config get language`
+  1. Run `algo-trainer config set language python`
+  2. Run `algo-trainer config get language`
 - **Expected Result**:
   - Set shows success message
   - Get shows "python"
@@ -780,8 +780,8 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config set preferences.theme dark`
-  2. Run `at config get preferences.theme`
+  1. Run `algo-trainer config set preferences.theme dark`
+  2. Run `algo-trainer config get preferences.theme`
 - **Expected Result**:
   - Set succeeds
   - Get shows "dark"
@@ -792,8 +792,8 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Language set to python
 - **Steps**:
-  1. Run `at config reset language`
-  2. Run `at config get language`
+  1. Run `algo-trainer config reset language`
+  2. Run `algo-trainer config get language`
 - **Expected Result**:
   - Reset succeeds
   - Language returns to default (typescript)
@@ -804,7 +804,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Multiple settings changed
 - **Steps**:
-  1. Run `at config reset`
+  1. Run `algo-trainer config reset`
 - **Expected Result**:
   - All settings return to defaults
   - Shows confirmation or success
@@ -815,7 +815,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config set language invalid`
+  1. Run `algo-trainer config set language invalid`
 - **Expected Result**:
   - Shows validation error
   - Lists valid languages
@@ -827,7 +827,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config set aiEnabled maybe`
+  1. Run `algo-trainer config set aiEnabled maybe`
 - **Expected Result**:
   - Shows validation error
   - Indicates valid values (true/false)
@@ -838,7 +838,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config list --json`
+  1. Run `algo-trainer config list --json`
 - **Expected Result**:
   - Outputs valid JSON object
   - Contains all configuration
@@ -849,7 +849,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config get nonexistent.key`
+  1. Run `algo-trainer config get nonexistent.key`
 - **Expected Result**:
   - Shows error about unknown key
   - Exit code: 2 or 3
@@ -859,7 +859,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Test each: `at config set language <lang>`
+  1. Test each: `algo-trainer config set language <lang>`
   2. Languages: typescript, javascript, python, java, cpp, rust, go
 - **Expected Result**:
   - All 7 languages accepted
@@ -870,7 +870,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Test each: `at config set preferences.theme <theme>`
+  1. Test each: `algo-trainer config set preferences.theme <theme>`
   2. Themes: light, dark, auto
 - **Expected Result**:
   - All 3 themes accepted
@@ -881,26 +881,26 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. `at config set aiEnabled true` - verify true
-  2. `at config set aiEnabled false` - verify false
-  3. `at config set aiEnabled 1` - verify true
-  4. `at config set aiEnabled 0` - verify false
-  5. `at config set aiEnabled yes` - verify true
-  6. `at config set aiEnabled no` - verify false
+  1. `algo-trainer config set aiEnabled true` - verify true
+  2. `algo-trainer config set aiEnabled false` - verify false
+  3. `algo-trainer config set aiEnabled 1` - verify true
+  4. `algo-trainer config set aiEnabled 0` - verify false
+  5. `algo-trainer config set aiEnabled yes` - verify true
+  6. `algo-trainer config set aiEnabled no` - verify false
 - **Expected Result**:
   - All variations parsed correctly
   - Exit code: 0 for all
 
 ---
 
-### 3.9 Teach Command (at teach)
+### 3.9 Teach Command (algo-trainer teach)
 
 #### TC-100: Generate teaching script
 
 - **Priority**: High
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at teach generate two-sum`
+  1. Run `algo-trainer teach generate two-sum`
 - **Expected Result**:
   - Generates YAML teaching script
   - Script saved in problem directory
@@ -912,7 +912,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at teach generate two-sum --output ./custom-script.yaml`
+  1. Run `algo-trainer teach generate two-sum --output ./custom-script.yaml`
 - **Expected Result**:
   - Script saved to specified path
   - Exit code: 0
@@ -922,7 +922,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Valid teaching script exists
 - **Steps**:
-  1. Run `at teach validate ./trainer.yaml`
+  1. Run `algo-trainer teach validate ./trainer.yaml`
 - **Expected Result**:
   - Shows "Script is valid" or similar
   - Exit code: 0
@@ -933,7 +933,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: Invalid YAML file
 - **Steps**:
   1. Create malformed YAML file
-  2. Run `at teach validate ./invalid.yaml`
+  2. Run `algo-trainer teach validate ./invalid.yaml`
 - **Expected Result**:
   - Shows validation errors
   - Describes what's wrong
@@ -944,7 +944,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at teach info`
+  1. Run `algo-trainer teach info`
 - **Expected Result**:
   - Shows AI system status
   - Shows whether aiEnabled
@@ -956,7 +956,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace initialized
 - **Steps**:
-  1. Run `at teach generate nonexistent-problem`
+  1. Run `algo-trainer teach generate nonexistent-problem`
 - **Expected Result**:
   - Shows problem not found error
   - Exit code: 5
@@ -970,7 +970,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Different workspace exists
 - **Steps**:
-  1. Run `AT_WORKSPACE=/tmp/other-ws at challenge two-sum`
+  1. Run `AT_WORKSPACE=/tmp/other-ws algo-trainer challenge two-sum`
 - **Expected Result**:
   - Uses /tmp/other-ws as workspace
   - Creates files there
@@ -981,7 +981,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Config language is typescript
 - **Steps**:
-  1. Run `AT_LANGUAGE=python at challenge three-sum`
+  1. Run `AT_LANGUAGE=python algo-trainer challenge three-sum`
 - **Expected Result**:
   - Creates Python template despite config
   - Exit code: 0
@@ -991,7 +991,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `AT_VERBOSE=1 at list`
+  1. Run `AT_VERBOSE=1 algo-trainer list`
 - **Expected Result**:
   - Shows verbose/debug output
   - More detailed than normal
@@ -1002,7 +1002,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `AT_QUIET=1 at challenge two-sum`
+  1. Run `AT_QUIET=1 algo-trainer challenge two-sum`
 - **Expected Result**:
   - Minimal output
   - Only essential information shown
@@ -1013,7 +1013,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: Terminal supports colors
 - **Steps**:
-  1. Run `AT_NO_COLOR=1 at list`
+  1. Run `AT_NO_COLOR=1 algo-trainer list`
 - **Expected Result**:
   - Output has no ANSI color codes
   - Plain text only
@@ -1024,7 +1024,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Run `AT_NO_EMOJI=1 at progress`
+  1. Run `AT_NO_EMOJI=1 algo-trainer progress`
 - **Expected Result**:
   - No emoji characters in output
   - Exit code: 0
@@ -1034,8 +1034,8 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Config language is typescript
 - **Steps**:
-  1. Run `AT_LANGUAGE=java at config get language`
-  2. Run `at config get language` (without env var)
+  1. Run `AT_LANGUAGE=java algo-trainer config get language`
+  2. Run `algo-trainer config get language` (without env var)
 - **Expected Result**:
   - With env: shows java (env overrides)
   - Without env: shows typescript (from config)
@@ -1046,7 +1046,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `AT_LANGUAGE=invalid at challenge two-sum`
+  1. Run `AT_LANGUAGE=invalid algo-trainer challenge two-sum`
 - **Expected Result**:
   - Shows error about invalid language
   - Does not crash
@@ -1061,7 +1061,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Workspace initialized, no difficulty specified
 - **Steps**:
-  1. Run `at challenge`
+  1. Run `algo-trainer challenge`
   2. Select "medium" when prompted
 - **Expected Result**:
   - Shows difficulty options (easy, medium, hard)
@@ -1074,7 +1074,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: No default language configured
 - **Steps**:
-  1. Run `at challenge two-sum`
+  1. Run `algo-trainer challenge two-sum`
   2. Select "python" when prompted
 - **Expected Result**:
   - Shows language options
@@ -1086,7 +1086,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: two-sum already exists
 - **Steps**:
-  1. Run `at challenge two-sum`
+  1. Run `algo-trainer challenge two-sum`
   2. Select "no" when asked to overwrite
 - **Expected Result**:
   - Does not overwrite files
@@ -1098,7 +1098,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: two-sum already exists
 - **Steps**:
-  1. Run `at challenge two-sum`
+  1. Run `algo-trainer challenge two-sum`
   2. Select "yes" when asked to overwrite
 - **Expected Result**:
   - Overwrites existing files
@@ -1110,7 +1110,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: Multiple problems in progress
 - **Steps**:
-  1. Run `at complete`
+  1. Run `algo-trainer complete`
   2. Select problem from list
 - **Expected Result**:
   - Shows list of in-progress problems
@@ -1123,7 +1123,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Interactive prompt active
 - **Steps**:
-  1. Run `at challenge`
+  1. Run `algo-trainer challenge`
   2. Enter invalid option (e.g., "99")
 - **Expected Result**:
   - Shows error about invalid selection
@@ -1139,7 +1139,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at --verbose challenge two-sum`
+  1. Run `algo-trainer--verbose challenge two-sum`
 - **Expected Result**:
   - Shows extra debug/verbose information
   - Exit code: 0
@@ -1149,7 +1149,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at --quiet complete two-sum`
+  1. Run `algo-trainer--quiet complete two-sum`
 - **Expected Result**:
   - Minimal output
   - Exit code: 0
@@ -1159,7 +1159,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at --no-color list`
+  1. Run `algo-trainer--no-color list`
 - **Expected Result**:
   - No color codes in output
   - Exit code: 0
@@ -1169,7 +1169,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at --no-emoji progress`
+  1. Run `algo-trainer--no-emoji progress`
 - **Expected Result**:
   - No emoji in output
   - Exit code: 0
@@ -1179,8 +1179,8 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Custom config file exists
 - **Steps**:
-  1. Create custom config at /tmp/custom-config.json
-  2. Run `at -c /tmp/custom-config.json config list`
+  1. Create custom config algo-trainer/tmp/custom-config.json
+  2. Run `algo-trainer-c /tmp/custom-config.json config list`
 - **Expected Result**:
   - Uses custom config file
   - Shows settings from custom file
@@ -1195,7 +1195,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at config set` (missing key and value)
+  1. Run `algo-trainer config set` (missing key and value)
 - **Expected Result**:
   - Shows usage error
   - Indicates required arguments
@@ -1207,10 +1207,10 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: Corrupt JSON in config file
 - **Steps**:
   1. Write invalid JSON to ~/.config/algo-trainer/config.json
-  2. Run `at config list`
+  2. Run `algo-trainer config list`
 - **Expected Result**:
   - Shows error about corrupt config
-  - Suggests `at config reset` or manual fix
+  - Suggests `algo-trainer config reset` or manual fix
   - Exit code: 3
 
 #### TC-142: Permission denied on write
@@ -1219,7 +1219,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Preconditions**: Read-only workspace directory
 - **Steps**:
   1. Make workspace read-only: `chmod 444 ~/workspace/problems`
-  2. Run `at challenge two-sum`
+  2. Run `algo-trainer challenge two-sum`
 - **Expected Result**:
   - Shows permission denied error
   - Clear error message
@@ -1245,8 +1245,8 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Problem with unicode content
 - **Steps**:
-  1. Run `at list` with unicode content
-  2. Run `at challenge <problem-with-unicode>`
+  1. Run `algo-trainer list` with unicode content
+  2. Run `algo-trainer challenge <problem-with-unicode>`
 - **Expected Result**:
   - Unicode displays correctly
   - No encoding errors
@@ -1257,7 +1257,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: Problem with lengthy description
 - **Steps**:
-  1. Run `at challenge <long-description-problem>`
+  1. Run `algo-trainer challenge <long-description-problem>`
 - **Expected Result**:
   - Description displays (possibly paginated)
   - Does not truncate unexpectedly
@@ -1268,7 +1268,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `at init "/tmp/test workspace (1)"`
+  1. Run `algo-trainer init "/tmp/test workspace (1)"`
 - **Expected Result**:
   - Handles parentheses and spaces
   - Creates valid directory
@@ -1290,9 +1290,9 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: Workspace initialized but empty
 - **Steps**:
-  1. Run `at complete`
-  2. Run `at progress`
-  3. Run `at hint`
+  1. Run `algo-trainer complete`
+  2. Run `algo-trainer progress`
+  3. Run `algo-trainer hint`
 - **Expected Result**:
   - Appropriate "no problems" messages
   - No crashes
