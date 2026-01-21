@@ -26,7 +26,8 @@ function showHelp(): void {
         flags: '-d, --difficulty <level>',
         description: 'Filter by difficulty (easy, medium, hard)',
       },
-      { flags: '-c, --category <cat>', description: 'Filter by category' },
+      { flags: '-t, --tag <tag>', description: 'Filter by tag' },
+      { flags: '-c, --category <cat>', description: 'Filter by category (alias for --tag)' },
       { flags: '-s, --search <text>', description: 'Search in title/description' },
       { flags: '-l, --limit <n>', description: 'Limit results (default: 20)' },
       { flags: '--json', description: 'Output in JSON format' },
@@ -36,7 +37,8 @@ function showHelp(): void {
     examples: [
       { command: 'at list', description: 'List first 20 problems' },
       { command: 'at list -d easy', description: 'List easy problems' },
-      { command: 'at list -c arrays', description: 'List array problems' },
+      { command: 'at list -t array', description: 'List problems with array tag' },
+      { command: 'at list -c arrays', description: 'List array problems (same as -t)' },
       { command: 'at list -s "two sum"', description: 'Search for problems' },
       { command: 'at list -l 50', description: 'List first 50 problems' },
       { command: 'at list --verbose', description: 'Show detailed descriptions' },
@@ -50,7 +52,7 @@ function showHelp(): void {
  */
 export interface ListOptions {
   difficulty?: Difficulty;
-  category?: string;
+  tag?: string;
   search?: string;
   limit: number;
   json: boolean;
@@ -63,7 +65,9 @@ export interface ListOptions {
 export function extractListOptions(args: Args): ListOptions {
   const difficulty = (args.difficulty as Difficulty | undefined) ||
     (args.d as Difficulty | undefined);
-  const category = (args.category as string | undefined) || (args.c as string | undefined);
+  // Support both -t/--tag and -c/--category (aliases for the same thing)
+  const tag = (args.tag as string | undefined) || (args.t as string | undefined) ||
+    (args.category as string | undefined) || (args.c as string | undefined);
   const search = (args.search as string | undefined) || (args.s as string | undefined);
 
   const result: ListOptions = {
@@ -76,8 +80,8 @@ export function extractListOptions(args: Args): ListOptions {
     result.difficulty = difficulty;
   }
 
-  if (category !== undefined) {
-    result.category = category;
+  if (tag !== undefined) {
+    result.tag = tag;
   }
 
   if (search !== undefined) {
@@ -176,9 +180,9 @@ export async function listCommand(args: Args): Promise<CommandResult> {
       query.difficulty = options.difficulty;
     }
 
-    if (options.category) {
-      // Use tags field for category filtering (tags are used as categories)
-      query.tags = [options.category];
+    if (options.tag) {
+      // Use tags field for tag/category filtering
+      query.tags = [options.tag];
     }
 
     if (options.search) {

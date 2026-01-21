@@ -65,7 +65,10 @@ export async function initCommand(args: Args): Promise<CommandResult> {
     } else {
       try {
         const config = configManager.getConfig();
-        workspaceRoot = config.workspace;
+        // Use config workspace if it's not empty, otherwise use current directory
+        workspaceRoot = config.workspace && config.workspace.trim().length > 0
+          ? config.workspace
+          : Deno.cwd();
       } catch {
         // Config not loaded, use current directory
         workspaceRoot = Deno.cwd();
@@ -76,11 +79,11 @@ export async function initCommand(args: Args): Promise<CommandResult> {
     const alreadyInitialized = await isWorkspaceInitialized(workspaceRoot);
 
     if (alreadyInitialized && !options.force) {
-      logger.info(`Workspace already initialized at: ${workspaceRoot}`);
+      logger.warn(`Workspace already initialized at: ${workspaceRoot}`);
       logger.info('Use --force to reinitialize');
       return {
-        success: true,
-        exitCode: ExitCode.SUCCESS,
+        success: false,
+        exitCode: ExitCode.CONFIG_ERROR,
       };
     }
 

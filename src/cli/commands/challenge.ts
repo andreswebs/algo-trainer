@@ -16,15 +16,18 @@ import type {
 import { configManager } from '../../config/manager.ts';
 import {
   generateProblemFiles,
-  initWorkspace,
-  isWorkspaceInitialized,
   problemExists,
 } from '../../core/mod.ts';
 import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import { join } from '@std/path';
 import { ExitCode } from '../exit-codes.ts';
 import { logger } from '../../utils/output.ts';
-import { confirmAction, formatProblemSummary, requireProblemManager } from './shared.ts';
+import {
+  confirmAction,
+  formatProblemSummary,
+  requireProblemManager,
+  requireWorkspace,
+} from './shared.ts';
 import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { promptDifficulty, promptLanguage } from '../prompts.ts';
 import { showCommandHelp } from './help.ts';
@@ -100,15 +103,9 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const options = extractChallengeOptions(args);
     const config = configManager.getConfig();
 
-    // Validate workspace is initialized
+    // Ensure workspace is initialized (throws WorkspaceError if not)
+    const workspace = await requireWorkspace();
     const workspaceRoot = config.workspace || Deno.cwd();
-    if (!await isWorkspaceInitialized(workspaceRoot)) {
-      // Initialize workspace if it doesn't exist
-      logger.info(`Workspace not initialized at: ${workspaceRoot}`);
-      logger.info('Initializing workspace...');
-      await initWorkspace(workspaceRoot);
-      logger.success('Workspace initialized');
-    }
 
     // Initialize problem manager
     const manager = await requireProblemManager();

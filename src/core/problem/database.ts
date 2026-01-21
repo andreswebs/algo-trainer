@@ -14,7 +14,8 @@ import { createErrorContext, ProblemError } from '../../utils/errors.ts';
 import { listDirectory, pathExists } from '../../utils/fs.ts';
 import { getConfigPaths } from '../../config/paths.ts';
 import { logger } from '../../utils/output.ts';
-import { parseProblemFromFile } from './parser.ts';
+import { parseProblemFromFile, parseProblemFromJson } from './parser.ts';
+import { getAllProblemSlugs, getProblemJson } from '../../data/problems.generated.ts';
 
 /**
  * Database loading options
@@ -194,14 +195,55 @@ export class ProblemDatabase {
       }
     };
 
-    if (await pathExists(builtInPath)) {
-      const builtInProblems = await loadProblemsFromDirectory(builtInPath);
-      for (const filePath of builtInProblems) {
-        const problem = await loadProblem(filePath, true);
-        if (problem) {
-          problems.push(problem);
-          builtInCount++;
+    // Load built-in problems from generated TypeScript module
+    // This allows the data to be bundled with `deno compile`
+    const builtInSlugs = getAllProblemSlugs();
+    for (const slug of builtInSlugs) {
+      const jsonData = getProblemJson(slug);
+      if (!jsonData) continue;
+
+      try {
+        const problem = parseProblemFromJson(jsonData, `${slug}.json`);
+
+        if (loadedIds.has(problem.id)) {
+          throw new ProblemError(
+            `Duplicate problem ID: '${problem.id}' in ${slug}.json`,
+            createErrorContext('loadProblemDatabase', {
+              path: `${slug}.json`,
+              reason: 'duplicate_id',
+              duplicateId: problem.id,
+            }),
+          );
         }
+
+        if (loadedSlugs.has(problem.slug)) {
+          throw new ProblemError(
+            `Duplicate problem slug: '${problem.slug}' in ${slug}.json`,
+            createErrorContext('loadProblemDatabase', {
+              path: `${slug}.json`,
+              reason: 'duplicate_slug',
+              duplicateSlug: problem.slug,
+            }),
+          );
+        }
+
+        loadedIds.add(problem.id);
+        loadedSlugs.add(problem.slug);
+
+        problems.push(problem);
+        builtInCount++;
+      } catch (error) {
+        if (error instanceof ProblemError) {
+          throw error;
+        }
+        throw new ProblemError(
+          `Failed to load built-in problem: ${slug}.json`,
+          createErrorContext('loadProblemDatabase', {
+            path: `${slug}.json`,
+            reason: 'parse_error',
+            originalError: String(error),
+          }),
+        );
       }
     }
 

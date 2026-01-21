@@ -16,7 +16,7 @@ import {
   problemExists,
   updateProblemMetadata,
 } from '../../core/workspace/generation.ts';
-import { requireProblemManager, resolveProblem } from './shared.ts';
+import { requireProblemManager, requireWorkspace, resolveProblem } from './shared.ts';
 import { showCommandHelp } from './help.ts';
 import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import { join } from '@std/path';
@@ -164,6 +164,9 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const options = extractHintOptions(args);
     const config = configManager.getConfig();
 
+    // Ensure workspace is initialized (throws WorkspaceError if not)
+    const workspace = await requireWorkspace();
+
     // Initialize problem manager
     const manager = await requireProblemManager();
 
@@ -214,6 +217,20 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     }
 
     const hintsUsed = metadata?.hintsUsed ?? [];
+
+    // Validate hint level if provided
+    if (options.level !== undefined) {
+      const maxLevel = problem.hints.length;
+      if (options.level < 1 || options.level > maxLevel) {
+        logger.error(`Invalid hint level: ${options.level}`);
+        logger.info(`Available hint levels for this problem: 1-${maxLevel}`);
+        return {
+          success: false,
+          exitCode: ExitCode.USAGE_ERROR,
+          error: `Invalid hint level: ${options.level}`,
+        };
+      }
+    }
 
     // Display problem information
     logger.newline();

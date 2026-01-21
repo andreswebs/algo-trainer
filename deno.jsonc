@@ -13,7 +13,8 @@
   },
   "tasks": {
     "dev": "DENO_ENV=development deno run --allow-all --watch src/main.ts",
-    "build": "deno compile --allow-all --output=bin/at src/main.ts",
+    "generate-problems": "deno run --allow-read --allow-write scripts/generate-problems.ts",
+    "build": "deno task generate-problems && deno compile --allow-all --output=bin/at src/main.ts",
     "test": "DENO_ENV=test deno test --allow-write --allow-read --allow-env",
     "test:watch": "deno test --watch --allow-write --allow-read --allow-env",
     "bench": "deno bench --allow-all",

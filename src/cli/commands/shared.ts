@@ -41,6 +41,17 @@ export async function requireWorkspace(
     // Get workspace root from config if not provided
     const root = workspaceRoot || configManager.getConfig().workspace;
 
+    // Check if root is empty or not provided
+    if (!root || root.trim().length === 0) {
+      throw new WorkspaceError(
+        'Workspace not initialized. Run "at init" to create workspace structure.',
+        createErrorContext('requireWorkspace', {
+          workspaceRoot: root || '(empty)',
+          reason: 'not_initialized',
+        }),
+      );
+    }
+
     // Check if workspace is initialized
     const initialized = await isWorkspaceInitialized(root);
 

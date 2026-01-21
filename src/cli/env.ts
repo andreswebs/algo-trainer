@@ -228,3 +228,59 @@ ENVIRONMENT VARIABLES:
 Note: Environment variables take precedence over configuration file settings.
 `.trim();
 }
+
+/**
+ * Validate environment variables and throw error if invalid
+ *
+ * This function should be called early in the CLI to ensure invalid
+ * environment variables cause the program to exit with USAGE_ERROR.
+ *
+ * @throws Error if any environment variable has an invalid value
+ */
+export function validateEnvironmentVariables(): void {
+  // Validate language
+  const language = Deno.env.get(ENV_VARS.LANGUAGE);
+  if (language && language.trim()) {
+    const validated = validateLanguage(language);
+    if (!validated) {
+      throw new Error(
+        `Invalid ${ENV_VARS.LANGUAGE}: "${language}"\nSupported languages: ${
+          SUPPORTED_LANGUAGES.join(', ')
+        }`,
+      );
+    }
+  }
+
+  // Validate template style
+  const templateStyle = Deno.env.get(ENV_VARS.TEMPLATE_STYLE);
+  if (templateStyle && templateStyle.trim()) {
+    const validated = validateTemplateStyle(templateStyle);
+    if (!validated) {
+      throw new Error(
+        `Invalid ${ENV_VARS.TEMPLATE_STYLE}: "${templateStyle}"\nSupported styles: ${
+          SUPPORTED_TEMPLATE_STYLES.join(', ')
+        }`,
+      );
+    }
+  }
+
+  // Validate boolean env vars (verbose, quiet, no_color, no_emoji)
+  const boolEnvVars = [
+    ENV_VARS.VERBOSE,
+    ENV_VARS.QUIET,
+    ENV_VARS.NO_COLOR,
+    ENV_VARS.NO_EMOJI,
+  ];
+
+  for (const envVar of boolEnvVars) {
+    const value = Deno.env.get(envVar);
+    if (value && value.trim()) {
+      const parsed = parseBooleanEnv(value);
+      if (parsed === undefined) {
+        throw new Error(
+          `Invalid ${envVar}: "${value}"\nSupported values: 1, 0, true, false, yes, no`,
+        );
+      }
+    }
+  }
+}

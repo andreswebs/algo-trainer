@@ -9,11 +9,11 @@
 import { parseArgs } from '@std/cli/parse-args';
 import { exitWithError, logger, outputData, setOutputOptions } from '../utils/output.ts';
 import { formatError } from '../utils/errors.ts';
-import { getExitCodeForError } from './exit-codes.ts';
+import { getExitCodeForError, ExitCode } from './exit-codes.ts';
 import { initializeConfig } from '../config/manager.ts';
 import { dispatch, getAvailableCommands } from './commands/mod.ts';
 import { extractGlobalFlags } from './types.ts';
-import { getEnvVarDocumentation } from './env.ts';
+import { getEnvVarDocumentation, validateEnvironmentVariables } from './env.ts';
 import { VERSION } from '../version.ts';
 
 const PARSE_OPTIONS = {
@@ -86,6 +86,14 @@ For more information about a specific command, run:
 
 export async function main(inputArgs: string[] = Deno.args): Promise<void> {
   try {
+    // Validate environment variables early
+    try {
+      validateEnvironmentVariables();
+    } catch (error) {
+      logger.error(error instanceof Error ? error.message : String(error));
+      Deno.exit(ExitCode.USAGE_ERROR);
+    }
+
     const args = parseArgs(inputArgs, PARSE_OPTIONS);
     const globalFlags = extractGlobalFlags(args);
 

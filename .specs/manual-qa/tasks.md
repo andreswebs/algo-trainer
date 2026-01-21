@@ -1,8 +1,8 @@
 # Manual QA Issues - Implementation Plan
 
-**Status:** Ready for Implementation
+**Status:** ✅ All Implementation Tasks Completed
 **Goal:** Fix all issues identified during manual QA testing
-**Priority:** CRITICAL (Binary is non-functional)
+**Priority:** Testing & Validation Phase
 
 ## Overview
 
@@ -12,13 +12,13 @@ This document provides an implementation plan to fix all issues discovered durin
 
 | Issue ID | Severity | Description | Status |
 |----------|----------|-------------|--------|
-| CRITICAL-001 | Critical | Binary doesn't include data files | 🔴 Pending |
-| TC-010 | High | Init requires path argument | 🔴 Pending |
-| TC-012 | Medium | Wrong exit code for already initialized | 🔴 Pending |
-| TC-030 | Medium | Wrong error message for missing workspace | 🔴 Pending |
-| TC-046 | Low | Invalid hint level wrong exit code | 🔴 Pending |
-| TC-063 | Low | Tag filter may not be working | 🔴 Pending |
-| TC-117 | Low | Invalid env var handling | 🔴 Pending |
+| CRITICAL-001 | Critical | Binary doesn't include data files | ✅ Fixed |
+| TC-010 | High | Init requires path argument | ✅ Fixed |
+| TC-012 | Medium | Wrong exit code for already initialized | ✅ Fixed |
+| TC-030 | Medium | Wrong error message for missing workspace | ✅ Fixed |
+| TC-046 | Low | Invalid hint level wrong exit code | ✅ Fixed |
+| TC-063 | Low | Tag filter may not be working | ✅ Fixed |
+| TC-117 | Low | Invalid env var handling | ✅ Fixed |
 
 ## Task Dependency Graph
 
@@ -497,19 +497,19 @@ Deno.test("Invalid env var causes exit code 2", async () => {
 Track progress as tasks are completed:
 
 ### Critical Priority
-- [ ] **FIX-001**: Fix binary compilation to include data files
+- [x] **FIX-001**: Fix binary compilation to include data files (✅ COMPLETED - uses generate-problems.ts script)
 
 ### High Priority
-- [ ] **FIX-010**: Allow init without path argument
-- [ ] **FIX-030**: Fix workspace detection error message
+- [x] **FIX-010**: Allow init without path argument (✅ COMPLETED - defaults to cwd when workspace is empty)
+- [x] **FIX-030**: Fix workspace detection error message (✅ COMPLETED - added requireWorkspace checks)
 
 ### Medium Priority
-- [ ] **FIX-012**: Fix workspace already initialized exit code
-- [ ] **FIX-046**: Fix invalid hint level exit code
-- [ ] **FIX-117**: Fix invalid environment variable exit code
+- [x] **FIX-012**: Fix workspace already initialized exit code (✅ COMPLETED - returns CONFIG_ERROR)
+- [x] **FIX-046**: Fix invalid hint level exit code (✅ COMPLETED - validates level and returns USAGE_ERROR)
+- [x] **FIX-117**: Fix invalid environment variable exit code (✅ COMPLETED - validates env vars early in main)
 
 ### Low Priority
-- [ ] **FIX-063**: Investigate and fix tag filtering
+- [x] **FIX-063**: Investigate and fix tag filtering (✅ COMPLETED - added -t/--tag flag support)
 
 ### Testing
 - [ ] **TEST-001**: Add binary compilation tests
