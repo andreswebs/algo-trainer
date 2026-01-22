@@ -25,9 +25,7 @@ function showHelp(): void {
   showCommandHelp({
     name: 'progress',
     description: 'View progress stats and completion',
-    usage: [
-      'at progress [options]',
-    ],
+    usage: ['algo-trainer progress [options]'],
     options: [
       { flags: '-d, --detailed', description: 'Show detailed breakdown' },
       { flags: '-c, --category', description: 'Group by category' },
@@ -35,10 +33,22 @@ function showHelp(): void {
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at progress', description: 'Show overall progress summary' },
-      { command: 'at progress --detailed', description: 'Show detailed breakdown' },
-      { command: 'at progress --category', description: 'Group by category' },
-      { command: 'at progress --json', description: 'Output as JSON' },
+      {
+        command: 'algo-trainer progress',
+        description: 'Show overall progress summary',
+      },
+      {
+        command: 'algo-trainer progress --detailed',
+        description: 'Show detailed breakdown',
+      },
+      {
+        command: 'algo-trainer progress --category',
+        description: 'Group by category',
+      },
+      {
+        command: 'algo-trainer progress --json',
+        description: 'Output as JSON',
+      },
     ],
   });
 }
@@ -177,8 +187,12 @@ async function calculateProgressStats(
 
     if (metadata.tags) {
       for (const tag of metadata.tags) {
-        const stats = categoryStats.get(tag) ||
-          { category: tag, current: 0, completed: 0, total: 0 };
+        const stats = categoryStats.get(tag) || {
+          category: tag,
+          current: 0,
+          completed: 0,
+          total: 0,
+        };
         stats.current++;
         categoryStats.set(tag, stats);
       }
@@ -198,8 +212,12 @@ async function calculateProgressStats(
 
     if (metadata.tags) {
       for (const tag of metadata.tags) {
-        const stats = categoryStats.get(tag) ||
-          { category: tag, current: 0, completed: 0, total: 0 };
+        const stats = categoryStats.get(tag) || {
+          category: tag,
+          current: 0,
+          completed: 0,
+          total: 0,
+        };
         stats.completed++;
         categoryStats.set(tag, stats);
       }
@@ -240,7 +258,12 @@ async function calculateProgressStats(
     if (stats) {
       stats.total = total;
     } else {
-      categoryStats.set(category, { category, current: 0, completed: 0, total });
+      categoryStats.set(category, {
+        category,
+        current: 0,
+        completed: 0,
+        total,
+      });
     }
   }
 
@@ -249,8 +272,8 @@ async function calculateProgressStats(
     currentProblems: currentSlugs.length,
     completedProblems: completedSlugs.length,
     byDifficulty: Array.from(difficultyStats.values()),
-    byCategory: Array.from(categoryStats.values()).sort((a, b) =>
-      b.completed - a.completed || a.category.localeCompare(b.category)
+    byCategory: Array.from(categoryStats.values()).sort(
+      (a, b) => b.completed - a.completed || a.category.localeCompare(b.category),
     ),
   };
 }
@@ -258,7 +281,10 @@ async function calculateProgressStats(
 /**
  * Display progress statistics as formatted tables
  */
-function displayProgressTable(stats: ProgressStats, options: ProgressOptions): void {
+function displayProgressTable(
+  stats: ProgressStats,
+  options: ProgressOptions,
+): void {
   logger.newline();
   logger.log('=== Progress Summary ===');
   logger.newline();
@@ -346,8 +372,8 @@ export async function progressCommand(args: Args): Promise<CommandResult> {
     const workspaceRoot = config.workspace;
 
     // Check if workspace is initialized
-    if (!await isWorkspaceInitialized(workspaceRoot)) {
-      logger.error('Workspace not initialized. Run "at init" first.');
+    if (!(await isWorkspaceInitialized(workspaceRoot))) {
+      logger.error('Workspace not initialized. Run "algo-trainer init" first.');
       return {
         success: false,
         error: 'Workspace not initialized',

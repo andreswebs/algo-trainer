@@ -59,25 +59,25 @@ deno cache --lock=deno.lock --lock-write src/main.ts
 
 ```bash
 # Show help
-at --help
+algo-trainer --help
 
 # Show version
-at --version
+algo-trainer --version
 
 # Start a challenge
-at challenge easy
+algo-trainer challenge easy
 
 # Get a hint
-at hint
+algo-trainer hint
 
 # Mark problem as completed
-at complete two-sum
+algo-trainer complete two-sum
 
 # Configure settings
-at config set language python
-at config get language
-at config list
+algo-trainer config set language python
+algo-trainer config get language
+algo-trainer config list
 
 # Initialize workspace
-at init ~/my-practice
+algo-trainer init ~/my-practice
 ```

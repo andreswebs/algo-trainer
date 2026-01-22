@@ -30,7 +30,7 @@ import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/er
  *   const structure = await requireWorkspace();
  *   console.log(structure.problems); // /path/to/workspace/problems
  * } catch (error) {
- *   console.error('Workspace not initialized. Run "at init" first.');
+ *   console.error('Workspace not initialized. Run "algo-trainer init" first.');
  * }
  * ```
  */
@@ -44,7 +44,7 @@ export async function requireWorkspace(
     // Check if root is empty or not provided
     if (!root || root.trim().length === 0) {
       throw new WorkspaceError(
-        'Workspace not initialized. Run "at init" to create workspace structure.',
+        'Workspace not initialized. Run "algo-trainer init" to create workspace structure.',
         createErrorContext('requireWorkspace', {
           workspaceRoot: root || '(empty)',
           reason: 'not_initialized',
@@ -57,7 +57,7 @@ export async function requireWorkspace(
 
     if (!initialized) {
       throw new WorkspaceError(
-        'Workspace not initialized. Run "at init" to create workspace structure.',
+        'Workspace not initialized. Run "algo-trainer init" to create workspace structure.',
         createErrorContext('requireWorkspace', {
           workspaceRoot: root,
           reason: 'not_initialized',
@@ -286,7 +286,10 @@ export async function confirmAction(
   }
 
   // Parse input
-  const input = new TextDecoder().decode(buf.subarray(0, n)).trim().toLowerCase();
+  const input = new TextDecoder()
+    .decode(buf.subarray(0, n))
+    .trim()
+    .toLowerCase();
 
   // Empty input means use default
   if (input === '') {

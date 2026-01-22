@@ -18,31 +18,53 @@ function showHelp(): void {
   showCommandHelp({
     name: 'list',
     description: 'List and filter available problems',
-    usage: [
-      'at list [options]',
-    ],
+    usage: ['algo-trainer list [options]'],
     options: [
       {
         flags: '-d, --difficulty <level>',
         description: 'Filter by difficulty (easy, medium, hard)',
       },
       { flags: '-t, --tag <tag>', description: 'Filter by tag' },
-      { flags: '-c, --category <cat>', description: 'Filter by category (alias for --tag)' },
-      { flags: '-s, --search <text>', description: 'Search in title/description' },
+      {
+        flags: '-c, --category <cat>',
+        description: 'Filter by category (alias for --tag)',
+      },
+      {
+        flags: '-s, --search <text>',
+        description: 'Search in title/description',
+      },
       { flags: '-l, --limit <n>', description: 'Limit results (default: 20)' },
       { flags: '--json', description: 'Output in JSON format' },
       { flags: '--verbose', description: 'Show full descriptions' },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at list', description: 'List first 20 problems' },
-      { command: 'at list -d easy', description: 'List easy problems' },
-      { command: 'at list -t array', description: 'List problems with array tag' },
-      { command: 'at list -c arrays', description: 'List array problems (same as -t)' },
-      { command: 'at list -s "two sum"', description: 'Search for problems' },
-      { command: 'at list -l 50', description: 'List first 50 problems' },
-      { command: 'at list --verbose', description: 'Show detailed descriptions' },
-      { command: 'at list --json', description: 'Output as JSON' },
+      { command: 'algo-trainer list', description: 'List first 20 problems' },
+      {
+        command: 'algo-trainer list -d easy',
+        description: 'List easy problems',
+      },
+      {
+        command: 'algo-trainer list -t array',
+        description: 'List problems with array tag',
+      },
+      {
+        command: 'algo-trainer list -c arrays',
+        description: 'List array problems (same as -t)',
+      },
+      {
+        command: 'algo-trainer list -s "two sum"',
+        description: 'Search for problems',
+      },
+      {
+        command: 'algo-trainer list -l 50',
+        description: 'List first 50 problems',
+      },
+      {
+        command: 'algo-trainer list --verbose',
+        description: 'Show detailed descriptions',
+      },
+      { command: 'algo-trainer list --json', description: 'Output as JSON' },
     ],
   });
 }
@@ -66,12 +88,16 @@ export function extractListOptions(args: Args): ListOptions {
   const difficulty = (args.difficulty as Difficulty | undefined) ||
     (args.d as Difficulty | undefined);
   // Support both -t/--tag and -c/--category (aliases for the same thing)
-  const tag = (args.tag as string | undefined) || (args.t as string | undefined) ||
-    (args.category as string | undefined) || (args.c as string | undefined);
+  const tag = (args.tag as string | undefined) ||
+    (args.t as string | undefined) ||
+    (args.category as string | undefined) ||
+    (args.c as string | undefined);
   const search = (args.search as string | undefined) || (args.s as string | undefined);
 
   const result: ListOptions = {
-    limit: (args.limit as number | undefined) || (args.l as number | undefined) || 20,
+    limit: (args.limit as number | undefined) ||
+      (args.l as number | undefined) ||
+      20,
     json: !!args.json,
     verbose: !!args.verbose,
   };
@@ -95,9 +121,13 @@ export function extractListOptions(args: Args): ListOptions {
  * Display problems as a table
  */
 function displayProblemsTable(
-  problems: Array<
-    { id: string; difficulty: string; title: string; description: string; tags: string[] }
-  >,
+  problems: Array<{
+    id: string;
+    difficulty: string;
+    title: string;
+    description: string;
+    tags: string[];
+  }>,
   options: { verbose: boolean },
 ): void {
   if (problems.length === 0) {
@@ -140,7 +170,9 @@ function displayProblemsTable(
   }
 
   logger.newline();
-  logger.log(`Total: ${problems.length} problem${problems.length === 1 ? '' : 's'}`);
+  logger.log(
+    `Total: ${problems.length} problem${problems.length === 1 ? '' : 's'}`,
+  );
 }
 
 /**

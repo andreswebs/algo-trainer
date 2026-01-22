@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Bash completion script for Algo Trainer (at) CLI
+# Bash completion script for Algo Trainer (algo-trainer) CLI
 #
 # Installation:
 #   Source this file in your .bashrc or .bash_profile:
-#     source /path/to/completions/at.bash
+#     source /path/to/completions/algo-trainer.bash
 #
 #   Or copy to system completion directory:
-#     sudo cp completions/at.bash /etc/bash_completion.d/at
+#     sudo cp completions/algo-trainer.bash /etc/bash_completion.d/algo-trainer
 #     # or
-#     cp completions/at.bash ~/.local/share/bash-completion/completions/at
+#     cp completions/algo-trainer.bash ~/.local/share/bash-completion/completions/algo-trainer
 
-_at_completion() {
+_algo-trainer_completion() {
     local cur prev words cword
-    
+
     # Use _init_completion if available (from bash-completion package)
     # Otherwise, initialize manually
     if declare -F _init_completion > /dev/null 2>&1; then
@@ -27,31 +27,31 @@ _at_completion() {
 
     # All available commands
     local commands="challenge complete config hint init list progress"
-    
+
     # Global flags available for all commands
     local global_flags="--help --version --verbose --quiet --no-color --no-emoji --config -h -v -c"
-    
+
     # Config subcommands
     local config_subcommands="list get set reset"
-    
+
     # Valid configuration keys
     local config_keys="language workspace aiEnabled companies preferences.theme preferences.verbosity preferences.autoSave preferences.templateStyle preferences.useEmoji preferences.useColors"
-    
+
     # Supported languages
     local languages="typescript javascript python java cpp rust go"
-    
+
     # Difficulty levels
     local difficulties="easy medium hard"
-    
+
     # Problem categories (common ones)
     local categories="arrays strings hash-table linked-list trees graphs dynamic-programming sorting searching backtracking greedy binary-search depth-first-search breadth-first-search"
-    
+
     # Template styles
     local template_styles="minimal documented comprehensive"
-    
+
     # Theme options
     local themes="light dark auto"
-    
+
     # Verbosity levels
     local verbosity_levels="quiet normal verbose"
 
@@ -63,7 +63,7 @@ _at_completion() {
 
     # Get the command (first non-flag argument)
     local command="${words[1]}"
-    
+
     # Handle global flags before command
     if [[ $command == -* ]]; then
         COMPREPLY=($(compgen -W "$commands" -- "$cur"))
@@ -75,7 +75,7 @@ _at_completion() {
         challenge)
             # challenge command flags
             local challenge_flags="--difficulty --category --topic --language --force --random -d -c -t -l -f"
-            
+
             # Handle flag values
             case "$prev" in
                 --difficulty|-d)
@@ -95,7 +95,7 @@ _at_completion() {
                     return 0
                     ;;
             esac
-            
+
             # If no flag value expected, suggest flags or difficulty/slug
             if [[ $cur == -* ]]; then
                 COMPREPLY=($(compgen -W "$challenge_flags $global_flags" -- "$cur"))
@@ -105,18 +105,18 @@ _at_completion() {
                 # Could add dynamic problem slug completion here
             fi
             ;;
-            
+
         complete)
             # complete command flags
             local complete_flags="--notes --no-archive -n"
-            
+
             case "$prev" in
                 --notes|-n)
                     # Notes are free-form text
                     return 0
                     ;;
             esac
-            
+
             if [[ $cur == -* ]]; then
                 COMPREPLY=($(compgen -W "$complete_flags $global_flags" -- "$cur"))
             else
@@ -124,7 +124,7 @@ _at_completion() {
                 return 0
             fi
             ;;
-            
+
         config)
             # config subcommand handling
             if [[ $cword -eq 2 ]]; then
@@ -132,9 +132,9 @@ _at_completion() {
                 COMPREPLY=($(compgen -W "$config_subcommands --json --help -h" -- "$cur"))
                 return 0
             fi
-            
+
             local subcommand="${words[2]}"
-            
+
             case "$subcommand" in
                 get|set|reset)
                     if [[ $cword -eq 3 ]]; then
@@ -179,18 +179,18 @@ _at_completion() {
                     ;;
             esac
             ;;
-            
+
         hint)
             # hint command flags
             local hint_flags="--level --all -a"
-            
+
             case "$prev" in
                 --level)
                     COMPREPLY=($(compgen -W "1 2 3" -- "$cur"))
                     return 0
                     ;;
             esac
-            
+
             if [[ $cur == -* ]]; then
                 COMPREPLY=($(compgen -W "$hint_flags $global_flags" -- "$cur"))
             else
@@ -198,11 +198,11 @@ _at_completion() {
                 return 0
             fi
             ;;
-            
+
         init)
             # init command flags
             local init_flags="--force -f"
-            
+
             if [[ $cur == -* ]]; then
                 COMPREPLY=($(compgen -W "$init_flags $global_flags" -- "$cur"))
             else
@@ -210,11 +210,11 @@ _at_completion() {
                 _filedir -d
             fi
             ;;
-            
+
         list)
             # list command flags
             local list_flags="--difficulty --category --search --limit --json --verbose -d -c -s -l"
-            
+
             case "$prev" in
                 --difficulty|-d)
                     COMPREPLY=($(compgen -W "$difficulties" -- "$cur"))
@@ -234,21 +234,21 @@ _at_completion() {
                     return 0
                     ;;
             esac
-            
+
             if [[ $cur == -* ]]; then
                 COMPREPLY=($(compgen -W "$list_flags $global_flags" -- "$cur"))
             fi
             ;;
-            
+
         progress)
             # progress command flags
             local progress_flags="--detailed --category --json -d -c"
-            
+
             if [[ $cur == -* ]]; then
                 COMPREPLY=($(compgen -W "$progress_flags $global_flags" -- "$cur"))
             fi
             ;;
-            
+
         *)
             # Unknown command, suggest global flags
             if [[ $cur == -* ]]; then
@@ -259,4 +259,4 @@ _at_completion() {
 }
 
 # Register completion function
-complete -F _at_completion at
+complete -F _algo-trainer_completion algo-trainer

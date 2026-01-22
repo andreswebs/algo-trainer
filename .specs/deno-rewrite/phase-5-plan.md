@@ -102,8 +102,8 @@ Make error messages actionable with fix suggestions.
 
 - [ ] Replace generic `Error()` with typed errors (`ConfigError`, `ValidationError`, etc.)
 - [ ] Add actionable suggestions to common errors:
-  - "Workspace not initialized" → "Run 'at init [path]' to create a workspace"
-  - "Problem not found" → "Use 'at list' to see available problems"
+  - "Workspace not initialized" → "Run 'algo-trainer init [path]' to create a workspace"
+  - "Problem not found" → "Use 'algo-trainer list' to see available problems"
   - "Invalid configuration value" → Show valid options
 - [ ] Add context objects to error constructors
 - [ ] Review AI trigger warnings for clarity

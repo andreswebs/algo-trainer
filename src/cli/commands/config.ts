@@ -21,23 +21,44 @@ function showHelp(): void {
     name: 'config',
     description: 'Manage configuration settings',
     usage: [
-      'at config list',
-      'at config get <key>',
-      'at config set <key> <value>',
-      'at config reset [key]',
+      'algo-trainer config list',
+      'algo-trainer config get <key>',
+      'algo-trainer config set <key> <value>',
+      'algo-trainer config reset [key]',
     ],
     options: [
       { flags: '--json', description: 'Output in JSON format' },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at config list', description: 'List all configuration values' },
-      { command: 'at config get language', description: 'Get the language setting' },
-      { command: 'at config set language python', description: 'Set default language to Python' },
-      { command: 'at config set preferences.theme dark', description: 'Set theme preference' },
-      { command: 'at config reset language', description: 'Reset language to default' },
-      { command: 'at config reset', description: 'Reset all settings to defaults' },
-      { command: 'at config list --json', description: 'Get config as JSON' },
+      {
+        command: 'algo-trainer config list',
+        description: 'List all configuration values',
+      },
+      {
+        command: 'algo-trainer config get language',
+        description: 'Get the language setting',
+      },
+      {
+        command: 'algo-trainer config set language python',
+        description: 'Set default language to Python',
+      },
+      {
+        command: 'algo-trainer config set preferences.theme dark',
+        description: 'Set theme preference',
+      },
+      {
+        command: 'algo-trainer config reset language',
+        description: 'Reset language to default',
+      },
+      {
+        command: 'algo-trainer config reset',
+        description: 'Reset all settings to defaults',
+      },
+      {
+        command: 'algo-trainer config list --json',
+        description: 'Get config as JSON',
+      },
     ],
   });
 }
@@ -67,7 +88,7 @@ const VALID_KEYS = [
   'preferences.useColors',
 ] as const;
 
-type ValidConfigKey = typeof VALID_KEYS[number];
+type ValidConfigKey = (typeof VALID_KEYS)[number];
 
 /**
  * Extract config options from command arguments
@@ -87,7 +108,9 @@ export function extractConfigOptions(args: Args): ConfigOptions {
  */
 function getConfigValue(config: Config, key: string): unknown {
   if (key.startsWith('preferences.')) {
-    const prefKey = key.substring('preferences.'.length) as keyof UserPreferences;
+    const prefKey = key.substring(
+      'preferences.'.length,
+    ) as keyof UserPreferences;
     return config.preferences[prefKey];
   }
   return config[key as keyof Config];
@@ -115,7 +138,10 @@ function parseConfigValue(key: string, value: string): unknown {
 
   // String arrays
   if (key === 'companies') {
-    return value.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+    return value
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
   }
 
   // Enums with validation
@@ -180,7 +206,9 @@ function parseConfigValue(key: string, value: string): unknown {
  */
 async function setConfigValue(key: string, value: unknown): Promise<void> {
   if (key.startsWith('preferences.')) {
-    const prefKey = key.substring('preferences.'.length) as keyof UserPreferences;
+    const prefKey = key.substring(
+      'preferences.'.length,
+    ) as keyof UserPreferences;
     await configManager.updatePreferences({ [prefKey]: value });
   } else {
     await configManager.updateConfig({ [key]: value } as Partial<Config>);
@@ -357,7 +385,7 @@ export async function configCommand(args: Args): Promise<CommandResult> {
     case 'get':
       if (!options.key) {
         logger.error('Key is required for "get" subcommand');
-        logger.info('Usage: at config get <key>');
+        logger.info('Usage: algo-trainer config get <key>');
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
       return configGet(options.key, options.json);
@@ -365,7 +393,7 @@ export async function configCommand(args: Args): Promise<CommandResult> {
     case 'set':
       if (!options.key || !options.value) {
         logger.error('Key and value are required for "set" subcommand');
-        logger.info('Usage: at config set <key> <value>');
+        logger.info('Usage: algo-trainer config set <key> <value>');
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
       return await configSet(options.key, options.value);

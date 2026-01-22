@@ -1,9 +1,9 @@
-#compdef at
+#compdef algo-trainer
 
-# Zsh completion script for Algo Trainer (at)
+# Zsh completion script for Algo Trainer (algo-trainer)
 # This provides tab completion for commands, flags, and dynamic values
 
-_at() {
+_algo-trainer() {
   local curcontext="$curcontext" state line
   typeset -A opt_args
 
@@ -38,32 +38,32 @@ _at() {
         'list:List and filter available problems'
         'progress:View progress stats and completion'
       )
-      _describe -t commands 'at commands' commands
+      _describe -t commands 'algo-trainer commands' commands
       ;;
 
     args)
       # Handle command-specific completions
       case $words[1] in
         challenge)
-          _at_challenge
+          _algo-trainer_challenge
           ;;
         complete)
-          _at_complete
+          _algo-trainer_complete
           ;;
         config)
-          _at_config
+          _algo-trainer_config
           ;;
         hint)
-          _at_hint
+          _algo-trainer_hint
           ;;
         init)
-          _at_init
+          _algo-trainer_init
           ;;
         list)
-          _at_list
+          _algo-trainer_list
           ;;
         progress)
-          _at_progress
+          _algo-trainer_progress
           ;;
       esac
       ;;
@@ -71,7 +71,7 @@ _at() {
 }
 
 # Challenge command completions
-_at_challenge() {
+_algo-trainer_challenge() {
   local -a difficulties languages categories
   difficulties=(easy medium hard)
   languages=(typescript javascript python java cpp rust go)
@@ -89,7 +89,7 @@ _at_challenge() {
 }
 
 # Complete command completions
-_at_complete() {
+_algo-trainer_complete() {
   _arguments \
     '1:problem slug:' \
     '(-n --notes)'{-n,--notes}'[Add completion notes]:notes:' \
@@ -98,7 +98,7 @@ _at_complete() {
 }
 
 # Config command completions
-_at_config() {
+_algo-trainer_config() {
   local -a subcommands config_keys languages
   subcommands=(
     'list:List all configuration values'
@@ -158,7 +158,7 @@ _at_config() {
 }
 
 # Hint command completions
-_at_hint() {
+_algo-trainer_hint() {
   _arguments \
     '1:problem slug or id:' \
     '--level[Get specific hint level]:level:(1 2 3)' \
@@ -167,7 +167,7 @@ _at_hint() {
 }
 
 # Init command completions
-_at_init() {
+_algo-trainer_init() {
   _arguments \
     '1:workspace path:_directories' \
     '(-f --force)'{-f,--force}'[Reinitialize existing workspace]' \
@@ -175,7 +175,7 @@ _at_init() {
 }
 
 # List command completions
-_at_list() {
+_algo-trainer_list() {
   _arguments \
     '(-d --difficulty)'{-d,--difficulty}'[Filter by difficulty]:difficulty:(easy medium hard)' \
     '(-c --category)'{-c,--category}'[Filter by category]:category:(array string hash-table dynamic-programming tree graph sorting)' \
@@ -187,7 +187,7 @@ _at_list() {
 }
 
 # Progress command completions
-_at_progress() {
+_algo-trainer_progress() {
   _arguments \
     '(-d --detailed)'{-d,--detailed}'[Show detailed breakdown]' \
     '(-c --category)'{-c,--category}'[Group by category]' \
@@ -196,4 +196,4 @@ _at_progress() {
 }
 
 # Execute the main completion function
-_at "$@"
+_algo-trainer "$@"

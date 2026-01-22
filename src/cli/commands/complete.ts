@@ -22,20 +22,32 @@ function showHelp(): void {
   showCommandHelp({
     name: 'complete',
     description: 'Mark a problem as completed and archive it',
-    usage: [
-      'at complete <slug>',
-      'at complete',
-    ],
+    usage: ['algo-trainer complete <slug>', 'algo-trainer complete'],
     options: [
       { flags: '-n, --notes <text>', description: 'Add completion notes' },
-      { flags: '--no-archive', description: "Keep files in current (don't move)" },
+      {
+        flags: '--no-archive',
+        description: "Keep files in current (don't move)",
+      },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at complete two-sum', description: 'Mark "two-sum" as completed' },
-      { command: 'at complete', description: 'Complete current problem (interactive)' },
-      { command: 'at complete two-sum -n "Great problem!"', description: 'Complete with notes' },
-      { command: 'at complete --no-archive', description: 'Mark as complete without archiving' },
+      {
+        command: 'algo-trainer complete two-sum',
+        description: 'Mark "two-sum" as completed',
+      },
+      {
+        command: 'algo-trainer complete',
+        description: 'Complete current problem (interactive)',
+      },
+      {
+        command: 'algo-trainer complete two-sum -n "Great problem!"',
+        description: 'Complete with notes',
+      },
+      {
+        command: 'algo-trainer complete --no-archive',
+        description: 'Mark as complete without archiving',
+      },
     ],
   });
 }
@@ -87,7 +99,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
 
         if (entries.length === 0) {
           logger.error('No problems found in workspace');
-          logger.info('Start a challenge with: at challenge');
+          logger.info('Start a challenge with: algo-trainer challenge');
           return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
         }
 
@@ -131,7 +143,9 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     const exists = await problemExists(structure.root, problemSlug, language);
     if (!exists) {
       logger.error(`Problem '${problemSlug}' not found in workspace`);
-      logger.info('Use "at challenge <slug>" to start working on this problem first');
+      logger.info(
+        'Use "algo-trainer challenge <slug>" to start working on this problem first',
+      );
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     }
 
@@ -162,7 +176,9 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
 
       logger.success(`Completed and archived: ${problemSlug}`);
       if (archiveResult.collisionHandled) {
-        logger.info('Note: A previous completion exists. Archived with timestamp.');
+        logger.info(
+          'Note: A previous completion exists. Archived with timestamp.',
+        );
       }
       logger.info(`Archived to: ${archiveResult.archivedTo}`);
     } else {
@@ -196,15 +212,16 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
         const similarProblems = manager.list(query);
 
         if (similarProblems.problems.length > 0) {
-          const suggestions = similarProblems.problems.filter((p) => p.slug !== problemSlug).slice(
-            0,
-            3,
-          );
+          const suggestions = similarProblems.problems
+            .filter((p) => p.slug !== problemSlug)
+            .slice(0, 3);
           if (suggestions.length > 0) {
             for (const p of suggestions) {
               logger.info(`  - ${p.title} (${p.slug})`);
             }
-            logger.info(`\nStart with: at challenge ${suggestions[0].slug}`);
+            logger.info(
+              `\nStart with: algo-trainer challenge ${suggestions[0].slug}`,
+            );
           }
         }
       }
@@ -221,7 +238,10 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
       logger.error('Problem error:', error.message);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     } else {
-      logger.error('Unexpected error:', error instanceof Error ? error.message : String(error));
+      logger.error(
+        'Unexpected error:',
+        error instanceof Error ? error.message : String(error),
+      );
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
   }

@@ -19,17 +19,24 @@ function showHelp(): void {
   showCommandHelp({
     name: 'init',
     description: 'Initialize a new workspace',
-    usage: [
-      'at init [path]',
-    ],
+    usage: ['algo-trainer init [path]'],
     options: [
       { flags: '-f, --force', description: 'Reinitialize existing workspace' },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at init', description: 'Initialize in current directory' },
-      { command: 'at init ~/my-practice', description: 'Initialize at specific path' },
-      { command: 'at init --force', description: 'Reinitialize existing workspace' },
+      {
+        command: 'algo-trainer init',
+        description: 'Initialize in current directory',
+      },
+      {
+        command: 'algo-trainer init ~/my-practice',
+        description: 'Initialize algo-trainer specific path',
+      },
+      {
+        command: 'algo-trainer init --force',
+        description: 'Reinitialize existing workspace',
+      },
     ],
   });
 }

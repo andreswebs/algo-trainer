@@ -122,7 +122,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const config = configManager.getConfig();
 
     // Initialize workspace if needed
-    if (!await isWorkspaceInitialized(config.workspace.root)) {
+    if (!(await isWorkspaceInitialized(config.workspace.root))) {
       await initWorkspace(config.workspace.root);
     }
 
@@ -326,7 +326,9 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     });
 
     console.log(`Completed and archived: ${problem.title}`);
-    console.log(`Files moved to: ${config.workspace.root}/completed/${problemSlug}`);
+    console.log(
+      `Files moved to: ${config.workspace.root}/completed/${problemSlug}`,
+    );
 
     return { success: true, exitCode: 0 };
   } catch (error) {
@@ -440,6 +442,7 @@ try {
 ### Common Error Scenarios
 
 1. **Problem Not Found**
+
    ```typescript
    const problem = manager.getBySlug('invalid-slug');
    if (!problem) {
@@ -449,9 +452,10 @@ try {
    ```
 
 2. **Workspace Not Initialized**
+
    ```typescript
-   if (!await isWorkspaceInitialized(workspaceRoot)) {
-     console.error('Workspace not initialized. Run "at init" first.');
+   if (!(await isWorkspaceInitialized(workspaceRoot))) {
+     console.error('Workspace not initialized. Run "algo-trainer init" first.');
      return { success: false, exitCode: 1 };
    }
    ```
@@ -545,8 +549,8 @@ if (args.id !== undefined) {
 
 ```typescript
 // Check workspace initialization
-if (!await isWorkspaceInitialized(config.workspace.root)) {
-  console.error('Workspace not initialized. Run "at init" first.');
+if (!(await isWorkspaceInitialized(config.workspace.root))) {
+  console.error('Workspace not initialized. Run "algo-trainer init" first.');
   return { success: false, exitCode: 1 };
 }
 
@@ -660,10 +664,18 @@ function validateWorkspace(workspaceRoot: string): Promise<boolean>;
 function generateProblemFiles(options: GenerateOptions): Promise<void>;
 
 // Check if problem files exist
-function problemExists(workspaceRoot: string, slug: string, language: string): Promise<boolean>;
+function problemExists(
+  workspaceRoot: string,
+  slug: string,
+  language: string,
+): Promise<boolean>;
 
 // Get problem metadata
-function getProblemMetadata(workspaceRoot: string, slug: string, language: string): Promise<any>;
+function getProblemMetadata(
+  workspaceRoot: string,
+  slug: string,
+  language: string,
+): Promise<any>;
 
 // Archive completed problem
 function archiveProblem(options: ArchiveOptions): Promise<void>;
@@ -810,7 +822,10 @@ For isolated testing, mock the ProblemManager:
 export class MockProblemManager {
   private problems = new Map([
     ['two-sum', { id: 1, slug: 'two-sum', title: 'Two Sum' }],
-    ['add-two-numbers', { id: 2, slug: 'add-two-numbers', title: 'Add Two Numbers' }],
+    [
+      'add-two-numbers',
+      { id: 2, slug: 'add-two-numbers', title: 'Add Two Numbers' },
+    ],
   ]);
 
   async init() {

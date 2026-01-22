@@ -176,6 +176,7 @@ Wave 7: ATS-019, ATS-020
 ### Subtasks
 
 1. **Define DSL step types** (`TeachingStepType`):
+
    ```typescript
    type TeachingStepType =
      | 'intro' // Introduction when problem starts
@@ -187,6 +188,7 @@ Wave 7: ATS-019, ATS-020
    ```
 
 2. **Define teaching step interface** (`TeachingStep`):
+
    ```typescript
    interface TeachingStep {
      type: TeachingStepType;
@@ -197,6 +199,7 @@ Wave 7: ATS-019, ATS-020
    ```
 
 3. **Define teaching script interface** (`TeachingScript`):
+
    ```typescript
    interface TeachingScript {
      id: string;
@@ -209,6 +212,7 @@ Wave 7: ATS-019, ATS-020
    ```
 
 4. **Define user session state** (`TeachingSessionState`):
+
    ```typescript
    interface TeachingSessionState {
      problemId: string;
@@ -223,6 +227,7 @@ Wave 7: ATS-019, ATS-020
    ```
 
 5. **Define trigger context** (`TriggerContext`):
+
    ```typescript
    interface TriggerContext {
      code: string;
@@ -234,6 +239,7 @@ Wave 7: ATS-019, ATS-020
    ```
 
 6. **Define execution result** (`ExecutionResult`):
+
    ```typescript
    interface ExecutionResult {
      stdout: string;
@@ -283,7 +289,7 @@ Wave 7: ATS-019, ATS-020
    - `keywords` only valid for `on_request` type
 
 3. **Validate step type constraints**:
-   - `intro`: No trigger allowed (always shown at start)
+   - `intro`: No trigger allowed (always shown algo-trainer start)
    - `pre_prompt`: No trigger allowed (always shown before coding)
    - `on_run`: Trigger recommended but optional
    - `after_success`: No trigger allowed (always shown on success)
@@ -329,9 +335,12 @@ Wave 7: ATS-019, ATS-020
    - Handle optional fields
 
 3. **Create parser function**:
+
    ```typescript
    function parseTeachingScript(yamlContent: string): TeachingScript;
-   function loadTeachingScript(filePath: string): Promise<TeachingScript | null>;
+   function loadTeachingScript(
+     filePath: string,
+   ): Promise<TeachingScript | null>;
    ```
 
 4. **Support variable placeholders in content**:
@@ -384,11 +393,9 @@ The legacy implementation uses `Function()` constructor for evaluation. We need 
    - Consider using a small expression parser library or regex-based approach
 
 4. **Implement safe evaluator**:
+
    ```typescript
-   function evaluateTrigger(
-     trigger: string,
-     context: TriggerContext,
-   ): boolean;
+   function evaluateTrigger(trigger: string, context: TriggerContext): boolean;
    ```
 
 5. **Handle evaluation errors**:
@@ -435,6 +442,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Create integrated load function**:
+
    ```typescript
    async function loadAndValidateScript(
      filePath: string,
@@ -471,6 +479,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Define TeachingEngine class**:
+
    ```typescript
    class TeachingEngine {
      private currentScript: TeachingScript | null;
@@ -490,11 +499,13 @@ trigger: code.length < 50
    - Initialize session state
 
 3. **Implement step filtering**:
+
    ```typescript
    private getStepsByType(type: TeachingStepType): TeachingStep[];
    ```
 
 4. **Implement trigger matching**:
+
    ```typescript
    private findMatchingStep(
      steps: TeachingStep[],
@@ -528,6 +539,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Define TeachingSession class**:
+
    ```typescript
    class TeachingSession {
      private state: TeachingSessionState;
@@ -571,24 +583,28 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Implement introduction getter**:
+
    ```typescript
    getIntroduction(): string | null;
    // Returns intro step content (always first)
    ```
 
 2. **Implement pre-prompt getter**:
+
    ```typescript
    getPrePrompt(): string | null;
    // Returns pre_prompt step content
    ```
 
 3. **Implement contextual hint getter**:
+
    ```typescript
    getHint(code: string): string | null;
    // Evaluates hint triggers against current code
    ```
 
 4. **Implement success message getter**:
+
    ```typescript
    getSuccessMessage(): string | null;
    // Returns after_success step content
@@ -619,6 +635,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Implement execution processor**:
+
    ```typescript
    processExecution(
      code: string,
@@ -661,6 +678,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Define template types**:
+
    ```typescript
    type ScriptTemplateType = 'basic' | 'comprehensive' | 'advanced';
 
@@ -700,6 +718,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Define TeachingScriptGenerator class**:
+
    ```typescript
    class TeachingScriptGenerator {
      constructor(options?: Partial<ScriptGeneratorOptions>);
@@ -743,6 +762,7 @@ trigger: code.length < 50
 ### Subtasks
 
 1. **Implement topic detection**:
+
    ```typescript
    private detectTopics(problem: Problem): string[];
    // Normalize and detect relevant topics from tags
@@ -801,7 +821,9 @@ trigger: code.length < 50
 
 4. **Implement script discovery**:
    ```typescript
-   async function findTeachingScript(problemSlug: string): Promise<string | null>;
+   async function findTeachingScript(
+     problemSlug: string,
+   ): Promise<string | null>;
    // Check built-in, then user custom
    ```
 
@@ -839,10 +861,11 @@ trigger: code.length < 50
    - Display feedback message if available
 
 4. **Add `teach` subcommand** (optional):
+
    ```bash
-   at teach generate <problem-slug>  # Generate script
-   at teach validate <path>          # Validate script
-   at teach info                     # Show current session
+   algo-trainer teach generate <problem-slug>  # Generate script
+   algo-trainer teach validate <path>          # Validate script
+   algo-trainer teach info                     # Show current session
    ```
 
 5. **Respect `config.aiEnabled`**:

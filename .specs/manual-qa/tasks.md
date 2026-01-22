@@ -10,15 +10,15 @@ This document provides an implementation plan to fix all issues discovered durin
 
 ### Issues Summary
 
-| Issue ID | Severity | Description | Status |
-|----------|----------|-------------|--------|
-| CRITICAL-001 | Critical | Binary doesn't include data files | ✅ Fixed |
-| TC-010 | High | Init requires path argument | ✅ Fixed |
-| TC-012 | Medium | Wrong exit code for already initialized | ✅ Fixed |
-| TC-030 | Medium | Wrong error message for missing workspace | ✅ Fixed |
-| TC-046 | Low | Invalid hint level wrong exit code | ✅ Fixed |
-| TC-063 | Low | Tag filter may not be working | ✅ Fixed |
-| TC-117 | Low | Invalid env var handling | ✅ Fixed |
+| Issue ID     | Severity | Description                               | Status   |
+| ------------ | -------- | ----------------------------------------- | -------- |
+| CRITICAL-001 | Critical | Binary doesn't include data files         | ✅ Fixed |
+| TC-010       | High     | Init requires path argument               | ✅ Fixed |
+| TC-012       | Medium   | Wrong exit code for already initialized   | ✅ Fixed |
+| TC-030       | Medium   | Wrong error message for missing workspace | ✅ Fixed |
+| TC-046       | Low      | Invalid hint level wrong exit code        | ✅ Fixed |
+| TC-063       | Low      | Tag filter may not be working             | ✅ Fixed |
+| TC-117       | Low      | Invalid env var handling                  | ✅ Fixed |
 
 ## Task Dependency Graph
 
@@ -53,6 +53,7 @@ PRIORITY 4 (Testing & Validation):
 **Severity:** CRITICAL - Binary is completely non-functional
 **Impact:** Users cannot use the compiled binary at all
 **Files to Modify:**
+
 - `deno.json` or build script
 - `src/data/loader.ts` (may need refactoring)
 - `src/main.ts` (may need import changes)
@@ -63,6 +64,7 @@ The `deno compile` command doesn't include the JSON problem files from `src/data
 **Solution Options:**
 
 **Option A: Embed data files during compilation (Recommended)**
+
 ```bash
 # Update build command to include data files
 deno compile --allow-all \
@@ -72,11 +74,13 @@ deno compile --allow-all \
 ```
 
 **Option B: Convert JSON to TypeScript modules**
+
 1. Create a build script that converts all JSON files to TS modules
 2. Import problems as TypeScript modules instead of reading JSON files
 3. This ensures they're bundled in the binary
 
 **Implementation Steps:**
+
 1. **Investigate current data loading mechanism**
    - Check how `src/data/loader.ts` currently loads problem files
    - Identify if using `Deno.readFile` or dynamic imports
@@ -95,6 +99,7 @@ deno compile --allow-all \
    - Verify data is accessible
 
 **Acceptance Criteria:**
+
 - Binary works standalone without source files
 - All problem commands (list, challenge, hint) work correctly
 - No performance degradation
@@ -112,16 +117,19 @@ deno compile --allow-all \
 **Files to Modify:** `src/cli/commands/init.ts`
 
 **Current Behavior:**
+
 ```bash
 algo-trainer init  # Error: "Root directory cannot be empty"
 ```
 
 **Expected Behavior:**
+
 ```bash
 algo-trainer init  # Initializes workspace in current directory
 ```
 
 **Implementation:**
+
 ```typescript
 // In init command handler
 const targetPath = args.path || Deno.cwd();
@@ -133,9 +141,10 @@ if (!targetPath || targetPath.trim() === '') {
 ```
 
 **Acceptance Criteria:**
-- `at init` without arguments initializes in current directory
-- `at init .` also works
-- `at init /path/to/dir` still works as before
+
+- `algo-trainer init` without arguments initializes in current directory
+- `algo-trainer init .` also works
+- `algo-trainer init /path/to/dir` still works as before
 
 **Estimated Effort:** 30 minutes
 
@@ -145,6 +154,7 @@ if (!targetPath || targetPath.trim() === '') {
 
 **Severity:** Medium
 **Files to Modify:**
+
 - `src/cli/commands/challenge.ts`
 - `src/cli/commands/hint.ts`
 - `src/cli/commands/complete.ts`
@@ -160,13 +170,16 @@ Should show "Workspace not initialized" (exit code 4)
 Problem database loads with 0 problems when no workspace exists, causing the wrong error path to execute.
 
 **Implementation:**
+
 ```typescript
 // Add workspace check before problem operations
 export async function requireWorkspace(): Promise<WorkspaceInfo> {
   const workspacePath = await getWorkspacePath();
 
-  if (!workspacePath || !await exists(workspacePath)) {
-    throw new WorkspaceError('Workspace not initialized. Run "at init" first.');
+  if (!workspacePath || !(await exists(workspacePath))) {
+    throw new WorkspaceError(
+      'Workspace not initialized. Run "algo-trainer init" first.',
+    );
   }
 
   return loadWorkspaceInfo(workspacePath);
@@ -186,9 +199,10 @@ try {
 ```
 
 **Acceptance Criteria:**
+
 - Commands show "Workspace not initialized" when no workspace
 - Exit code is 4 (WORKSPACE_ERROR) not 5 (PROBLEM_ERROR)
-- Error message guides user to run `at init`
+- Error message guides user to run `algo-trainer init`
 
 **Estimated Effort:** 1 hour
 
@@ -202,26 +216,30 @@ try {
 **Files to Modify:** `src/cli/commands/init.ts`
 
 **Current Behavior:**
+
 ```bash
 algo-trainer init /existing/workspace  # Shows info message, exits with code 0
 ```
 
 **Expected Behavior:**
+
 ```bash
 algo-trainer init /existing/workspace  # Shows warning, exits with code 3 (CONFIG_ERROR)
 ```
 
 **Implementation:**
+
 ```typescript
 // In init command
-if (await workspaceExists(targetPath) && !args.force) {
+if ((await workspaceExists(targetPath)) && !args.force) {
   logInfo(`Workspace already initialized at ${targetPath}`);
   logInfo('Use --force to reinitialize');
-  return exitWithCode(ExitCode.CONFIG_ERROR);  // Exit code 3
+  return exitWithCode(ExitCode.CONFIG_ERROR); // Exit code 3
 }
 ```
 
 **Acceptance Criteria:**
+
 - Returns exit code 3 when workspace already exists (without --force)
 - Message still informative but treated as an error condition
 - Scripts can detect this condition via exit code
@@ -236,26 +254,30 @@ if (await workspaceExists(targetPath) && !args.force) {
 **Files to Modify:** `src/cli/commands/hint.ts`
 
 **Current Behavior:**
+
 ```bash
 algo-trainer hint --level 99  # Shows error message, exits with code 0
 ```
 
 **Expected Behavior:**
+
 ```bash
 algo-trainer hint --level 99  # Shows error message, exits with code 2 (USAGE_ERROR)
 ```
 
 **Implementation:**
+
 ```typescript
 // In hint command validation
 const level = parseInt(args.level);
 if (isNaN(level) || level < 1 || level > 3) {
   logError('Invalid hint level. Must be 1, 2, or 3');
-  return exitWithCode(ExitCode.USAGE_ERROR);  // Exit code 2
+  return exitWithCode(ExitCode.USAGE_ERROR); // Exit code 2
 }
 ```
 
 **Acceptance Criteria:**
+
 - Invalid hint levels return exit code 2
 - Valid levels are 1, 2, 3 only
 - Clear error message about valid range
@@ -268,20 +290,24 @@ if (isNaN(level) || level < 1 || level > 3) {
 
 **Severity:** Low
 **Files to Modify:**
+
 - `src/cli/env.ts` or environment loading module
 - `src/cli/main.ts` (initialization)
 
 **Current Behavior:**
+
 ```bash
-AT_LANGUAGE=invalid at list  # Shows warning, continues with exit 0
+AT_LANGUAGE=invalid algo-trainer list  # Shows warning, continues with exit 0
 ```
 
 **Expected Behavior:**
+
 ```bash
-AT_LANGUAGE=invalid at list  # Shows error, exits with code 2 (USAGE_ERROR)
+AT_LANGUAGE=invalid algo-trainer list  # Shows error, exits with code 2 (USAGE_ERROR)
 ```
 
 **Implementation:**
+
 ```typescript
 // In environment variable validation
 export function validateEnvironmentVariables(): void {
@@ -290,7 +316,7 @@ export function validateEnvironmentVariables(): void {
   if (language && !VALID_LANGUAGES.includes(language)) {
     logError(`Invalid AT_LANGUAGE: ${language}`);
     logError(`Valid languages: ${VALID_LANGUAGES.join(', ')}`);
-    Deno.exit(ExitCode.USAGE_ERROR);  // Exit code 2
+    Deno.exit(ExitCode.USAGE_ERROR); // Exit code 2
   }
 
   // Validate other env vars...
@@ -301,6 +327,7 @@ validateEnvironmentVariables();
 ```
 
 **Acceptance Criteria:**
+
 - Invalid environment variables cause immediate exit with code 2
 - Clear error message showing valid values
 - Validation happens before any command execution
@@ -315,35 +342,40 @@ validateEnvironmentVariables();
 
 **Severity:** Low
 **Files to Modify:**
+
 - `src/cli/commands/list.ts`
 - `src/core/problems/manager.ts` (if filtering logic is there)
 
 **Current Behavior:**
+
 ```bash
 algo-trainer list -t array  # Shows all 16 problems instead of filtered subset
 ```
 
 **Expected Behavior:**
+
 ```bash
 algo-trainer list -t array  # Shows only problems tagged with "array"
 ```
 
 **Investigation Steps:**
+
 1. Check if all problems actually have the "array" tag (data issue)
 2. Verify tag filtering logic in list command
 3. Check if filter is being applied correctly
 
 **Implementation:**
+
 ```typescript
 // First, verify the data
 const problems = await loadProblems();
-const arrayProblems = problems.filter(p => p.tags?.includes('array'));
+const arrayProblems = problems.filter((p) => p.tags?.includes('array'));
 console.log(`Found ${arrayProblems.length} problems with 'array' tag`);
 
 // Fix filtering if needed
 export function filterByTag(problems: Problem[], tag: string): Problem[] {
-  return problems.filter(problem =>
-    problem.tags && problem.tags.includes(tag.toLowerCase())
+  return problems.filter(
+    (problem) => problem.tags && problem.tags.includes(tag.toLowerCase()),
   );
 }
 
@@ -357,6 +389,7 @@ if (args.tag) {
 ```
 
 **Acceptance Criteria:**
+
 - Tag filtering returns only problems with specified tag
 - Case-insensitive tag matching
 - Clear message when no problems match tag
@@ -372,6 +405,7 @@ if (args.tag) {
 
 **Severity:** High (Prevents regression of critical issue)
 **Files to Create/Modify:**
+
 - `tests/build/binary_test.ts` (new)
 - `.github/workflows/build.yml` (if using CI)
 
@@ -379,14 +413,15 @@ if (args.tag) {
 Ensure the binary includes all necessary data files and works standalone.
 
 **Test Implementation:**
+
 ```typescript
 // tests/build/binary_test.ts
-Deno.test("Binary includes problem data", async () => {
+Deno.test('Binary includes problem data', async () => {
   // Build the binary
   const buildProcess = await Deno.run({
-    cmd: ["deno", "task", "build"],
-    stdout: "piped",
-    stderr: "piped",
+    cmd: ['deno', 'task', 'build'],
+    stdout: 'piped',
+    stderr: 'piped',
   });
 
   const status = await buildProcess.status();
@@ -394,37 +429,38 @@ Deno.test("Binary includes problem data", async () => {
 
   // Test binary can list problems
   const listProcess = await Deno.run({
-    cmd: ["./bin/algo-trainer", "list", "--json"],
-    stdout: "piped",
+    cmd: ['./bin/algo-trainer', 'list', '--json'],
+    stdout: 'piped',
   });
 
   const output = await listProcess.output();
   const problems = JSON.parse(new TextDecoder().decode(output));
 
-  assertNotEquals(problems.length, 0, "Binary should include problem data");
-  assert(problems.length > 10, "Should have multiple problems");
+  assertNotEquals(problems.length, 0, 'Binary should include problem data');
+  assert(problems.length > 10, 'Should have multiple problems');
 });
 
-Deno.test("Binary works without source files", async () => {
+Deno.test('Binary works without source files', async () => {
   // Create temp directory
   const tempDir = await Deno.makeTempDir();
 
   // Copy only the binary
-  await Deno.copyFile("./bin/algo-trainer", `${tempDir}/at`);
+  await Deno.copyFile('./bin/algo-trainer', `${tempDir}/at`);
 
   // Run from temp directory (no source files)
   const process = await Deno.run({
-    cmd: [`${tempDir}/at`, "list"],
+    cmd: [`${tempDir}/at`, 'list'],
     cwd: tempDir,
-    stdout: "piped",
+    stdout: 'piped',
   });
 
   const status = await process.status();
-  assertEquals(status.success, true, "Binary should work standalone");
+  assertEquals(status.success, true, 'Binary should work standalone');
 });
 ```
 
 **Acceptance Criteria:**
+
 - Test verifies binary includes data files
 - Test runs in CI/CD pipeline
 - Catches regression if build process breaks
@@ -439,30 +475,31 @@ Deno.test("Binary works without source files", async () => {
 **Files to Create/Modify:** `tests/cli/exit_codes_test.ts`
 
 **Test Cases:**
+
 ```typescript
 // Test workspace already initialized
-Deno.test("Init returns code 3 for existing workspace", async () => {
+Deno.test('Init returns code 3 for existing workspace', async () => {
   const tempDir = await Deno.makeTempDir();
 
   // First init succeeds
-  const init1 = await runCommand(["init", tempDir]);
+  const init1 = await runCommand(['init', tempDir]);
   assertEquals(init1.code, 0);
 
   // Second init without force fails with code 3
-  const init2 = await runCommand(["init", tempDir]);
+  const init2 = await runCommand(['init', tempDir]);
   assertEquals(init2.code, 3);
 });
 
 // Test invalid hint level
-Deno.test("Hint returns code 2 for invalid level", async () => {
-  const result = await runCommand(["hint", "--level", "99"]);
+Deno.test('Hint returns code 2 for invalid level', async () => {
+  const result = await runCommand(['hint', '--level', '99']);
   assertEquals(result.code, 2);
 });
 
 // Test invalid environment variable
-Deno.test("Invalid env var causes exit code 2", async () => {
+Deno.test('Invalid env var causes exit code 2', async () => {
   const result = await runCommand([], {
-    env: { AT_LANGUAGE: "invalid-lang" }
+    env: { AT_LANGUAGE: 'invalid-lang' },
   });
   assertEquals(result.code, 2);
 });
@@ -478,12 +515,14 @@ Deno.test("Invalid env var causes exit code 2", async () => {
 **Files to Modify:** Manual QA test documentation
 
 **Updates Required:**
-1. Add test case for `at init` without arguments
+
+1. Add test case for `algo-trainer init` without arguments
 2. Update expected exit codes in test cases
 3. Add regression tests for fixed issues
 4. Document the binary build verification process
 
 **New Test Cases to Add:**
+
 - TC-010a: Init in current directory without argument
 - TC-BINARY-001: Verify binary includes data files
 - TC-EXIT-001: Verify all error exit codes
@@ -497,21 +536,26 @@ Deno.test("Invalid env var causes exit code 2", async () => {
 Track progress as tasks are completed:
 
 ### Critical Priority
+
 - [x] **FIX-001**: Fix binary compilation to include data files (✅ COMPLETED - uses generate-problems.ts script)
 
 ### High Priority
+
 - [x] **FIX-010**: Allow init without path argument (✅ COMPLETED - defaults to cwd when workspace is empty)
 - [x] **FIX-030**: Fix workspace detection error message (✅ COMPLETED - added requireWorkspace checks)
 
 ### Medium Priority
+
 - [x] **FIX-012**: Fix workspace already initialized exit code (✅ COMPLETED - returns CONFIG_ERROR)
 - [x] **FIX-046**: Fix invalid hint level exit code (✅ COMPLETED - validates level and returns USAGE_ERROR)
 - [x] **FIX-117**: Fix invalid environment variable exit code (✅ COMPLETED - validates env vars early in main)
 
 ### Low Priority
+
 - [x] **FIX-063**: Investigate and fix tag filtering (✅ COMPLETED - added -t/--tag flag support)
 
 ### Testing
+
 - [ ] **TEST-001**: Add binary compilation tests
 - [ ] **TEST-002**: Add exit code validation tests
 - [ ] **TEST-003**: Update manual QA test suite
@@ -521,21 +565,25 @@ Track progress as tasks are completed:
 ## Implementation Order Recommendation
 
 **Day 1: Critical Fix (2-3 hours)**
+
 1. FIX-001: Binary compilation (MUST fix first)
 2. TEST-001: Binary tests (prevent regression)
 
 **Day 2: Core Functionality (2-3 hours)**
+
 1. FIX-010: Init without path
 2. FIX-030: Workspace detection
 3. Quick smoke test of both fixes
 
 **Day 3: Exit Codes (2 hours)**
+
 1. FIX-012: Already initialized exit code
 2. FIX-046: Invalid hint level exit code
 3. FIX-117: Invalid env var exit code
 4. TEST-002: Exit code tests
 
 **Day 4: Feature Investigation (1-2 hours)**
+
 1. FIX-063: Tag filtering investigation and fix
 2. TEST-003: Update QA suite
 3. Full regression test
@@ -570,6 +618,7 @@ rm -rf ~/.config/algo-trainer
 ### Automated Test Suite
 
 Run after each fix:
+
 ```bash
 deno test tests/cli/  # Unit tests
 deno test tests/build/  # Binary tests
@@ -624,14 +673,14 @@ All fixes are considered complete when:
 
 ## Total Estimated Effort
 
-| Category | Tasks | Estimated Time |
-|----------|-------|----------------|
-| Critical Fix | 1 | 2-3 hours |
-| High Priority | 2 | 1.5 hours |
-| Medium Priority | 3 | 1.75 hours |
-| Low Priority | 1 | 1 hour |
-| Testing | 3 | 3.5 hours |
-| **Total** | **10** | **9.75-10.75 hours** |
+| Category        | Tasks  | Estimated Time       |
+| --------------- | ------ | -------------------- |
+| Critical Fix    | 1      | 2-3 hours            |
+| High Priority   | 2      | 1.5 hours            |
+| Medium Priority | 3      | 1.75 hours           |
+| Low Priority    | 1      | 1 hour               |
+| Testing         | 3      | 3.5 hours            |
+| **Total**       | **10** | **9.75-10.75 hours** |
 
 This can be completed in approximately 2-3 days of focused work, with the critical binary fix being the absolute top priority.
 
@@ -640,19 +689,23 @@ This can be completed in approximately 2-3 days of focused work, with the critic
 ## Notes for Implementers
 
 ### Key Files to Review First
+
 - `deno.json` - Build configuration
 - `src/data/loader.ts` - How problems are loaded
 - `src/cli/commands/*.ts` - Command implementations
 - `src/cli/exit-codes.ts` - Exit code definitions (if exists)
 
 ### Testing Each Fix
+
 After implementing each fix, verify:
+
 1. The specific issue is resolved
 2. No other functionality is broken
 3. Tests pass
 4. Exit codes are correct
 
 ### Communication
+
 - Update this document as tasks are completed
 - Note any discoveries or complications
 - Create issues for any new bugs found

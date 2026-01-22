@@ -25,20 +25,29 @@ function showHelp(): void {
   showCommandHelp({
     name: 'hint',
     description: 'Get progressive hints for a problem',
-    usage: [
-      'at hint <slug>',
-      'at hint <id>',
-    ],
+    usage: ['algo-trainer hint <slug>', 'algo-trainer hint <id>'],
     options: [
       { flags: '--level <n>', description: 'Get specific hint level (1-3)' },
       { flags: '-a, --all', description: 'Show all available hints' },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at hint two-sum', description: 'Get next hint for "two-sum"' },
-      { command: 'at hint 1', description: 'Get next hint by problem ID' },
-      { command: 'at hint two-sum --level 2', description: 'Get hint level 2' },
-      { command: 'at hint two-sum --all', description: 'Show all hints' },
+      {
+        command: 'algo-trainer hint two-sum',
+        description: 'Get next hint for "two-sum"',
+      },
+      {
+        command: 'algo-trainer hint 1',
+        description: 'Get next hint by problem ID',
+      },
+      {
+        command: 'algo-trainer hint two-sum --level 2',
+        description: 'Get hint level 2',
+      },
+      {
+        command: 'algo-trainer hint two-sum --all',
+        description: 'Show all hints',
+      },
     ],
   });
 }
@@ -62,7 +71,11 @@ export function extractHintOptions(args: Args): HintOptions {
  * Format and display a single hint
  */
 function displayHint(level: number, hint: string, isUsed: boolean): void {
-  const levelLabel = ['General Approach', 'Algorithm/Data Structure', 'Solution Strategy'][level];
+  const levelLabel = [
+    'General Approach',
+    'Algorithm/Data Structure',
+    'Solution Strategy',
+  ][level];
   const usedIndicator = isUsed ? '✓' : '•';
 
   logger.newline();
@@ -120,7 +133,9 @@ function displayHints(
   }
 
   // Progressive hint display: show the next hint that hasn't been used
-  const nextHintIndex = hints.findIndex((_, index) => !hintsUsed.includes(index));
+  const nextHintIndex = hints.findIndex(
+    (_, index) => !hintsUsed.includes(index),
+  );
 
   if (nextHintIndex === -1) {
     // All hints have been used, show summary
@@ -141,13 +156,19 @@ function displayHints(
   newHintsUsed.push(nextHintIndex);
 
   // Show progress
-  const progressBar = hints.map((_, i) => newHintsUsed.includes(i) ? '█' : '░').join('');
+  const progressBar = hints
+    .map((_, i) => (newHintsUsed.includes(i) ? '█' : '░'))
+    .join('');
   logger.newline();
-  logger.log(`Progress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
+  logger.log(
+    `Progress: ${progressBar} (${newHintsUsed.length}/${hints.length})`,
+  );
 
   if (newHintsUsed.length < hints.length) {
     logger.newline();
-    logger.log(`💬 Use 'at hint --level ${nextHintIndex + 2}' for the next hint`);
+    logger.log(
+      `💬 Use 'algo-trainer hint --level ${nextHintIndex + 2}' for the next hint`,
+    );
   }
 
   return newHintsUsed.sort((a, b) => a - b);
@@ -179,7 +200,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
       // This would use the same detection mechanism as CLI-001 in shared.ts
       // to identify which problem the user is currently working on
       // Decision: Deferred to post-v1.0 as explicit problem identifiers work well
-      logger.error('Problem slug is required. Usage: at hint <slug>');
+      logger.error('Problem slug is required. Usage: algo-trainer hint <slug>');
       return {
         success: false,
         exitCode: ExitCode.USAGE_ERROR,
@@ -191,7 +212,9 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const problem = resolveProblem(problemSlug, manager);
     if (!problem) {
       logger.error(`Problem '${problemSlug}' not found.`);
-      logger.info('Use "at list" to see available problems, or provide a valid problem ID or slug');
+      logger.info(
+        'Use "algo-trainer list" to see available problems, or provide a valid problem ID or slug',
+      );
       return {
         success: false,
         exitCode: ExitCode.PROBLEM_ERROR,
@@ -238,7 +261,12 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
 
     // Try to get AI contextual hint if enabled and problem exists in workspace
     let aiHintShown = false;
-    if (config.aiEnabled && exists && !options.all && options.level === undefined) {
+    if (
+      config.aiEnabled &&
+      exists &&
+      !options.all &&
+      options.level === undefined
+    ) {
       try {
         const session = new TeachingSession(problem.slug);
         const engine = new TeachingEngine(session);
@@ -261,7 +289,9 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
             logger.log(aiHint);
             logger.separator(50);
             logger.newline();
-            logger.log('💬 For more structured hints, use --all or --level flags');
+            logger.log(
+              '💬 For more structured hints, use --all or --level flags',
+            );
             logger.newline();
             aiHintShown = true;
           }

@@ -52,7 +52,7 @@ export const ExitCode = {
 /**
  * Type for exit code values
  */
-export type ExitCodeValue = typeof ExitCode[keyof typeof ExitCode];
+export type ExitCodeValue = (typeof ExitCode)[keyof typeof ExitCode];
 
 /**
  * Exit immediately with the specified exit code and optional message
@@ -66,7 +66,7 @@ export type ExitCodeValue = typeof ExitCode[keyof typeof ExitCode];
  * @example
  * ```typescript
  * if (!await isWorkspaceInitialized(workspace)) {
- *   exitWithCode(ExitCode.WORKSPACE_ERROR, 'Workspace not initialized. Run "at init" first.');
+ *   exitWithCode(ExitCode.WORKSPACE_ERROR, 'Workspace not initialized. Run "algo-trainer init" first.');
  * }
  * ```
  */
@@ -119,7 +119,8 @@ export function getExitCodeForError(error: unknown): ExitCodeValue {
         if (error instanceof Error) {
           const message = error.message.toLowerCase();
           if (
-            message.includes('permission') || message.includes('access denied') ||
+            message.includes('permission') ||
+            message.includes('access denied') ||
             message.includes('eacces')
           ) {
             return ExitCode.PERMISSION_ERROR;

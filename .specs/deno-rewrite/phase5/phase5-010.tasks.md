@@ -167,23 +167,23 @@ export function outputData(data: string | object): void;
 
 The Logger class encapsulates all functionality from the current standalone functions:
 
-| Current Function | Logger Method | Behavior |
-|-----------------|---------------|----------|
-| `logSuccess(msg)` | `logger.success(msg)` | Green + ✅ prefix |
-| `logError(msg, details?)` | `logger.error(msg, details?)` | Red + ❌ prefix |
-| `logErrorObject(error)` | `logger.errorObject(error)` | Formatted error + stack in verbose |
-| `logWarning(msg)` | `logger.warn(msg)` | Yellow + ⚠️ prefix |
-| `logInfo(msg)` | `logger.info(msg)` | Cyan + ℹ️ prefix, quiet-aware |
-| `logDebug(msg)` | `logger.debug(msg)` | Dim + 🐛 prefix, verbose-only |
-| `logProgress(msg)` | `logger.progress(msg)` | Blue + 🔄 prefix, quiet-aware |
-| `exitWithError(msg)` | `logger.error(msg)` + `Deno.exit()` | Keep as standalone or add method |
-| N/A (new) | `logger.log(msg)` | Plain output to stderr |
-| N/A (new) | `logger.newline()` | Empty line to stderr |
-| N/A (new) | `logger.keyValue(k,v,w)` | Formatted key-value |
-| N/A (new) | `logger.section(title)` | Section header |
-| N/A (new) | `logger.separator(w)` | Horizontal line |
-| N/A (new) | `logger.box(t,c)` | Titled content box |
-| N/A (new) | `logger.table(d,c)` | Formatted table |
+| Current Function          | Logger Method                       | Behavior                           |
+| ------------------------- | ----------------------------------- | ---------------------------------- |
+| `logSuccess(msg)`         | `logger.success(msg)`               | Green + ✅ prefix                  |
+| `logError(msg, details?)` | `logger.error(msg, details?)`       | Red + ❌ prefix                    |
+| `logErrorObject(error)`   | `logger.errorObject(error)`         | Formatted error + stack in verbose |
+| `logWarning(msg)`         | `logger.warn(msg)`                  | Yellow + ⚠️ prefix                 |
+| `logInfo(msg)`            | `logger.info(msg)`                  | Cyan + ℹ️ prefix, quiet-aware      |
+| `logDebug(msg)`           | `logger.debug(msg)`                 | Dim + 🐛 prefix, verbose-only      |
+| `logProgress(msg)`        | `logger.progress(msg)`              | Blue + 🔄 prefix, quiet-aware      |
+| `exitWithError(msg)`      | `logger.error(msg)` + `Deno.exit()` | Keep as standalone or add method   |
+| N/A (new)                 | `logger.log(msg)`                   | Plain output to stderr             |
+| N/A (new)                 | `logger.newline()`                  | Empty line to stderr               |
+| N/A (new)                 | `logger.keyValue(k,v,w)`            | Formatted key-value                |
+| N/A (new)                 | `logger.section(title)`             | Section header                     |
+| N/A (new)                 | `logger.separator(w)`               | Horizontal line                    |
+| N/A (new)                 | `logger.box(t,c)`                   | Titled content box                 |
+| N/A (new)                 | `logger.table(d,c)`                 | Formatted table                    |
 
 **Subtasks:**
 
@@ -274,11 +274,13 @@ All migrations now use `logger.*` methods instead of standalone `log*()` functio
 **Issue:** Direct `console.error(error)`
 
 **Before:**
+
 ```typescript
 console.error(error);
 ```
 
 **After:**
+
 ```typescript
 import { logger } from './utils/output.ts';
 // ...
@@ -298,11 +300,13 @@ logger.errorObject(error);
 **Issue:** Direct `console.warn()` calls
 
 **Before:**
+
 ```typescript
 console.warn(`[env] ...`);
 ```
 
 **After:**
+
 ```typescript
 import { logger } from '../utils/output.ts';
 // ...
@@ -320,6 +324,7 @@ logger.warn('[env] ...');
 
 **Lines:** 188, 200, 209
 **Issues:**
+
 - Line 188: `console.log(JSON.stringify(...))` - machine output, use `outputData()`
 - Line 200: `console.log(table)` - human output table
 - Line 209: `console.error(...)` - error message
@@ -337,10 +342,12 @@ logger.warn('[env] ...');
 
 **Lines:** 188-211, 245
 **Issues:**
+
 - Lines 188-211: Hardcoded key-value formatting with `console.error()`
 - Line 245: `console.log()` for get command output
 
 **Before:**
+
 ```typescript
 console.error(''); // Empty line
 console.error('  language:            ' + config.language);
@@ -348,6 +355,7 @@ console.error('  language:            ' + config.language);
 ```
 
 **After:**
+
 ```typescript
 import { logger, outputData } from '../../utils/output.ts';
 // ...
@@ -373,6 +381,7 @@ logger.section('Preferences');
 
 **Lines:** 161, 174-182
 **Issues:**
+
 - Line 161: `console.error()` for validation errors
 - Lines 174-182: `console.log()` for human-readable teaching info
 
@@ -388,6 +397,7 @@ logger.section('Preferences');
 
 **Lines:** 68-70, 91, 109, 122, 130, 136, 139, 205, 225-229, 235, 263
 **Issues:**
+
 - Multiple `console.log()` calls for hint display (human output)
 - Line 235: `console.warn()` for error note
 - Hardcoded separator formatting `'─'.repeat(50)`
@@ -424,6 +434,7 @@ logger.section('Preferences');
 
 **Lines:** 355, 369, 373, 382
 **Issues:**
+
 - Line 355: `console.error()` for workspace error
 - Line 369: `console.log(JSON.stringify(...))` - machine output
 - Line 373: `console.log(table)` - human output
@@ -467,6 +478,7 @@ logger.section('Preferences');
 
 **Lines:** 228-273, 282
 **Issues:**
+
 - Lines 228-273: Multiple `console.error()` for problem display formatting
 - Line 282: `console.warn()` for teaching guidance error
 
@@ -496,6 +508,7 @@ logger.section('Preferences');
 
 **Lines:** 84, 93
 **Issues:**
+
 - Line 84: `console.error()` for help display
 - Line 93: `console.log()` for version display
 
@@ -555,13 +568,14 @@ logger.section('Preferences');
 
 ---
 
-### PHASE5-010-027: Update Remaining Files Using log*() Functions
+### PHASE5-010-027: Update Remaining Files Using log\*() Functions
 
 **Priority:** Medium
 
 Search for and update any files still using the deprecated standalone `log*()` functions.
 
 **Files to check:**
+
 - Any file importing `logError`, `logWarning`, `logInfo`, `logDebug`, `logSuccess`, `logProgress`
 
 **Subtasks:**
@@ -595,10 +609,10 @@ Verify that output goes to correct streams.
 
 **Subtasks:**
 
-- [ ] PHASE5-010-031a: Test `at list --json 2>/dev/null | jq .` works (JSON to stdout)
-- [ ] PHASE5-010-031b: Test `at list 2>&1 >/dev/null` shows human output only (stderr)
-- [ ] PHASE5-010-031c: Test `at config show --json 2>/dev/null` works (JSON to stdout)
-- [ ] PHASE5-010-031d: Test `at --version 2>/dev/null` outputs version to stdout
+- [ ] PHASE5-010-031a: Test `algo-trainer list --json 2>/dev/null | jq .` works (JSON to stdout)
+- [ ] PHASE5-010-031b: Test `algo-trainer list 2>&1 >/dev/null` shows human output only (stderr)
+- [ ] PHASE5-010-031c: Test `algo-trainer config show --json 2>/dev/null` works (JSON to stdout)
+- [ ] PHASE5-010-031d: Test `algo-trainer --version 2>/dev/null` outputs version to stdout
 
 ---
 
@@ -619,33 +633,33 @@ Verify that output goes to correct streams.
 ### New Code (Blocking)
 
 - [ ] PHASE5-010-001: Create Logger class with all methods
-- [ ] PHASE5-010-002: Deprecate standalone log*() functions
+- [ ] PHASE5-010-002: Deprecate standalone log\*() functions
 - [ ] PHASE5-010-003: Update exit functions to use logger
 
 ### File Migrations (17 files)
 
-| Task | File | Console Calls | Status |
-|------|------|---------------|--------|
-| PHASE5-010-010 | `src/main.ts` | 1 | ⬜ |
-| PHASE5-010-011 | `src/cli/env.ts` | 3 | ⬜ |
-| PHASE5-010-012 | `src/cli/commands/list.ts` | 3 | ⬜ |
-| PHASE5-010-013 | `src/cli/commands/config.ts` | 14+ | ⬜ |
-| PHASE5-010-014 | `src/cli/commands/teach.ts` | 6 | ⬜ |
-| PHASE5-010-015 | `src/cli/commands/hint.ts` | 15+ | ⬜ |
-| PHASE5-010-016 | `src/core/ai/triggers.ts` | 3 | ⬜ |
-| PHASE5-010-017 | `src/cli/commands/progress.ts` | 4 | ⬜ |
-| PHASE5-010-018 | `src/cli/commands/init.ts` | 5 | ⬜ |
-| PHASE5-010-019 | `src/cli/commands/help.ts` | 1 | ⬜ |
-| PHASE5-010-020 | `src/cli/commands/challenge.ts` | 12 | ⬜ |
-| PHASE5-010-021 | `src/cli/commands/complete.ts` | 3 | ⬜ |
-| PHASE5-010-022 | `src/cli/main.ts` | 2 | ⬜ |
-| PHASE5-010-023 | `src/cli/exit-codes.ts` | 1 | ⬜ |
-| PHASE5-010-024 | `src/core/problem/manager.ts` | 1 | ⬜ |
-| PHASE5-010-025 | `src/core/workspace/watcher.ts` | 3 | ⬜ |
-| PHASE5-010-026 | `src/core/ai/engine.ts` | 1 | ⬜ |
-| PHASE5-010-027 | Files using log*() functions | TBD | ⬜ |
+| Task           | File                            | Console Calls | Status |
+| -------------- | ------------------------------- | ------------- | ------ |
+| PHASE5-010-010 | `src/main.ts`                   | 1             | ⬜     |
+| PHASE5-010-011 | `src/cli/env.ts`                | 3             | ⬜     |
+| PHASE5-010-012 | `src/cli/commands/list.ts`      | 3             | ⬜     |
+| PHASE5-010-013 | `src/cli/commands/config.ts`    | 14+           | ⬜     |
+| PHASE5-010-014 | `src/cli/commands/teach.ts`     | 6             | ⬜     |
+| PHASE5-010-015 | `src/cli/commands/hint.ts`      | 15+           | ⬜     |
+| PHASE5-010-016 | `src/core/ai/triggers.ts`       | 3             | ⬜     |
+| PHASE5-010-017 | `src/cli/commands/progress.ts`  | 4             | ⬜     |
+| PHASE5-010-018 | `src/cli/commands/init.ts`      | 5             | ⬜     |
+| PHASE5-010-019 | `src/cli/commands/help.ts`      | 1             | ⬜     |
+| PHASE5-010-020 | `src/cli/commands/challenge.ts` | 12            | ⬜     |
+| PHASE5-010-021 | `src/cli/commands/complete.ts`  | 3             | ⬜     |
+| PHASE5-010-022 | `src/cli/main.ts`               | 2             | ⬜     |
+| PHASE5-010-023 | `src/cli/exit-codes.ts`         | 1             | ⬜     |
+| PHASE5-010-024 | `src/core/problem/manager.ts`   | 1             | ⬜     |
+| PHASE5-010-025 | `src/core/workspace/watcher.ts` | 3             | ⬜     |
+| PHASE5-010-026 | `src/core/ai/engine.ts`         | 1             | ⬜     |
+| PHASE5-010-027 | Files using log\*() functions   | TBD           | ⬜     |
 
-**Total Changes:** ~78 console calls + all log*() function calls
+**Total Changes:** ~78 console calls + all log\*() function calls
 
 ### Validation
 
@@ -688,7 +702,7 @@ Verify that output goes to correct streams.
    - PHASE5-010-026: ai/engine.ts
 
 6. **Phase F - Cleanup deprecated usage**
-   - PHASE5-010-027: Update any remaining log*() function usage
+   - PHASE5-010-027: Update any remaining log\*() function usage
 
 7. **Phase G - Validation**
    - PHASE5-010-030: Verify no console or deprecated usage
@@ -701,23 +715,23 @@ Verify that output goes to correct streams.
 
 ### Logger Methods Summary
 
-| Method | Prefix | Color | Verbosity | Stream |
-|--------|--------|-------|-----------|--------|
-| `logger.success(msg)` | ✅ | green | always | stderr |
-| `logger.error(msg, details?)` | ❌ | red | always | stderr |
-| `logger.errorObject(error)` | ❌ | red | always (+stack in verbose) | stderr |
-| `logger.warn(msg)` | ⚠️ | yellow | always | stderr |
-| `logger.info(msg)` | ℹ️ | cyan | normal, verbose | stderr |
-| `logger.debug(msg)` | 🐛 | dim | verbose only | stderr |
-| `logger.progress(msg)` | 🔄 | blue | normal, verbose | stderr |
-| `logger.log(msg)` | (none) | (none) | always | stderr |
-| `logger.newline()` | - | - | always | stderr |
-| `logger.keyValue(k,v,w)` | - | - | always | stderr |
-| `logger.section(title)` | - | - | always | stderr |
-| `logger.separator(w,c)` | - | - | always | stderr |
-| `logger.box(t,c)` | - | - | always | stderr |
-| `logger.table(d,cfg)` | - | - | always | stderr |
-| `outputData(data)` | - | - | always | **stdout** |
+| Method                        | Prefix | Color  | Verbosity                  | Stream     |
+| ----------------------------- | ------ | ------ | -------------------------- | ---------- |
+| `logger.success(msg)`         | ✅     | green  | always                     | stderr     |
+| `logger.error(msg, details?)` | ❌     | red    | always                     | stderr     |
+| `logger.errorObject(error)`   | ❌     | red    | always (+stack in verbose) | stderr     |
+| `logger.warn(msg)`            | ⚠️     | yellow | always                     | stderr     |
+| `logger.info(msg)`            | ℹ️     | cyan   | normal, verbose            | stderr     |
+| `logger.debug(msg)`           | 🐛     | dim    | verbose only               | stderr     |
+| `logger.progress(msg)`        | 🔄     | blue   | normal, verbose            | stderr     |
+| `logger.log(msg)`             | (none) | (none) | always                     | stderr     |
+| `logger.newline()`            | -      | -      | always                     | stderr     |
+| `logger.keyValue(k,v,w)`      | -      | -      | always                     | stderr     |
+| `logger.section(title)`       | -      | -      | always                     | stderr     |
+| `logger.separator(w,c)`       | -      | -      | always                     | stderr     |
+| `logger.box(t,c)`             | -      | -      | always                     | stderr     |
+| `logger.table(d,cfg)`         | -      | -      | always                     | stderr     |
+| `outputData(data)`            | -      | -      | always                     | **stdout** |
 
 ---
 

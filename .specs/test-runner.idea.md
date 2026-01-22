@@ -104,7 +104,7 @@ Error: C++ compiler not found.
 Install with: apt install g++ (Linux) / brew install gcc (macOS)
 ```
 
-Consider: `at doctor` command to check all toolchain availability.
+Consider: `algo-trainer doctor` command to check all toolchain availability.
 
 ## Test Case Handling
 
@@ -171,7 +171,7 @@ const TIMEOUT_MS = 10_000; // 10 seconds default
 ## Output Format
 
 ```
-$ at run two-sum
+$ algo-trainer run two-sum
 
 Running two-sum (C++)...
 Compiling: g++ -O2 -o solution solution.cpp
@@ -224,7 +224,7 @@ src/
 ## Open Questions
 
 1. **Should we validate solutions before marking complete?**
-   - `at complete` could require passing tests, or just warn
+   - `algo-trainer complete` could require passing tests, or just warn
 
 2. **How to handle function signatures?**
    - LeetCode uses class-based `Solution` with specific method names
@@ -232,7 +232,7 @@ src/
 
 3. **Do we support custom test cases?**
    - Let students add their own test cases to a file
-   - `at run --custom tests.json`
+   - `algo-trainer run --custom tests.json`
 
 4. **What about problems requiring data structures?**
    - Linked lists, trees, graphs need serialization/deserialization
@@ -244,7 +244,7 @@ src/
 
 6. **Performance benchmarking?**
    - Show execution time, compare to expected complexity
-   - `at run --bench` to run multiple iterations
+   - `algo-trainer run --bench` to run multiple iterations
 
 ## MVP Scope
 
@@ -254,7 +254,7 @@ For initial implementation, consider:
 2. **Example test cases only** - Use existing `problem.examples` data
 3. **Exact output matching** - Simple comparison, add modes later
 4. **Basic timeout** - 10 second default
-5. **Single `at run` command** - Keep it simple
+5. **Single `algo-trainer run` command** - Keep it simple
 
 Then iterate to add:
 

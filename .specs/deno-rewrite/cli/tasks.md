@@ -181,7 +181,7 @@ These commands can be implemented in parallel once Layer 0 is complete.
 
 **Tasks:**
 
-1. Parse arguments: `at init [path] [--force]`
+1. Parse arguments: `algo-trainer init [path] [--force]`
 2. Resolve workspace path (arg > config > cwd)
 3. Check if already initialized (prompt to overwrite if `--force`)
 4. Call `initWorkspace()` from core module
@@ -214,10 +214,10 @@ algo-trainer init [path]        Initialize workspace at path (default: current d
 
 **Subcommands:**
 
-1. `at config list` - Show all config values
-2. `at config get <key>` - Get specific value
-3. `at config set <key> <value>` - Set value
-4. `at config reset [key]` - Reset to defaults
+1. `algo-trainer config list` - Show all config values
+2. `algo-trainer config get <key>` - Get specific value
+3. `algo-trainer config set <key> <value>` - Set value
+4. `algo-trainer config reset [key]` - Reset to defaults
 
 **Tasks:**
 
@@ -475,7 +475,7 @@ Options:
 
 ```typescript
 // In challenge command, if no difficulty specified:
-const difficulty = args.difficulty || await promptDifficulty();
+const difficulty = args.difficulty || (await promptDifficulty());
 ```
 
 **Acceptance Criteria:**
@@ -503,7 +503,7 @@ const difficulty = args.difficulty || await promptDifficulty();
 
 1. Add `showHelp()` function to each command
 2. Include usage, options, and examples
-3. Handle `at <command> --help`
+3. Handle `algo-trainer <command> --help`
 4. Consistent formatting across all commands
 
 **Help Format:**
@@ -512,9 +512,9 @@ const difficulty = args.difficulty || await promptDifficulty();
 algo-trainer challenge - Start a new coding challenge
 
 USAGE:
-    at challenge [difficulty]
-    at challenge <slug>
-    at challenge --random
+    algo-trainer challenge [difficulty]
+    algo-trainer challenge <slug>
+    algo-trainer challenge --random
 
 OPTIONS:
     -d, --difficulty <level>  Filter by difficulty (easy, medium, hard)
@@ -524,9 +524,9 @@ OPTIONS:
     -h, --help                Show this help message
 
 EXAMPLES:
-    at challenge easy         Start an easy random challenge
-    at challenge two-sum      Start the 'two-sum' problem
-    at challenge -d medium    Start a medium difficulty challenge
+    algo-trainer challenge easy         Start an easy random challenge
+    algo-trainer challenge two-sum      Start the 'two-sum' problem
+    algo-trainer challenge -d medium    Start a medium difficulty challenge
 ```
 
 **Acceptance Criteria:**
@@ -777,7 +777,11 @@ try {
   // operation
 } catch (error) {
   if (error instanceof WorkspaceError) {
-    return { success: false, exitCode: ExitCode.WORKSPACE_ERROR, error: error.message };
+    return {
+      success: false,
+      exitCode: ExitCode.WORKSPACE_ERROR,
+      error: error.message,
+    };
   }
   throw error;
 }

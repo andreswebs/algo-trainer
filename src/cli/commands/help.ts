@@ -21,7 +21,7 @@ export interface CommandHelp {
  */
 export function showCommandHelp(help: CommandHelp): void {
   // Header
-  logger.log(`at ${help.name} - ${help.description}`);
+  logger.log(`algo-trainer ${help.name} - ${help.description}`);
   logger.newline();
 
   // Usage
@@ -36,7 +36,9 @@ export function showCommandHelp(help: CommandHelp): void {
     logger.log('OPTIONS:');
 
     // Calculate the maximum width needed for flags column
-    const maxFlagWidth = Math.max(...help.options.map(opt => opt.flags.length));
+    const maxFlagWidth = Math.max(
+      ...help.options.map((opt) => opt.flags.length),
+    );
     const flagWidth = Math.min(maxFlagWidth + 2, 35); // Cap at 35 for very long flags
 
     help.options.forEach((opt) => {
@@ -50,11 +52,15 @@ export function showCommandHelp(help: CommandHelp): void {
     logger.log('EXAMPLES:');
 
     // Calculate the maximum width needed for command column
-    const maxCommandWidth = Math.max(...help.examples.map(ex => ex.command.length));
+    const maxCommandWidth = Math.max(
+      ...help.examples.map((ex) => ex.command.length),
+    );
     const commandWidth = Math.min(maxCommandWidth + 2, 50); // Cap at 50 for very long commands
 
     help.examples.forEach((example) => {
-      logger.log(`    ${example.command.padEnd(commandWidth)} ${example.description}`);
+      logger.log(
+        `    ${example.command.padEnd(commandWidth)} ${example.description}`,
+      );
     });
     logger.newline();
   }

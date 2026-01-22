@@ -41,6 +41,7 @@ Replaced 5 generic `Error()` throws with typed errors:
   - After: `throw new ValidationError(\`Invalid template style: ${value}. Valid options: ${validOptions.join(', ')}\`, { key, value, validOptions })`
 
 **Added import:**
+
 ```typescript
 import { ConfigError, ValidationError } from '../../utils/errors.ts';
 ```
@@ -48,6 +49,7 @@ import { ConfigError, ValidationError } from '../../utils/errors.ts';
 ### 2. **src/cli/commands/shared.ts**
 
 **Lines 98-103:** Problem manager initialization error
+
 - Before: Generic `Error()` with technical message
 - After: `ProblemError` with actionable message:
   ```typescript
@@ -58,6 +60,7 @@ import { ConfigError, ValidationError } from '../../utils/errors.ts';
   ```
 
 **Added import:**
+
 ```typescript
 import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/errors.ts';
 ```
@@ -77,6 +80,7 @@ import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/er
 ### 4. **src/core/problem/database.ts**
 
 **Lines 128-141:** Duplicate ID error
+
 - Before: Used generic `Error()` for user-provided problems, `ProblemError` for built-in
 - After: Always use `ProblemError` with enhanced message for user problems:
   ```typescript
@@ -87,42 +91,55 @@ import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/er
   ```
 
 **Lines 143-156:** Duplicate slug error
+
 - Similar improvement to duplicate ID handling
 
 ### 5. **src/cli/commands/challenge.ts**
 
 **Line 122-124:** Problem not found error
+
 - Added actionable suggestion:
   ```typescript
   logger.error(`Problem not found: ${options.slug}`);
-  logger.info('Use "at list" to see available problems, or try a search with "at list -s <term>"');
+  logger.info(
+    'Use "algo-trainer list" to see available problems, or try a search with "algo-trainer list -s <term>"',
+  );
   ```
 
 ### 6. **src/cli/commands/teach.ts**
 
 **Line 115-117:** Problem not found error
+
 - Added actionable suggestion:
   ```typescript
   logger.error(`Problem '${options.problemSlug}' not found.`);
-  logger.info('Use "at list" to see available problems, or provide a valid problem ID or slug');
+  logger.info(
+    'Use "algo-trainer list" to see available problems, or provide a valid problem ID or slug',
+  );
   ```
 
 ### 7. **src/cli/commands/complete.ts**
 
 **Line 133-135:** Problem not found in workspace
+
 - Improved suggestion:
   ```typescript
   logger.error(`Problem '${problemSlug}' not found in workspace`);
-  logger.info('Use "at challenge <slug>" to start working on this problem first');
+  logger.info(
+    'Use "algo-trainer challenge <slug>" to start working on this problem first',
+  );
   ```
 
 ### 8. **src/cli/commands/hint.ts**
 
 **Line 190-196:** Problem not found error
+
 - Added actionable suggestion:
   ```typescript
   logger.error(`Problem '${problemSlug}' not found.`);
-  logger.info('Use "at list" to see available problems, or provide a valid problem ID or slug');
+  logger.info(
+    'Use "algo-trainer list" to see available problems, or provide a valid problem ID or slug',
+  );
   ```
 
 ---
@@ -143,6 +160,7 @@ throw new ConfigError(
 ```
 
 Key improvements:
+
 1. **Typed errors** - Use specific error classes instead of generic `Error()`
 2. **Context objects** - Include structured context for debugging
 3. **Actionable messages** - Tell users exactly what to do to fix the problem
@@ -155,34 +173,40 @@ Key improvements:
 All tests pass successfully:
 
 ### Config Tests
+
 ```bash
 deno test test/cli-commands-config.test.ts
 ✅ 2 test suites, 38 steps, 100% pass rate
 ```
 
 Key validations:
+
 - Boolean validation shows all valid options
 - Language/theme/verbosity validation shows valid choices
 - Error messages include context
 
 ### Trigger Tests
+
 ```bash
 deno test test/ai/triggers.test.ts
 ✅ 31 tests, 100% pass rate
 ```
 
 Validated:
+
 - Improved warning messages show type information
 - Empty trigger message provides examples
 - All security tests still pass
 
 ### Database Tests
+
 ```bash
 deno test test/database.test.ts
 ✅ 19 tests, 100% pass rate
 ```
 
 Validated:
+
 - Duplicate ID/slug errors use ProblemError
 - Enhanced messages for user-provided problems
 
@@ -190,13 +214,13 @@ Validated:
 
 ## Success Metrics
 
-| Metric | Target | Before | After | Status |
-|--------|--------|--------|-------|--------|
-| Generic `Error()` in commands | 0 | 7 | 0 | ✅ |
-| Actionable error messages | 100% | ~70% | ~95% | ✅ |
-| Typed errors in config.ts | All | 0/5 | 5/5 | ✅ |
-| Problem not found guidance | Present | 0/4 | 4/4 | ✅ |
-| Trigger warning context | Enhanced | Basic | Detailed | ✅ |
+| Metric                        | Target   | Before | After    | Status |
+| ----------------------------- | -------- | ------ | -------- | ------ |
+| Generic `Error()` in commands | 0        | 7      | 0        | ✅     |
+| Actionable error messages     | 100%     | ~70%   | ~95%     | ✅     |
+| Typed errors in config.ts     | All      | 0/5    | 5/5      | ✅     |
+| Problem not found guidance    | Present  | 0/4    | 4/4      | ✅     |
+| Trigger warning context       | Enhanced | Basic  | Detailed | ✅     |
 
 ---
 
@@ -218,12 +242,14 @@ Validated:
 ## Examples of Improved User Experience
 
 ### Before
+
 ```
 ❌ Failed to set configuration value
    Invalid theme: rainbow. Supported: light, dark, auto
 ```
 
 ### After
+
 ```
 ❌ Failed to set configuration value
    VALIDATION_ERROR: Invalid theme: rainbow. Valid options: light, dark, auto
@@ -231,14 +257,16 @@ Validated:
 ```
 
 ### Before
+
 ```
 ❌ Problem 'two-sum' not found.
 ```
 
 ### After
+
 ```
 ❌ Problem 'two-sum' not found.
-ℹ️  Use "at list" to see available problems, or provide a valid problem ID or slug
+ℹ️  Use "algo-trainer list" to see available problems, or provide a valid problem ID or slug
 ```
 
 ---
@@ -256,6 +284,7 @@ Validated:
 ## Next Steps
 
 PHASE5-020 is complete. Ready to proceed with:
+
 - **PHASE5-030:** Display Formatting Consistency
 - **PHASE5-040:** TODO Resolution
 - **PHASE5-050:** Documentation Organization

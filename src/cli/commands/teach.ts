@@ -11,10 +11,7 @@ import type { CommandResult } from '../../types/global.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
 import { logger } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
-import {
-  TeachingScriptGenerator,
-  validateTeachingScript,
-} from '../../core/ai/mod.ts';
+import { TeachingScriptGenerator, validateTeachingScript } from '../../core/ai/mod.ts';
 import { requireProblemManager, resolveProblem } from './shared.ts';
 import { showCommandHelp } from './help.ts';
 import { join } from '@std/path';
@@ -25,19 +22,34 @@ function showHelp(): void {
     name: 'teach',
     description: 'Manage AI teaching scripts',
     usage: [
-      'at teach generate <slug>',
-      'at teach validate <path>',
-      'at teach info',
+      'algo-trainer teach generate <slug>',
+      'algo-trainer teach validate <path>',
+      'algo-trainer teach info',
     ],
     options: [
-      { flags: '--output <path>', description: 'Output path for generated script' },
+      {
+        flags: '--output <path>',
+        description: 'Output path for generated script',
+      },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at teach generate two-sum', description: 'Generate teaching script for "two-sum"' },
-      { command: 'at teach generate two-sum --output ./trainer.yaml', description: 'Generate to specific file' },
-      { command: 'at teach validate ./trainer.yaml', description: 'Validate a teaching script' },
-      { command: 'at teach info', description: 'Show current teaching session info' },
+      {
+        command: 'algo-trainer teach generate two-sum',
+        description: 'Generate teaching script for "two-sum"',
+      },
+      {
+        command: 'algo-trainer teach generate two-sum --output ./trainer.yaml',
+        description: 'Generate to specific file',
+      },
+      {
+        command: 'algo-trainer teach validate ./trainer.yaml',
+        description: 'Validate a teaching script',
+      },
+      {
+        command: 'algo-trainer teach info',
+        description: 'Show current teaching session info',
+      },
     ],
   });
 }
@@ -71,7 +83,9 @@ export async function teachCommand(args: Args): Promise<CommandResult> {
     const config = configManager.getConfig();
 
     if (!options.subcommand) {
-      logger.error('Subcommand required. Usage: at teach <generate|validate|info>');
+      logger.error(
+        'Subcommand required. Usage: algo-trainer teach <generate|validate|info>',
+      );
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
@@ -104,7 +118,9 @@ async function handleGenerate(
   config: ReturnType<typeof configManager.getConfig>,
 ): Promise<CommandResult> {
   if (!options.problemSlug) {
-    logger.error('Problem slug required. Usage: at teach generate <slug>');
+    logger.error(
+      'Problem slug required. Usage: algo-trainer teach generate <slug>',
+    );
     return { success: false, exitCode: ExitCode.USAGE_ERROR };
   }
 
@@ -113,7 +129,9 @@ async function handleGenerate(
   const problem = resolveProblem(options.problemSlug, manager);
   if (!problem) {
     logger.error(`Problem '${options.problemSlug}' not found.`);
-    logger.info('Use "at list" to see available problems, or provide a valid problem ID or slug');
+    logger.info(
+      'Use "algo-trainer list" to see available problems, or provide a valid problem ID or slug',
+    );
     return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
   }
 
@@ -144,7 +162,7 @@ async function handleGenerate(
 
 async function handleValidate(options: TeachOptions): Promise<CommandResult> {
   if (!options.path) {
-    logger.error('Path required. Usage: at teach validate <path>');
+    logger.error('Path required. Usage: algo-trainer teach validate <path>');
     return { success: false, exitCode: ExitCode.USAGE_ERROR };
   }
 
@@ -177,7 +195,9 @@ function handleInfo(
   logger.log(`Workspace: ${config.workspace || '(not set)'}`);
 
   if (!config.aiEnabled) {
-    logger.log('\n💡 Enable AI features with: at config set aiEnabled true');
+    logger.log(
+      '\n💡 Enable AI features with: algo-trainer config set aiEnabled true',
+    );
   }
 
   logger.log('');

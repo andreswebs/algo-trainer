@@ -141,18 +141,21 @@ set -g fish_complete_path $fish_complete_path /path/to/algo-trainer/completions
 ### Completions Not Working
 
 1. **Check if completions are enabled:**
+
    ```bash
    echo $fpath
    # Should include the directory where _at is located
    ```
 
 2. **Rebuild completion cache:**
+
    ```bash
    rm -f ~/.zcompdump
    compinit
    ```
 
 3. **Verify the completion file is in the right place:**
+
    ```bash
    # Should show the path to _at
    whence -v _at
@@ -168,7 +171,7 @@ For Fish:
 
 1. Make sure Fish is restarted or run `source ~/.config/fish/config.fish`
 2. Verify the completion file is in the correct location: `ls ~/.config/fish/completions/at.fish`
-3. Test if Fish can find the completions: `complete -C"at " | grep challenge`
+3. Test if Fish can find the completions: `complete -C"algo-trainer " | grep challenge`
 
 ### Completions Are Slow
 
@@ -206,7 +209,7 @@ If you're developing the completion script:
    ```
 3. Test the completion:
    ```bash
-   at <TAB>
+   algo-trainer <TAB>
    ```
 
 ## Contributing

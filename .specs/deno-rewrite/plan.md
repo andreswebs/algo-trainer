@@ -268,14 +268,12 @@ export interface WorkspaceStructure {
 **Completed Tasks:**
 
 1. **Project Setup** ✅
-
    - Created Deno project structure
    - Configured `deno.json` with tasks, imports, compiler options, formatting, and linting
    - TypeScript strict mode enabled with `noImplicitAny`, `noImplicitReturns`, `strictNullChecks`, `exactOptionalPropertyTypes`
    - Testing framework configured with `@std/assert`
 
 2. **Core Utilities** ✅
-
    - `src/utils/output.ts` - Output utilities with proper stdout/stderr separation following 12-factor principles
    - `src/utils/display.ts` - Colors, tables, progress bars, text formatting
    - `src/utils/errors.ts` - Standardized error handling with custom error classes (`AlgoTrainerError`, `ConfigError`, `FileSystemError`, etc.)
@@ -284,19 +282,16 @@ export interface WorkspaceStructure {
    - `src/utils/http.ts` - HTTP client with rate limiting (moved up from Phase 4)
 
 3. **Type System Foundation** ✅
-
    - `src/types/global.ts` - Core interfaces: `Problem`, `Config`, `UserPreferences`, `WorkspaceStructure`, `SupportedLanguage`, etc.
    - `src/types/external.ts` - External API types: `LeetCodeProblem`, `ApiResponse`, `RateLimitInfo`, `CacheMetadata`
    - `src/types/index.ts` - Central re-export point
 
 4. **Configuration System** ✅
-
    - `src/config/manager.ts` - XDG-compliant ConfigManager class with load/save/update operations
    - `src/config/paths.ts` - Application-specific XDG path utilities
    - `src/config/types.ts` - Default config values and validation types
 
 5. **Basic CLI Skeleton** ✅ (Moved up from Phase 3)
-
    - `src/cli/main.ts` - Entry point with argument parsing and command routing skeleton
    - `src/cli/types.ts` - CLI-specific types: `Command`, `Flag`, `CommandArgs`, `CliContext`
    - `main.ts` - Application entry point
@@ -348,19 +343,16 @@ deno.json               # Deno configuration
 **Tasks:**
 
 1. **Problem Data Structure**
-
    - Create new problem definitions in structured JSON/TypeScript format
    - Define problem schema and validation against type definitions
    - Build problem database with indexing
 
 2. **Problem Manager**
-
    - Implement CRUD operations for problems
    - Build problem filtering and search capabilities
    - Add problem validation system
 
 3. **Template System**
-
    - Rebuild code template generation for all supported languages
    - Create flexible template system with customization
    - Implement template testing framework
@@ -403,22 +395,19 @@ deno.json               # Deno configuration
 **Remaining Tasks:**
 
 1. **Command Implementations**
-
-   - `at challenge` - Problem generation with enhanced UX
-   - `at complete` - Mark problems as completed/active
-   - `at config` - Configuration management (get/set/list/reset)
-   - `at init` - Workspace initialization
-   - `at progress` - Progress tracking with tables
-   - `at hint` - Get hints for current problem
+   - `algo-trainer challenge` - Problem generation with enhanced UX
+   - `algo-trainer complete` - Mark problems as completed/active
+   - `algo-trainer config` - Configuration management (get/set/list/reset)
+   - `algo-trainer init` - Workspace initialization
+   - `algo-trainer progress` - Progress tracking with tables
+   - `algo-trainer hint` - Get hints for current problem
 
 2. **Interactive Features**
-
    - Add prompts for missing required inputs
    - Implement table displays for data (using `src/utils/display.ts`)
    - Create progress indicators for long operations (using `ProgressIndicator`)
 
 3. **Shell Integration**
-
    - Generate shell completions (bash, zsh, fish)
    - Add environment variable support for all config options
    - Implement proper exit codes
@@ -448,25 +437,21 @@ deno.json               # Deno configuration
 **Tasks:**
 
 1. **AI Engine Core**
-
    - Rebuild AI teaching engine with better error handling
    - Implement hint generation system
    - Create teaching script generator
 
 2. **Enhanced Learning Features**
-
    - Build interactive hint system with progressive disclosure
    - Implement AI-powered code review and suggestions
    - Create learning path recommendations
 
 3. **Test Runner System**
-
    - Rebuild multi-language test execution
    - Implement real-time test feedback
    - Add performance metrics and benchmarking
 
 4. **Scraping & External APIs**
-
    - Implement LeetCode API integration (when available)
    - Build fallback scraping system
    - Add problem data validation and caching
@@ -500,19 +485,16 @@ deno.json               # Deno configuration
 **Tasks:**
 
 1. **Comprehensive Testing**
-
    - Unit tests for all modules (target 90% coverage)
    - Integration tests for CLI workflows
    - Performance tests and benchmarking
 
 2. **Documentation**
-
    - Complete README with examples
    - API documentation for all modules
    - Development setup and contribution guidelines
 
 3. **Performance Optimization**
-
    - Optimize startup time (target <500ms)
    - Implement caching for expensive operations
    - Memory usage optimization
@@ -609,7 +591,11 @@ All implementation is new TypeScript code following the patterns established in 
       "exclude": ["no-unused-vars"]
     }
   },
-  "exclude": ["tests/fixtures/", "docs/examples/", "_.local-leetcode-trainer.legacy/"]
+  "exclude": [
+    "tests/fixtures/",
+    "docs/examples/",
+    "_.local-leetcode-trainer.legacy/"
+  ]
 }
 ```
 
@@ -659,14 +645,30 @@ export abstract class AlgoTrainerError extends Error {
 }
 
 // Specialized error types
-export class ConfigError extends AlgoTrainerError {/* code: CONFIG_ERROR */}
-export class FileSystemError extends AlgoTrainerError {/* code: FS_ERROR */}
-export class ProblemError extends AlgoTrainerError {/* code: PROBLEM_ERROR */}
-export class WorkspaceError extends AlgoTrainerError {/* code: WORKSPACE_ERROR */}
-export class ValidationError extends AlgoTrainerError {/* code: VALIDATION_ERROR */}
-export class CommandError extends AlgoTrainerError {/* code: COMMAND_ERROR */}
-export class NetworkError extends AlgoTrainerError {/* code: NETWORK_ERROR */}
-export class TemplateError extends AlgoTrainerError {/* code: TEMPLATE_ERROR */}
+export class ConfigError extends AlgoTrainerError {
+  /* code: CONFIG_ERROR */
+}
+export class FileSystemError extends AlgoTrainerError {
+  /* code: FS_ERROR */
+}
+export class ProblemError extends AlgoTrainerError {
+  /* code: PROBLEM_ERROR */
+}
+export class WorkspaceError extends AlgoTrainerError {
+  /* code: WORKSPACE_ERROR */
+}
+export class ValidationError extends AlgoTrainerError {
+  /* code: VALIDATION_ERROR */
+}
+export class CommandError extends AlgoTrainerError {
+  /* code: COMMAND_ERROR */
+}
+export class NetworkError extends AlgoTrainerError {
+  /* code: NETWORK_ERROR */
+}
+export class TemplateError extends AlgoTrainerError {
+  /* code: TEMPLATE_ERROR */
+}
 
 // Helper to create error context with operation, timestamp, platform, version
 export function createErrorContext(
@@ -802,24 +804,20 @@ export class ProgressIndicator {
 ### High Risk Areas
 
 1. **AI System Complexity**
-
    - **Risk**: AI teaching features are complex to reimplement correctly
    - **Mitigation**: Study legacy implementation thoroughly, extensive testing, iterate on UX
 
 2. **Feature Completeness**
-
    - **Risk**: Missing important features that users relied on
    - **Mitigation**: Document all legacy features, prioritize core functionality, gather feedback early
 
 ### Medium Risk Areas
 
 1. **Performance Regression**
-
    - **Risk**: New implementation slower than current
    - **Mitigation**: Performance benchmarks, optimization focus, early testing
 
 2. **Cross-platform Compatibility**
-
    - **Risk**: Deno-specific features breaking on some platforms
    - **Mitigation**: Multi-platform testing, conservative API usage
 

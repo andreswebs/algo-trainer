@@ -16,9 +16,9 @@ import type {
 import { configManager } from '../../config/manager.ts';
 import {
   generateProblemFiles,
-  problemExists,
   initWorkspace,
   isWorkspaceInitialized,
+  problemExists,
 } from '../../core/mod.ts';
 import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import { join } from '@std/path';
@@ -39,9 +39,9 @@ function showHelp(): void {
     name: 'challenge',
     description: 'Start a new coding challenge',
     usage: [
-      'at challenge [difficulty]',
-      'at challenge <slug>',
-      'at challenge --random',
+      'algo-trainer challenge [difficulty]',
+      'algo-trainer challenge <slug>',
+      'algo-trainer challenge --random',
     ],
     options: [
       {
@@ -50,17 +50,38 @@ function showHelp(): void {
       },
       { flags: '-c, --category <cat>', description: 'Filter by category' },
       { flags: '-t, --topic <topic>', description: 'Filter by topic' },
-      { flags: '-l, --language <lang>', description: 'Override default language' },
+      {
+        flags: '-l, --language <lang>',
+        description: 'Override default language',
+      },
       { flags: '-f, --force', description: 'Overwrite existing files' },
-      { flags: '--random', description: 'Start random problem (any difficulty)' },
+      {
+        flags: '--random',
+        description: 'Start random problem (any difficulty)',
+      },
       { flags: '-h, --help', description: 'Show this help message' },
     ],
     examples: [
-      { command: 'at challenge easy', description: 'Start an easy random challenge' },
-      { command: 'at challenge two-sum', description: 'Start the "two-sum" problem' },
-      { command: 'at challenge -d medium', description: 'Start a medium difficulty challenge' },
-      { command: 'at challenge -d hard -c arrays', description: 'Start a hard array problem' },
-      { command: 'at challenge --random', description: 'Start any random problem' },
+      {
+        command: 'algo-trainer challenge easy',
+        description: 'Start an easy random challenge',
+      },
+      {
+        command: 'algo-trainer challenge two-sum',
+        description: 'Start the "two-sum" problem',
+      },
+      {
+        command: 'algo-trainer challenge -d medium',
+        description: 'Start a medium difficulty challenge',
+      },
+      {
+        command: 'algo-trainer challenge -d hard -c arrays',
+        description: 'Start a hard array problem',
+      },
+      {
+        command: 'algo-trainer challenge --random',
+        description: 'Start any random problem',
+      },
     ],
   });
 }
@@ -85,7 +106,7 @@ export function extractChallengeOptions(args: Args): ChallengeOptions {
 
   return {
     slug: !isDifficulty ? firstArg : undefined,
-    difficulty: isDifficulty ? firstArg : (args.difficulty || args.d) as string | undefined,
+    difficulty: isDifficulty ? firstArg : ((args.difficulty || args.d) as string | undefined),
     category: (args.category || args.c) as string | undefined,
     topic: (args.topic || args.t) as string | undefined,
     language: (args.language || args.l) as string | undefined,
@@ -129,7 +150,9 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       problem = manager.getBySlug(options.slug);
       if (!problem) {
         logger.error(`Problem not found: ${options.slug}`);
-        logger.info('Use "at list" to see available problems, or try a search with "at list -s <term>"');
+        logger.info(
+          'Use "algo-trainer list" to see available problems, or try a search with "algo-trainer list -s <term>"',
+        );
         return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
       }
     } else {
@@ -211,7 +234,10 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       logger.warn(`Problem '${problem.slug}' already exists in workspace`);
       logger.info('Use --force to overwrite existing files');
 
-      const confirmed = await confirmAction('Do you want to overwrite existing files?', false);
+      const confirmed = await confirmAction(
+        'Do you want to overwrite existing files?',
+        false,
+      );
       if (!confirmed) {
         logger.info('Operation cancelled');
         return { success: true, exitCode: ExitCode.SUCCESS };
@@ -284,12 +310,17 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
           }
 
           if (intro || prePrompt) {
-            logger.info('💬 Use \'at hint\' for contextual hints during coding');
+            logger.info(
+              "💬 Use 'algo-trainer hint' for contextual hints during coding",
+            );
           }
         }
       } catch (error) {
         // Teaching system errors are non-fatal, just log a warning
-        logger.warn('Note: Could not load teaching guidance: ' + (error instanceof Error ? error.message : String(error)));
+        logger.warn(
+          'Note: Could not load teaching guidance: ' +
+            (error instanceof Error ? error.message : String(error)),
+        );
       }
     }
 
@@ -302,7 +333,10 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       logger.error('Problem error:', error.message);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     } else {
-      logger.error('Unexpected error:', error instanceof Error ? error.message : String(error));
+      logger.error(
+        'Unexpected error:',
+        error instanceof Error ? error.message : String(error),
+      );
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
   }
