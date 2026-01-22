@@ -22,7 +22,7 @@ When required arguments are missing, the CLI will prompt for them interactively:
 
 When starting a new challenge without specifying all options:
 
-```bash
+```sh
 # Without arguments - prompts for difficulty and language
 algo-trainer challenge
 
@@ -39,7 +39,7 @@ algo-trainer challenge easy
 
 When marking a problem as complete:
 
-```bash
+```sh
 # Without arguments - prompts for problem selection
 algo-trainer complete
 
@@ -66,7 +66,7 @@ This ensures your automation scripts work reliably.
 
 ### Interactive Challenge Start
 
-```bash
+```sh
 $ algo-trainer challenge
 Select difficulty level:
   1. easy
@@ -91,7 +91,7 @@ Selected language: python
 
 ### Interactive Problem Completion
 
-```bash
+```sh
 $ algo-trainer complete
 Select problem to complete:
   1. two-sum

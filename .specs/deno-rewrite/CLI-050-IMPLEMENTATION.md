@@ -253,7 +253,7 @@ describe('commandName', () => {
 
 ## Running the Tests
 
-```bash
+```sh
 # Run all tests
 deno task test
 
@@ -395,7 +395,7 @@ All tests demonstrate:
 
 ### Verification
 
-```bash
+```sh
 $ deno task check
 Check src/**/*.ts
 ✅ All files type checked successfully

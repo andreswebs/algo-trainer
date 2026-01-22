@@ -8,7 +8,7 @@
 
 ### Development Workflow
 
-```bash
+```sh
 # Run in development mode with watch
 deno task dev
 
@@ -40,7 +40,7 @@ deno task build
 
 ### Running Tests
 
-```bash
+```sh
 # Run all tests
 deno task test
 

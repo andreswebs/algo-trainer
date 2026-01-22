@@ -53,7 +53,7 @@ This document provides a complete manual testing plan for Algo-Trainer, a CLI to
 
 ### 2.3 Environment Setup
 
-```bash
+```sh
 # Create fresh test directory for each session
 mkdir ~/algo-trainer-test-workspace
 cd ~/algo-trainer-test-workspace
@@ -76,7 +76,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: High
 - **Preconditions**: None
 - **Steps**:
-  1. Run `algo-trainer--help`
+  1. Run `algo-trainer --help`
 - **Expected Result**:
   - Shows application name and version
   - Lists all available commands with descriptions
@@ -88,7 +88,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `algo-trainer--version`
+  1. Run `algo-trainer --version`
 - **Expected Result**:
   - Displays version number (0.0.1)
   - Exit code: 0
@@ -1139,7 +1139,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `algo-trainer--verbose challenge two-sum`
+  1. Run `algo-trainer --verbose challenge two-sum`
 - **Expected Result**:
   - Shows extra debug/verbose information
   - Exit code: 0
@@ -1149,7 +1149,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Medium
 - **Preconditions**: None
 - **Steps**:
-  1. Run `algo-trainer--quiet complete two-sum`
+  1. Run `algo-trainer --quiet complete two-sum`
 - **Expected Result**:
   - Minimal output
   - Exit code: 0
@@ -1159,7 +1159,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Run `algo-trainer--no-color list`
+  1. Run `algo-trainer --no-color list`
 - **Expected Result**:
   - No color codes in output
   - Exit code: 0
@@ -1169,7 +1169,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 - **Priority**: Low
 - **Preconditions**: None
 - **Steps**:
-  1. Run `algo-trainer--no-emoji progress`
+  1. Run `algo-trainer --no-emoji progress`
 - **Expected Result**:
   - No emoji in output
   - Exit code: 0
@@ -1336,7 +1336,7 @@ unset AT_WORKSPACE AT_LANGUAGE AT_VERBOSE AT_QUIET AT_NO_COLOR AT_NO_EMOJI
 
 After testing, clean up:
 
-```bash
+```sh
 # Remove test workspaces
 rm -rf ~/at-test-workspace
 rm -rf /tmp/test*workspace*

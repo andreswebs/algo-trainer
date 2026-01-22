@@ -8,10 +8,10 @@ Use `@std/cli/parse-args` for argument parsing with native support for flags, op
 import { parseArgs } from 'jsr:@std/cli/parse-args';
 
 const args = parseArgs(Deno.args, {
-  alias: { 'help': 'h', 'version': 'v', 'output': 'o' },
+  alias: { help: 'h', version: 'v', output: 'o' },
   boolean: ['help', 'version', 'verbose'],
   string: ['output', 'input'],
-  default: { 'output': 'stdout', 'verbose': false },
+  default: { output: 'stdout', verbose: false },
   collect: ['tag'],
   negatable: ['verbose'],
 });
@@ -210,7 +210,8 @@ function loadConfig(): CLIConfig {
     apiUrl,
     apiKey,
     logLevel: (Deno.env.get('LOG_LEVEL') ?? 'info') as CLIConfig['logLevel'],
-    outputFormat: (Deno.env.get('OUTPUT_FORMAT') ?? 'text') as CLIConfig['outputFormat'],
+    outputFormat: (Deno.env.get('OUTPUT_FORMAT') ??
+      'text') as CLIConfig['outputFormat'],
   };
 }
 ```
@@ -426,7 +427,7 @@ switch (command) {
 
 ### Adding Dependencies
 
-```bash
+```sh
 deno add jsr:@std/cli
 deno add jsr:@std/fs
 deno add npm:chalk
@@ -448,7 +449,7 @@ deno add npm:chalk
 
 ### Permission Declaration
 
-```bash
+```sh
 # Fine-grained permissions
 deno run --allow-read=./config,./data src/cli.ts
 
@@ -477,7 +478,7 @@ deno run --allow-read --deny-read=./secrets src/cli.ts
 
 ### Basic Compilation
 
-```bash
+```sh
 # Single platform
 deno compile --allow-read --allow-write -o my-cli src/cli.ts
 

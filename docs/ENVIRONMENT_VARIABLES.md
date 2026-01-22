@@ -26,7 +26,7 @@ This means environment variables will always override values from the configurat
 **Default:** `''` (empty string)\
 **Description:** Specifies the workspace directory path where problems and solutions are stored.
 
-```bash
+```sh
 export AT_WORKSPACE=/home/user/algo-practice
 algo-trainer init
 ```
@@ -37,7 +37,7 @@ algo-trainer init
 **Default:** System default config path\
 **Description:** Specifies a custom location for the configuration file.
 
-```bash
+```sh
 export AT_CONFIG_PATH=/custom/path/config.json
 algo-trainer config list
 ```
@@ -51,7 +51,7 @@ algo-trainer config list
 **Default:** `typescript`\
 **Description:** Sets the default programming language for problem solutions.
 
-```bash
+```sh
 export AT_LANGUAGE=python
 algo-trainer challenge easy
 ```
@@ -65,7 +65,7 @@ algo-trainer challenge easy
 **Default:** `documented`\
 **Description:** Specifies the code template style for generated files.
 
-```bash
+```sh
 export AT_TEMPLATE_STYLE=minimal
 algo-trainer challenge two-sum
 ```
@@ -74,7 +74,7 @@ algo-trainer challenge two-sum
 
 ### Basic Setup
 
-```bash
+```sh
 # Set up your workspace and language preference
 export AT_WORKSPACE=~/algo-practice
 export AT_LANGUAGE=python
@@ -86,7 +86,7 @@ algo-trainer challenge easy
 
 ### CI/CD Environment
 
-```bash
+```sh
 # Configure for automated testing
 export AT_WORKSPACE=/workspace
 export AT_LANGUAGE=typescript
@@ -103,7 +103,7 @@ algo-trainer challenge two-sum
 
 To test environment variable configuration:
 
-```bash
+```sh
 # Run tests
 deno test test/env.test.ts --allow-env --allow-read --allow-write
 

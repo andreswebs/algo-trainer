@@ -26,7 +26,7 @@ A comprehensive guide to using Algo-Trainer for practicing algorithmic problem s
 
 Ensure you have Deno installed on your system. Build the binary:
 
-```bash
+```sh
 deno task build
 ```
 
@@ -34,9 +34,16 @@ This creates the `bin/algo-trainer` executable.
 
 ### First Time Setup
 
-1. **Initialize a workspace** in your desired practice directory:
+1. **Verify installation**:
 
-```bash
+```sh
+algo-trainer --version
+algo-trainer --help
+```
+
+2. **Initialize a workspace** in your desired practice directory:
+
+```sh
 # Initialize in current directory
 algo-trainer init
 
@@ -45,19 +52,13 @@ algo-trainer init ~/algo-practice
 ```
 
 This creates the following structure:
+
 ```
 your-workspace/
 ├── problems/      # Active challenges
 ├── completed/     # Solved problems archive
 ├── templates/     # Language templates
 └── config/        # Workspace configuration
-```
-
-2. **Verify installation**:
-
-```bash
-algo-trainer--version
-algo-trainer--help
 ```
 
 ---
@@ -68,7 +69,7 @@ The typical workflow for practicing algorithmic problems:
 
 ### 1. Browse Available Problems
 
-```bash
+```sh
 # List all problems
 algo-trainer list
 
@@ -93,7 +94,7 @@ algo-trainer list --json
 
 ### 2. Start a Challenge
 
-```bash
+```sh
 # Start a specific problem
 algo-trainer challenge two-sum
 
@@ -113,7 +114,8 @@ algo-trainer challenge -d hard -l rust
 algo-trainer challenge -t "dynamic-programming"
 ```
 
-**Whalgo-trainer happens:**
+**What happens:**
+
 - Problem files are generated in `problems/[problem-slug]/`
 - You get a solution template in your chosen language
 - Problem description, test cases, and metadata are included
@@ -122,7 +124,7 @@ algo-trainer challenge -t "dynamic-programming"
 
 Navigate to the problem directory and work on your solution:
 
-```bash
+```sh
 cd problems/two-sum/
 # Edit solution.ts (or solution.py, solution.java, etc.)
 ```
@@ -131,7 +133,7 @@ cd problems/two-sum/
 
 If you're stuck, get progressive hints:
 
-```bash
+```sh
 # Get the next hint
 algo-trainer hint two-sum
 
@@ -143,6 +145,7 @@ algo-trainer hint two-sum --all
 ```
 
 **Hint Levels:**
+
 1. **General Approach** - High-level strategy
 2. **Algorithm/Data Structure** - Specific techniques to use
 3. **Solution Strategy** - Detailed implementation guidance
@@ -151,16 +154,13 @@ algo-trainer hint two-sum --all
 
 When you've solved it:
 
-```bash
-# Mark as complete (archives to completed/)
+```sh
+# Mark as complete - archives to completed/
+# You'll be prompted for notes
 algo-trainer complete two-sum
 
 # Complete without archiving
 algo-trainer complete two-sum --no-archive
-
-# Add solution notes
-algo-trainer complete two-sum
-# (You'll be prompted for notes)
 ```
 
 ---
@@ -170,7 +170,8 @@ algo-trainer complete two-sum
 ### Problem Selection Strategies
 
 **By Difficulty:**
-```bash
+
+```sh
 # Good for beginners
 algo-trainer challenge easy
 
@@ -182,7 +183,8 @@ algo-trainer challenge hard
 ```
 
 **By Topic:**
-```bash
+
+```sh
 # Focus on specific data structures
 algo-trainer list -t array
 algo-trainer list -t tree
@@ -195,18 +197,19 @@ algo-trainer list -t sorting
 ```
 
 **By Company:**
-```bash
+
+```sh
 # Practice problems from specific companies
 algo-trainer list --verbose  # Shows company tags
 ```
 
 ### Managing Active Problems
 
-```bash
-# See whalgo-trainer you're currently working on
+```sh
+# See what you're currently working on
 ls problems/
 
-# Multiple problems algo-trainer once is okay
+# Multiple problems at once is okay
 algo-trainer challenge binary-search
 algo-trainer challenge valid-parentheses
 # Work on whichever you prefer
@@ -215,6 +218,7 @@ algo-trainer challenge valid-parentheses
 ### Problem Files Structure
 
 Each problem generates:
+
 ```
 problems/two-sum/
 ├── solution.ts          # Your solution (or .py, .java, etc.)
@@ -229,7 +233,7 @@ problems/two-sum/
 
 ### View Your Progress
 
-```bash
+```sh
 # Basic progress overview
 algo-trainer progress
 
@@ -244,7 +248,8 @@ algo-trainer progress --json
 ```
 
 **Sample Output:**
-```
+
+```txt
 📊 Progress Summary
 ═══════════════════════════════════════════
 
@@ -266,7 +271,7 @@ Recently Completed:
 
 Completed problems are moved to `completed/` with metadata:
 
-```bash
+```sh
 # View completed problems
 ls completed/
 
@@ -276,6 +281,7 @@ calgo-trainer completed/two-sum/.metadata.json
 ```
 
 **Metadata includes:**
+
 - Completion date
 - Hints used
 - Time spent (if tracked)
@@ -287,7 +293,7 @@ calgo-trainer completed/two-sum/.metadata.json
 
 ### View Configuration
 
-```bash
+```sh
 # Show all settings
 algo-trainer config list
 
@@ -299,7 +305,7 @@ algo-trainer config get preferences.theme
 
 ### Update Settings
 
-```bash
+```sh
 # Set default language
 algo-trainer config set language python
 algo-trainer config set language typescript
@@ -316,11 +322,12 @@ algo-trainer config set aiEnabled true
 
 ### Supported Languages
 
-```bash
+```sh
 algo-trainer config set language <language>
 ```
 
 Available languages:
+
 - `typescript` (default)
 - `javascript`
 - `python`
@@ -331,7 +338,7 @@ Available languages:
 
 ### Reset Configuration
 
-```bash
+```sh
 # Reset specific key
 algo-trainer config reset language
 
@@ -343,7 +350,7 @@ algo-trainer config reset --all
 
 Override configuration with environment variables:
 
-```bash
+```sh
 # Temporary language override
 AT_LANGUAGE=python algo-trainer challenge two-sum
 
@@ -367,7 +374,7 @@ See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) for full list.
 
 **Goal:** Solve one problem every day
 
-```bash
+```sh
 # Morning routine
 cd ~/algo-practice
 
@@ -387,7 +394,7 @@ algo-trainer complete <problem-slug>
 
 **Goal:** Master a specific topic (e.g., arrays)
 
-```bash
+```sh
 # Find all array problems
 algo-trainer list -t array
 
@@ -406,7 +413,7 @@ algo-trainer progress --by-category
 
 **Goal:** Practice company-specific problems
 
-```bash
+```sh
 # Find problems by company (in verbose mode)
 algo-trainer list --verbose | grep -i "google"
 
@@ -423,7 +430,7 @@ time algo-trainer complete <slug>
 
 **Goal:** Implement solutions in a new language
 
-```bash
+```sh
 # Set your learning language
 algo-trainer config set language rust
 
@@ -442,7 +449,7 @@ algo-trainer challenge -d medium
 
 **Goal:** Revisit and improve old solutions
 
-```bash
+```sh
 # Check completed problems
 ls completed/
 
@@ -490,7 +497,8 @@ algo-trainer complete two-sum
 ### Organizing Your Practice
 
 **Daily Goals:**
-```bash
+
+```sh
 # Set realistic targets
 - Beginners: 1 easy problem/day
 - Intermediate: 1 medium problem/day
@@ -498,7 +506,8 @@ algo-trainer complete two-sum
 ```
 
 **Weekly Themes:**
-```bash
+
+```sh
 # Week 1: Arrays and Strings
 algo-trainer list -t array
 algo-trainer list -t string
@@ -512,19 +521,20 @@ algo-trainer list -t dynamic-programming
 ```
 
 **Track Your Time:**
-```bash
+
+```sh
 # Use external timer or shell timing
 time algo-trainer complete two-sum
 
 # Set time goals
 - Easy: 15-20 minutes
-- Medium: 30-45 minutes  
+- Medium: 30-45 minutes
 - Hard: 45-60 minutes
 ```
 
 ### Managing Multiple Languages
 
-```bash
+```sh
 # Practice same problem in different languages
 algo-trainer challenge two-sum -l python
 algo-trainer complete two-sum --no-archive
@@ -537,7 +547,7 @@ algo-trainer complete two-sum
 
 ### Workspace Organization
 
-```bash
+```sh
 # Keep workspace clean
 # Complete or remove abandoned problems regularly
 
@@ -560,12 +570,14 @@ algo-trainer init ~/algo-practice-2025
 #### Issue: "Workspace not initialized"
 
 **Symptom:**
-```
+
+```txt
 ❌ Workspace error: Workspace not initialized. Run "algo-trainer init" to create workspace structure.
 ```
 
 **Solution:**
-```bash
+
+```sh
 # Initialize workspace first
 algo-trainer init
 
@@ -578,12 +590,14 @@ algo-trainer init ~/my-practice
 #### Issue: "Problem already exists"
 
 **Symptom:**
-```
+
+```txt
 ⚠️  Problem 'two-sum' already exists in workspace
 ```
 
 **Solutions:**
-```bash
+
+```sh
 # Option 1: Work on the existing problem
 cd problems/two-sum
 
@@ -600,12 +614,14 @@ algo-trainer challenge two-sum  # Now will work
 #### Issue: Invalid hint level
 
 **Symptom:**
-```
+
+```txt
 ❌ Invalid hint level: 5
 ```
 
 **Solution:**
-```bash
+
+```sh
 # Valid hint levels are 1-3
 algo-trainer hint two-sum --level 1
 algo-trainer hint two-sum --level 2
@@ -620,12 +636,14 @@ algo-trainer hint two-sum
 #### Issue: Cannot find problem
 
 **Symptom:**
-```
+
+```txt
 ❌ Problem 'xyz' not found.
 ```
 
 **Solutions:**
-```bash
+
+```sh
 # Check exact slug
 algo-trainer list -s "problem name"
 
@@ -640,7 +658,8 @@ algo-trainer challenge two-sum  # Use lowercase with hyphens
 #### Issue: Wrong language template generated
 
 **Solution:**
-```bash
+
+```sh
 # Set default language
 algo-trainer config set language python
 
@@ -653,6 +672,7 @@ algo-trainer challenge two-sum -l python --force
 #### Issue: Exit code errors
 
 **Understanding exit codes:**
+
 - `0` - Success
 - `1` - General error
 - `2` - Usage error (invalid arguments)
@@ -661,7 +681,8 @@ algo-trainer challenge two-sum -l python --force
 - `5` - Problem error (problem not found)
 
 **Debugging:**
-```bash
+
+```sh
 # Check exit code
 algo-trainer some-command
 echo $?
@@ -678,14 +699,16 @@ AT_VERBOSE=1 algo-trainer list
 #### Issue: Environment variable not working
 
 **Symptom:**
-```
+
+```txt
 ❌ Invalid AT_LANGUAGE: "pythn"
 ```
 
 **Solution:**
-```bash
+
+```sh
 # Check valid values
-algo-trainer--help  # Shows valid options
+algo-trainer --help  # Shows valid options
 
 # Use correct spelling
 AT_LANGUAGE=python algo-trainer challenge easy
@@ -705,8 +728,9 @@ AT_LANGUAGE=go
 ### Getting Help
 
 **Command-specific help:**
-```bash
-algo-trainer--help
+
+```sh
+algo-trainer --help
 algo-trainer challenge --help
 algo-trainer hint --help
 algo-trainer complete --help
@@ -716,11 +740,13 @@ algo-trainer config --help
 ```
 
 **Check version:**
-```bash
-algo-trainer--version
+
+```sh
+algo-trainer --version
 ```
 
 **Report issues:**
+
 - GitHub: https://github.com/andreswebs/algo-trainer/issues
 - Check existing documentation in `docs/`
 
@@ -730,36 +756,36 @@ algo-trainer--version
 
 ### Essential Commands
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `algo-trainer init` | Initialize workspace | `algo-trainer init ~/practice` |
-| `algo-trainer challenge` | Start a problem | `algo-trainer challenge two-sum` |
-| `algo-trainer hint` | Get hints | `algo-trainer hint two-sum --level 2` |
-| `algo-trainer complete` | Mark as complete | `algo-trainer complete two-sum` |
-| `algo-trainer list` | Browse problems | `algo-trainer list -d easy -t array` |
-| `algo-trainer progress` | View stats | `algo-trainer progress --detailed` |
-| `algo-trainer config` | Manage settings | `algo-trainer config set language python` |
+| Command                  | Description          | Example                                   |
+| ------------------------ | -------------------- | ----------------------------------------- |
+| `algo-trainer init`      | Initialize workspace | `algo-trainer init ~/practice`            |
+| `algo-trainer challenge` | Start a problem      | `algo-trainer challenge two-sum`          |
+| `algo-trainer hint`      | Get hints            | `algo-trainer hint two-sum --level 2`     |
+| `algo-trainer complete`  | Mark as complete     | `algo-trainer complete two-sum`           |
+| `algo-trainer list`      | Browse problems      | `algo-trainer list -d easy -t array`      |
+| `algo-trainer progress`  | View stats           | `algo-trainer progress --detailed`        |
+| `algo-trainer config`    | Manage settings      | `algo-trainer config set language python` |
 
 ### Useful Flags
 
-| Flag | Description | Works With |
-|------|-------------|------------|
-| `-d, --difficulty` | Filter by difficulty | challenge, list |
-| `-t, --tag` | Filter by tag | challenge, list |
-| `-l, --language` | Override language | challenge |
-| `--force` | Force overwrite | challenge, init |
-| `--json` | JSON output | list, progress, config |
-| `--verbose` | Detailed output | list, global |
-| `--help` | Show help | all commands |
+| Flag               | Description          | Works With             |
+| ------------------ | -------------------- | ---------------------- |
+| `-d, --difficulty` | Filter by difficulty | challenge, list        |
+| `-t, --tag`        | Filter by tag        | challenge, list        |
+| `-l, --language`   | Override language    | challenge              |
+| `--force`          | Force overwrite      | challenge, init        |
+| `--json`           | JSON output          | list, progress, config |
+| `--verbose`        | Detailed output      | list, global           |
+| `--help`           | Show help            | all commands           |
 
 ### File Locations
 
-| Path | Description |
-|------|-------------|
-| `problems/` | Active challenges |
-| `completed/` | Archived solutions |
-| `templates/` | Language templates |
-| `config/` | Workspace config |
+| Path                      | Description         |
+| ------------------------- | ------------------- |
+| `problems/`               | Active challenges   |
+| `completed/`              | Archived solutions  |
+| `templates/`              | Language templates  |
+| `config/`                 | Workspace config    |
 | `~/.config/algo-trainer/` | Global config (XDG) |
 
 ---
@@ -767,6 +793,7 @@ algo-trainer--version
 **Happy coding! 🚀**
 
 For more advanced features, see:
+
 - [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)
 - [INTERACTIVE_PROMPTS.md](./INTERACTIVE_PROMPTS.md)
 - [SHELL_COMPLETIONS.md](./SHELL_COMPLETIONS.md)

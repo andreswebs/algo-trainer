@@ -65,7 +65,7 @@ The `deno compile` command doesn't include the JSON problem files from `src/data
 
 **Option A: Embed data files during compilation (Recommended)**
 
-```bash
+```sh
 # Update build command to include data files
 deno compile --allow-all \
   --include src/data/problems/*.json \
@@ -118,13 +118,13 @@ deno compile --allow-all \
 
 **Current Behavior:**
 
-```bash
+```sh
 algo-trainer init  # Error: "Root directory cannot be empty"
 ```
 
 **Expected Behavior:**
 
-```bash
+```sh
 algo-trainer init  # Initializes workspace in current directory
 ```
 
@@ -217,13 +217,13 @@ try {
 
 **Current Behavior:**
 
-```bash
+```sh
 algo-trainer init /existing/workspace  # Shows info message, exits with code 0
 ```
 
 **Expected Behavior:**
 
-```bash
+```sh
 algo-trainer init /existing/workspace  # Shows warning, exits with code 3 (CONFIG_ERROR)
 ```
 
@@ -255,13 +255,13 @@ if ((await workspaceExists(targetPath)) && !args.force) {
 
 **Current Behavior:**
 
-```bash
+```sh
 algo-trainer hint --level 99  # Shows error message, exits with code 0
 ```
 
 **Expected Behavior:**
 
-```bash
+```sh
 algo-trainer hint --level 99  # Shows error message, exits with code 2 (USAGE_ERROR)
 ```
 
@@ -296,13 +296,13 @@ if (isNaN(level) || level < 1 || level > 3) {
 
 **Current Behavior:**
 
-```bash
+```sh
 AT_LANGUAGE=invalid algo-trainer list  # Shows warning, continues with exit 0
 ```
 
 **Expected Behavior:**
 
-```bash
+```sh
 AT_LANGUAGE=invalid algo-trainer list  # Shows error, exits with code 2 (USAGE_ERROR)
 ```
 
@@ -348,13 +348,13 @@ validateEnvironmentVariables();
 
 **Current Behavior:**
 
-```bash
+```sh
 algo-trainer list -t array  # Shows all 16 problems instead of filtered subset
 ```
 
 **Expected Behavior:**
 
-```bash
+```sh
 algo-trainer list -t array  # Shows only problems tagged with "array"
 ```
 
@@ -594,7 +594,7 @@ Track progress as tasks are completed:
 
 ### Local Testing Commands
 
-```bash
+```sh
 # Test binary compilation fix
 deno task build
 ./bin/algo-trainer list  # Should show problems
@@ -619,7 +619,7 @@ rm -rf ~/.config/algo-trainer
 
 Run after each fix:
 
-```bash
+```sh
 deno test tests/cli/  # Unit tests
 deno test tests/build/  # Binary tests
 deno test tests/integration/  # Integration tests

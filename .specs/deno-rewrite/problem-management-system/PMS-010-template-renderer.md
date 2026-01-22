@@ -224,7 +224,7 @@ Custom placeholders override default values if there's a conflict.
 
 **Test Execution**:
 
-```bash
+```sh
 deno test test/core/problem/templates.test.ts
 deno test test/core/problem/templates.integration.test.ts
 ```

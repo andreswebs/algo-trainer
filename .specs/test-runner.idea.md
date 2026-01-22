@@ -22,7 +22,7 @@ Add the ability to run and validate student solutions against problem test cases
 
 ### Option A: Single `run` command
 
-```bash
+```sh
 algo-trainer run [slug]              # Run solution against example test cases
 algo-trainer run [slug] --all        # Run against all test cases (if we have more than examples)
 algo-trainer run [slug] --verbose    # Show input/output details for each case
@@ -30,14 +30,14 @@ algo-trainer run [slug] --verbose    # Show input/output details for each case
 
 ### Option B: Separate `run` and `test` commands
 
-```bash
+```sh
 algo-trainer run [slug]              # Run solution once (for debugging/manual input)
 algo-trainer test [slug]             # Run against test cases with pass/fail reporting
 ```
 
 ### Option C: Integrated into existing commands
 
-```bash
+```sh
 algo-trainer challenge [slug] --run  # Generate files and run immediately
 algo-trainer complete [slug] --verify # Verify solution passes before marking complete
 ```

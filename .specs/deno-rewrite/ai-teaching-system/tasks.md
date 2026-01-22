@@ -862,7 +862,7 @@ trigger: code.length < 50
 
 4. **Add `teach` subcommand** (optional):
 
-   ```bash
+   ```sh
    algo-trainer teach generate <problem-slug>  # Generate script
    algo-trainer teach validate <path>          # Validate script
    algo-trainer teach info                     # Show current session

@@ -4,7 +4,7 @@
 
 **MANDATORY:** Before any task, run ALL quality checks:
 
-```bash
+```sh
 deno task check
 deno task lint
 deno task test
@@ -16,7 +16,7 @@ If any fail, fix errors BEFORE starting the task.
 
 After completing ANY modification:
 
-```bash
+```sh
 deno task check
 deno task lint
 deno task test
@@ -95,7 +95,7 @@ Available error classes:
 
 ## Development Commands
 
-```bash
+```sh
 # Development mode with watch
 deno task dev
 

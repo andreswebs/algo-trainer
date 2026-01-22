@@ -2,7 +2,7 @@
 
 ## Development
 
-```bash
+```sh
 # Start development mode with hot reload
 deno task dev
 
@@ -18,7 +18,7 @@ deno task fmt
 
 ## Testing
 
-```bash
+```sh
 # Run all tests
 deno task test
 
@@ -31,7 +31,7 @@ deno task bench
 
 ## Building
 
-```bash
+```sh
 # Compile to binary (outputs to bin/algo-trainer)
 deno task build
 
@@ -41,7 +41,7 @@ deno task build
 
 ## Direct Deno Commands
 
-```bash
+```sh
 # Run main entry point
 deno run --allow-all src/main.ts
 
@@ -57,7 +57,7 @@ deno cache --lock=deno.lock --lock-write src/main.ts
 
 ## CLI Usage (after build)
 
-```bash
+```sh
 # Show help
 algo-trainer --help
 

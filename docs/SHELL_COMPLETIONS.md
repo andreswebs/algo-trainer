@@ -22,7 +22,7 @@ Algo Trainer provides shell completion scripts for popular shells, enabling tab 
 
 1. Copy the completion script to a directory in your `$fpath`:
 
-```bash
+```sh
 # Create a completions directory if it doesn't exist
 mkdir -p ~/.zsh/completions
 
@@ -38,7 +38,7 @@ echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
 
 2. Restart your shell or reload your configuration:
 
-```bash
+```sh
 source ~/.zshrc
 ```
 
@@ -46,7 +46,7 @@ source ~/.zshrc
 
 #### Oh My Zsh
 
-```bash
+```sh
 # Copy to Oh My Zsh completions directory
 cp completions/_at ~/.oh-my-zsh/completions/
 
@@ -58,7 +58,7 @@ source ~/.zshrc
 
 Add to your `.zshrc`:
 
-```bash
+```sh
 zinit ice as"completion"
 zinit snippet /path/to/algo-trainer/completions/_at
 ```
@@ -67,13 +67,13 @@ zinit snippet /path/to/algo-trainer/completions/_at
 
 Add to your `.zshrc`:
 
-```bash
+```sh
 antigen bundle /path/to/algo-trainer/completions
 ```
 
 ### Method 3: System-wide Installation (Requires sudo)
 
-```bash
+```sh
 # Copy to system completions directory
 sudo cp completions/_at /usr/local/share/zsh/site-functions/
 
@@ -92,13 +92,13 @@ exec zsh
 
 Add the following line to your `~/.bashrc` or `~/.bash_profile`:
 
-```bash
+```sh
 source /path/to/algo-trainer/completions/at.bash
 ```
 
 Then reload your shell configuration:
 
-```bash
+```sh
 source ~/.bashrc
 ```
 
@@ -106,7 +106,7 @@ source ~/.bashrc
 
 Copy the completion script to your system's bash completion directory:
 
-```bash
+```sh
 # On most Linux systems
 sudo cp completions/at.bash /etc/bash_completion.d/at
 
@@ -124,7 +124,7 @@ cp completions/at.bash ~/.local/share/bash-completion/completions/at
 
 #### Option 1: Copy to Fish completions directory
 
-```bash
+```sh
 cp completions/at.fish ~/.config/fish/completions/
 ```
 
@@ -132,7 +132,7 @@ cp completions/at.fish ~/.config/fish/completions/
 
 Add the completions directory to your Fish configuration:
 
-```bash
+```sh
 set -g fish_complete_path $fish_complete_path /path/to/algo-trainer/completions
 ```
 
@@ -142,27 +142,27 @@ set -g fish_complete_path $fish_complete_path /path/to/algo-trainer/completions
 
 1. **Check if completions are enabled:**
 
-   ```bash
+   ```sh
    echo $fpath
    # Should include the directory where _at is located
    ```
 
 2. **Rebuild completion cache:**
 
-   ```bash
+   ```sh
    rm -f ~/.zcompdump
    compinit
    ```
 
 3. **Verify the completion file is in the right place:**
 
-   ```bash
+   ```sh
    # Should show the path to _at
    whence -v _at
    ```
 
 4. **Check for syntax errors:**
-   ```bash
+   ```sh
    zsh -n completions/_at
    # Should not show any errors
    ```
@@ -177,7 +177,7 @@ For Fish:
 
 If completions are slow, you might want to enable completion caching:
 
-```bash
+```sh
 # Add to ~/.zshrc
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh/cache
@@ -187,7 +187,7 @@ zstyle ':completion:*' cache-path ~/.zsh/cache
 
 Make sure you're using the latest version of the completion script:
 
-```bash
+```sh
 # Re-copy the completion script
 cp completions/_at ~/.zsh/completions/
 
@@ -202,13 +202,13 @@ If you're developing the completion script:
 
 1. Make changes to `completions/_at`
 2. Test without restarting your shell:
-   ```bash
+   ```sh
    # Reload the completion
    unfunction _at
    autoload -U _at
    ```
 3. Test the completion:
-   ```bash
+   ```sh
    algo-trainer <TAB>
    ```
 

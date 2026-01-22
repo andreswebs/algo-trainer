@@ -174,7 +174,7 @@ All tests pass successfully:
 
 ### Config Tests
 
-```bash
+```sh
 deno test test/cli-commands-config.test.ts
 ✅ 2 test suites, 38 steps, 100% pass rate
 ```
@@ -187,7 +187,7 @@ Key validations:
 
 ### Trigger Tests
 
-```bash
+```sh
 deno test test/ai/triggers.test.ts
 ✅ 31 tests, 100% pass rate
 ```
@@ -200,7 +200,7 @@ Validated:
 
 ### Database Tests
 
-```bash
+```sh
 deno test test/database.test.ts
 ✅ 19 tests, 100% pass rate
 ```

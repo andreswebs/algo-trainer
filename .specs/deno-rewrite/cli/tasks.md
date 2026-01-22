@@ -795,7 +795,7 @@ try {
 
 ### Testing Commands Locally
 
-```bash
+```sh
 # Run in dev mode
 deno task dev -- challenge easy
 
