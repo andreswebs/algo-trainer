@@ -48,9 +48,10 @@ async function main() {
   lines.push(' * Generated problem data');
   lines.push(' *');
   lines.push(' * This file is auto-generated from src/data/problems/*.json');
-  lines.push(' * DO NOT EDIT MANUALLY - run `deno task generate-problems` to regenerate');
+  lines.push(
+    ' * DO NOT EDIT MANUALLY - run `deno task generate-problems` to regenerate',
+  );
   lines.push(' *');
-  lines.push(` * Generated at: ${new Date().toISOString()}`);
   lines.push(` * Total problems: ${problems.length}`);
   lines.push(' */');
   lines.push('');
