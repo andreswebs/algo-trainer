@@ -67,7 +67,7 @@ The `deno compile` command doesn't include the JSON problem files from `src/data
 # Update build command to include data files
 deno compile --allow-all \
   --include src/data/problems/*.json \
-  --output bin/at \
+  --output bin/algo-trainer \
   src/main.ts
 ```
 
@@ -113,12 +113,12 @@ deno compile --allow-all \
 
 **Current Behavior:**
 ```bash
-at init  # Error: "Root directory cannot be empty"
+algo-trainer init  # Error: "Root directory cannot be empty"
 ```
 
 **Expected Behavior:**
 ```bash
-at init  # Initializes workspace in current directory
+algo-trainer init  # Initializes workspace in current directory
 ```
 
 **Implementation:**
@@ -203,12 +203,12 @@ try {
 
 **Current Behavior:**
 ```bash
-at init /existing/workspace  # Shows info message, exits with code 0
+algo-trainer init /existing/workspace  # Shows info message, exits with code 0
 ```
 
 **Expected Behavior:**
 ```bash
-at init /existing/workspace  # Shows warning, exits with code 3 (CONFIG_ERROR)
+algo-trainer init /existing/workspace  # Shows warning, exits with code 3 (CONFIG_ERROR)
 ```
 
 **Implementation:**
@@ -237,12 +237,12 @@ if (await workspaceExists(targetPath) && !args.force) {
 
 **Current Behavior:**
 ```bash
-at hint --level 99  # Shows error message, exits with code 0
+algo-trainer hint --level 99  # Shows error message, exits with code 0
 ```
 
 **Expected Behavior:**
 ```bash
-at hint --level 99  # Shows error message, exits with code 2 (USAGE_ERROR)
+algo-trainer hint --level 99  # Shows error message, exits with code 2 (USAGE_ERROR)
 ```
 
 **Implementation:**
@@ -320,12 +320,12 @@ validateEnvironmentVariables();
 
 **Current Behavior:**
 ```bash
-at list -t array  # Shows all 16 problems instead of filtered subset
+algo-trainer list -t array  # Shows all 16 problems instead of filtered subset
 ```
 
 **Expected Behavior:**
 ```bash
-at list -t array  # Shows only problems tagged with "array"
+algo-trainer list -t array  # Shows only problems tagged with "array"
 ```
 
 **Investigation Steps:**
@@ -394,7 +394,7 @@ Deno.test("Binary includes problem data", async () => {
 
   // Test binary can list problems
   const listProcess = await Deno.run({
-    cmd: ["./bin/at", "list", "--json"],
+    cmd: ["./bin/algo-trainer", "list", "--json"],
     stdout: "piped",
   });
 
@@ -410,7 +410,7 @@ Deno.test("Binary works without source files", async () => {
   const tempDir = await Deno.makeTempDir();
 
   // Copy only the binary
-  await Deno.copyFile("./bin/at", `${tempDir}/at`);
+  await Deno.copyFile("./bin/algo-trainer", `${tempDir}/at`);
 
   // Run from temp directory (no source files)
   const process = await Deno.run({
@@ -549,22 +549,22 @@ Track progress as tasks are completed:
 ```bash
 # Test binary compilation fix
 deno task build
-./bin/at list  # Should show problems
-./bin/at challenge easy  # Should work
+./bin/algo-trainer list  # Should show problems
+./bin/algo-trainer challenge easy  # Should work
 
 # Test init without path
-./bin/at init  # Should work in current directory
+./bin/algo-trainer init  # Should work in current directory
 
 # Test exit codes
-./bin/at init /tmp/test && ./bin/at init /tmp/test
+./bin/algo-trainer init /tmp/test && ./bin/algo-trainer init /tmp/test
 echo $?  # Should be 3
 
-AT_LANGUAGE=invalid ./bin/at list
+AT_LANGUAGE=invalid ./bin/algo-trainer list
 echo $?  # Should be 2
 
 # Test workspace detection
 rm -rf ~/.config/algo-trainer
-./bin/at challenge easy  # Should show "Workspace not initialized"
+./bin/algo-trainer challenge easy  # Should show "Workspace not initialized"
 ```
 
 ### Automated Test Suite

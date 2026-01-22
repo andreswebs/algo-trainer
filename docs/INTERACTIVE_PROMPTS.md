@@ -24,10 +24,10 @@ When starting a new challenge without specifying all options:
 
 ```bash
 # Without arguments - prompts for difficulty and language
-at challenge
+algo-trainer challenge
 
 # Partial arguments - only prompts for missing values
-at challenge easy
+algo-trainer challenge easy
 ```
 
 **Prompts:**
@@ -41,10 +41,10 @@ When marking a problem as complete:
 
 ```bash
 # Without arguments - prompts for problem selection
-at complete
+algo-trainer complete
 
 # Single problem auto-selected
-at complete
+algo-trainer complete
 ```
 
 **Prompts:**
@@ -67,7 +67,7 @@ This ensures your automation scripts work reliably.
 ### Interactive Challenge Start
 
 ```bash
-$ at challenge
+$ algo-trainer challenge
 Select difficulty level:
   1. easy
   2. medium (default)
@@ -92,14 +92,14 @@ Selected language: python
 ### Interactive Problem Completion
 
 ```bash
-$ at complete
+$ algo-trainer complete
 Select problem to complete:
   1. two-sum
   2. add-two-numbers
   3. longest-substring
 Enter number or name: 1
 
-Add completion notes (optional): Great problem for hash tables!
+Add completion notes (optional): Grealgo-trainer problem for hash tables!
 
 ✅ Completed and archived: two-sum
 Files moved to: /workspace/completed/two-sum

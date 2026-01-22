@@ -28,7 +28,7 @@ This means environment variables will always override values from the configurat
 
 ```bash
 export AT_WORKSPACE=/home/user/algo-practice
-at init
+algo-trainer init
 ```
 
 #### `AT_CONFIG_PATH`
@@ -39,7 +39,7 @@ at init
 
 ```bash
 export AT_CONFIG_PATH=/custom/path/config.json
-at config list
+algo-trainer config list
 ```
 
 ### Language Settings
@@ -53,7 +53,7 @@ at config list
 
 ```bash
 export AT_LANGUAGE=python
-at challenge easy
+algo-trainer challenge easy
 ```
 
 ### Template Settings
@@ -67,7 +67,7 @@ at challenge easy
 
 ```bash
 export AT_TEMPLATE_STYLE=minimal
-at challenge two-sum
+algo-trainer challenge two-sum
 ```
 
 ## Usage Examples
@@ -80,8 +80,8 @@ export AT_WORKSPACE=~/algo-practice
 export AT_LANGUAGE=python
 
 # Initialize and start a challenge
-at init
-at challenge easy
+algo-trainer init
+algo-trainer challenge easy
 ```
 
 ### CI/CD Environment
@@ -95,8 +95,8 @@ export AT_NO_EMOJI=1
 export AT_QUIET=1
 
 # Run commands without interactive prompts
-at init
-at challenge two-sum
+algo-trainer init
+algo-trainer challenge two-sum
 ```
 
 ## Testing

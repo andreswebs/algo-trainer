@@ -44,7 +44,7 @@ function showHelp(): void {
 Algo Trainer v${VERSION} - Practice algorithmic problem solving
 
 USAGE:
-    at <command> [subcommand] [options] [args]
+    algo-trainer <command> [subcommand] [options] [args]
 
 COMMANDS:
 ${formatCommandList()}
@@ -61,11 +61,11 @@ GLOBAL OPTIONS:
 ${getEnvVarDocumentation()}
 
 EXAMPLES:
-    at challenge easy           Start an easy challenge
-    at complete two-sum         Mark 'two-sum' as completed
-    at hint                     Get a hint for current problem
-    at config set language ts   Set default language to TypeScript
-    at init ~/my-practice       Initialize workspace
+    algo-trainer challenge easy           Start an easy challenge
+    algo-trainer complete two-sum         Mark 'two-sum' as completed
+    algo-trainer hint                     Get a hint for current problem
+    algo-trainer config set language ts   Set default language to TypeScript
+    algo-trainer init ~/my-practice       Initialize workspace
 
 EXIT CODES:
     0    Success - Command completed successfully
@@ -78,7 +78,7 @@ EXIT CODES:
     7    Permission error - File permission denied
 
 For more information about a specific command, run:
-    at <command> --help
+    algo-trainer <command> --help
 `;
 
   logger.log(help.trim());

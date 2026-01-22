@@ -569,7 +569,7 @@ All implementation is new TypeScript code following the patterns established in 
 {
   "tasks": {
     "dev": "deno run --allow-all --watch src/cli/main.ts",
-    "build": "deno compile --allow-all --output=bin/at src/cli/main.ts",
+    "build": "deno compile --allow-all --output=bin/algo-trainer src/cli/main.ts",
     "test": "deno test --allow-all",
     "test:watch": "deno test --allow-all --watch",
     "bench": "deno bench --allow-all",

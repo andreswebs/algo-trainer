@@ -32,11 +32,11 @@ deno task bench
 ## Building
 
 ```bash
-# Compile to binary (outputs to bin/at)
+# Compile to binary (outputs to bin/algo-trainer)
 deno task build
 
 # Run the compiled binary
-./bin/at --help
+./bin/algo-trainer --help
 ```
 
 ## Direct Deno Commands

@@ -191,7 +191,7 @@ These commands can be implemented in parallel once Layer 0 is complete.
 **Usage:**
 
 ```
-at init [path]        Initialize workspace at path (default: current directory)
+algo-trainer init [path]        Initialize workspace at path (default: current directory)
   --force, -f         Reinitialize existing workspace
 ```
 
@@ -231,10 +231,10 @@ at init [path]        Initialize workspace at path (default: current directory)
 **Usage:**
 
 ```
-at config list              List all configuration values
-at config get <key>         Get a configuration value
-at config set <key> <value> Set a configuration value
-at config reset [key]       Reset configuration to defaults
+algo-trainer config list              List all configuration values
+algo-trainer config get <key>         Get a configuration value
+algo-trainer config set <key> <value> Set a configuration value
+algo-trainer config reset [key]       Reset configuration to defaults
 
 Options:
   --json                    Output in JSON format
@@ -268,7 +268,7 @@ Options:
 **Usage:**
 
 ```
-at list [options]           List available problems
+algo-trainer list [options]           List available problems
 
 Options:
   --difficulty, -d <level>  Filter by difficulty (easy, medium, hard)
@@ -311,9 +311,9 @@ Options:
 **Usage:**
 
 ```
-at challenge [difficulty]   Start a random challenge at difficulty level
-at challenge <slug>         Start specific problem by slug
-at challenge --random       Start random problem (any difficulty)
+algo-trainer challenge [difficulty]   Start a random challenge at difficulty level
+algo-trainer challenge <slug>         Start specific problem by slug
+algo-trainer challenge --random       Start random problem (any difficulty)
 
 Options:
   --difficulty, -d <level>  easy, medium, or hard
@@ -351,9 +351,9 @@ Options:
 **Usage:**
 
 ```
-at hint [slug]             Get next hint for problem
-at hint --level <n>        Get specific hint level (1-3)
-at hint --all              Show all hints
+algo-trainer hint [slug]             Get next hint for problem
+algo-trainer hint --level <n>        Get specific hint level (1-3)
+algo-trainer hint --all              Show all hints
 
 Options:
   --level, -l <n>          Hint level (1=gentle, 2=moderate, 3=solution approach)
@@ -393,10 +393,10 @@ Options:
 **Usage:**
 
 ```
-at progress                Show overall progress summary
-at progress --detailed     Show detailed breakdown
-at progress --category     Group by category
-at progress --json         Output in JSON format
+algo-trainer progress                Show overall progress summary
+algo-trainer progress --detailed     Show detailed breakdown
+algo-trainer progress --category     Group by category
+algo-trainer progress --json         Output in JSON format
 ```
 
 **Statistics to Show:**
@@ -436,8 +436,8 @@ at progress --json         Output in JSON format
 **Usage:**
 
 ```
-at complete <slug>         Mark problem as completed
-at complete                Mark current problem as completed
+algo-trainer complete <slug>         Mark problem as completed
+algo-trainer complete                Mark current problem as completed
 
 Options:
   --notes, -n <text>       Add completion notes
@@ -509,7 +509,7 @@ const difficulty = args.difficulty || await promptDifficulty();
 **Help Format:**
 
 ```
-at challenge - Start a new coding challenge
+algo-trainer challenge - Start a new coding challenge
 
 USAGE:
     at challenge [difficulty]

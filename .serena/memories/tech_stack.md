@@ -38,7 +38,7 @@ Strict mode with these compiler options:
 | Task         | Command                                                    | Description                 |
 | ------------ | ---------------------------------------------------------- | --------------------------- |
 | `dev`        | `deno run --allow-all --watch src/main.ts`                 | Development mode with watch |
-| `build`      | `deno compile --allow-all --output=bin/at src/main.ts`     | Compile to binary           |
+| `build`      | `deno compile --allow-all --output=bin/algo-trainer src/main.ts`     | Compile to binary           |
 | `test`       | `deno test --allow-write --allow-read --allow-env`         | Run tests                   |
 | `test:watch` | `deno test --watch --allow-write --allow-read --allow-env` | Run tests with watch        |
 | `bench`      | `deno bench --allow-all`                                   | Run benchmarks              |

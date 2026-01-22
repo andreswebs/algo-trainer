@@ -165,7 +165,7 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const config = configManager.getConfig();
 
     // Ensure workspace is initialized (throws WorkspaceError if not)
-    const workspace = await requireWorkspace();
+    const _workspace = await requireWorkspace();
 
     // Initialize problem manager
     const manager = await requireProblemManager();
