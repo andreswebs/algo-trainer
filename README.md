@@ -1,43 +1,94 @@
 # algo-trainer
 
-An offline LeetCode practice environment.
+A CLI tool for practicing algorithmic problems offline. Work through coding challenges with hints, progress tracking, and AI-assisted teaching.
 
-**Note**: This is an experiment in AI spec-driven development. Don't take it too seriously.
+**Note**: This is an experiment in AI spec-driven development. Don't take it too seriously. See the [story](docs/STORY.md) for more context.
 
-## The story
+## Installation
 
-This is a work-in-progress. I started this repo to test the capabilities of Cursor with the `Claude Opus 4.5` model and investigate orchestrating agents in parallel. This is essentially an experiment for `$WORK`, but may turn out to be a useful pedagogical tool. The story is as follows.
+Requires [Deno](https://deno.land/) 2.x or later.
 
-I had recently started on a project which gave me access to Cursor and `Claude Opus 4.5`, and I felt I needed a deep dive into their capabilities.
+```sh
+deno install --allow-read --allow-write --allow-env --allow-net --name algo-trainer jsr:@andreswebs/algo-trainer
+```
 
-This repo was originally a fork of [karote00/local-leetcode-trainer](https://github.com/karote00/local-leetcode-trainer), which I found when looking for a way to run LeetCode problems locally.
+Or build from source:
 
-I begun testing how well Cursor with `Opus 4.5` can convert it to Deno + TypeScript and implement various improvements to the CLI. I begun with a couple of careful planning and research sessions, creating new specs as output. When I was ready, I started to spin up agents in parallel in YOLO mode. This approach quickly exhausted my available credits for the model, and at this point I switched tools. The experience was boring and tiring, watching the agents grind through my task list, and then reviewing a lot of output. I soon lost focus. This was day 2 of the experiment.
+```sh
+git clone https://github.com/andreswebs/algo-trainer.git
+cd algo-trainer
+deno task build
+cp ./bin/algo-trainer ~/.local/bin # or somewhere else in your PATH
+```
 
-On the next day, after I had exhausted my tokens for Cursor, I switched to other tools. First I briefly tried `Gemini 3 Pro` through the Goose CLI. It gave me slightly worse results than `Opus 4.5` (for example, it insisted on overwriting the Serena memory files with crap related to the current task), and I was quickly rate-limited.
+## Usage
 
-Then I went on with GitHub Copilot using `Claude Sonnet 4`, but the output even worse than the two previous models (it made more mistakes, more failed tests, backed itself into a corner and made me start from scratch on a feature one time). At this point, I stopped caring and stopped reading attentively through generated code, and just started vibing the whole thing. I started a new approach:
+Initialize a workspace:
 
-I did a deep planning session for each major sub-system, before starting the implementation of it. For those sessions I used `Opus 4.5` again. This gave me a tasks.md file for each sub-system, with small tasks that could be parallelized. Then I started assigning those as issues directly to the Copilot remote agent on GitHub. I made sure everything passed linting and had some test coverage, but didn't bother to read the details. I just briefly skimmed the PRs before merging.
+```sh
+algo-trainer init
+```
 
-## AI Development Workflow
+Start a challenge:
 
-This project serves as a testbed for various AI-assisted development strategies. The first one is parallel agent orchestration.
+```sh
+algo-trainer challenge
+```
 
-### Parallel agent orchestration
+List available problems:
 
-#### Components
+```sh
+algo-trainer list
+```
 
-- **Dockerized Cursor CLI**: Running Cursor in a containerized environment with API key authentication: this allows safer YOLO mode
-- **Worktrunk (wt)**: Git worktree management tool: this facilitates branching and parallel development workflows
-- **Parallel Agent Orchestration**: Multiple AI agents running simultaneously in separate worktrees, each handling different aspects of development
+Get a hint:
 
-### Workflow Process
+```sh
+algo-trainer hint
+```
 
-1. **Worktree Setup**: Use `worktrunk` to create isolated git worktrees for different features or experiments
-2. **Agent Deployment**: One container is created per worktree, with a separate agent context
-3. **Parallel Execution**: Multiple agents work simultaneously on tasks
-4. **AI reviews**: PRs are reviewed separately by GitHub Copilot
+Mark a problem complete:
+
+```sh
+algo-trainer complete
+```
+
+View your progress:
+
+```sh
+algo-trainer progress
+```
+
+## Configuration
+
+Config files follow XDG Base Directory specification:
+
+- Config: `~/.config/algo-trainer/`
+- Cache: `~/.cache/algo-trainer/`
+- Data: `~/.local/share/algo-trainer/`
+
+Set your preferred language:
+
+```sh
+algo-trainer config set language python
+```
+
+Available languages: python, typescript, javascript, go, rust, java, cpp.
+
+## Development
+
+Type check and lint:
+
+```sh
+deno task check
+deno task lint
+```
+
+Run tests:
+
+```sh
+deno task test
+```
 
 ## Authors
 
