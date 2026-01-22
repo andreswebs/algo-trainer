@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write
+#!/usr/bin/env -S deno run --allow-read --allow-write --allow-env
 /**
  * Generate TypeScript module from problem JSON files
  *
@@ -11,6 +11,7 @@
  */
 
 import { join } from '@std/path';
+import { logger } from '../src/utils/output.ts';
 
 const PROBLEMS_DIR = 'src/data/problems';
 const OUTPUT_FILE = 'src/data/problems.generated.ts';
@@ -21,7 +22,7 @@ interface ProblemFile {
 }
 
 async function main() {
-  console.log('🔍 Scanning for problem files...');
+  logger.debug('Scanning for problem files...');
 
   // Read all JSON files from problems directory
   const problems: ProblemFile[] = [];
@@ -30,17 +31,17 @@ async function main() {
       const path = join(PROBLEMS_DIR, entry.name);
       const content = await Deno.readTextFile(path);
       problems.push({ filename: entry.name, content });
-      console.log(`  ✓ ${entry.name}`);
+      logger.debug(`Found: ${entry.name}`);
     }
   }
 
-  console.log(`\n📦 Found ${problems.length} problem files`);
+  logger.debug(`Found ${problems.length} problem files`);
 
   // Sort by filename for consistent output
   problems.sort((a, b) => a.filename.localeCompare(b.filename));
 
   // Generate TypeScript module
-  console.log('\n✨ Generating TypeScript module...');
+  logger.debug('Generating TypeScript module...');
 
   const lines: string[] = [];
   lines.push('/**');
@@ -87,14 +88,13 @@ async function main() {
   // Write the generated file
   await Deno.writeTextFile(OUTPUT_FILE, output);
 
-  console.log(`✅ Generated ${OUTPUT_FILE}`);
-  console.log(`📊 Output size: ${(output.length / 1024).toFixed(2)} KB`);
-  console.log('\n✨ Done!');
+  logger.success(`Generated ${OUTPUT_FILE}`);
+  logger.debug(`Output size: ${(output.length / 1024).toFixed(2)} KB`);
 }
 
 if (import.meta.main) {
   main().catch((error) => {
-    console.error('❌ Error:', error);
+    logger.error('Failed to generate problems', String(error));
     Deno.exit(1);
   });
 }

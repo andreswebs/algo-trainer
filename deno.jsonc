@@ -13,7 +13,7 @@
   },
   "tasks": {
     "dev": "DENO_ENV=development deno run --allow-all --watch src/main.ts",
-    "generate-problems": "deno run --allow-read --allow-write scripts/generate-problems.ts",
+    "generate-problems": "deno run --allow-read --allow-write --allow-env scripts/generate-problems.ts",
     "build": "deno task generate-problems && deno compile --allow-all --output=bin/algo-trainer src/main.ts",
     "test": "DENO_ENV=test deno test --allow-write --allow-read --allow-env",
     "test:watch": "deno test --watch --allow-write --allow-read --allow-env",

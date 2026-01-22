@@ -14,7 +14,7 @@ import { logger, outputData } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import { DEFAULT_CONFIG } from '../../config/types.ts';
 import { showCommandHelp } from './help.ts';
-import { ConfigError, ValidationError } from '../../utils/errors.ts';
+import { ValidationError } from '../../utils/errors.ts';
 
 function showHelp(): void {
   showCommandHelp({

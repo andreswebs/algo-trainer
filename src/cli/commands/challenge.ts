@@ -117,7 +117,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     }
 
     // Ensure workspace is valid
-    const workspace = await requireWorkspace();
+    const _workspace = await requireWorkspace();
 
     // Initialize problem manager
     const manager = await requireProblemManager();
