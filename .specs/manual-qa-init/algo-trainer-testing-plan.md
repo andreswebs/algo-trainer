@@ -43,7 +43,15 @@ This document provides a complete manual testing plan for Algo-Trainer, a CLI to
 - Write access to test directories
 - Clean test workspace for each test session
 
-### 2.2 Environment Setup
+### 2.2 Supported Platforms
+
+| Platform | Versions                           |
+| -------- | ---------------------------------- |
+| macOS    | 12.0+                              |
+| Linux    | Ubuntu 20.04+, other major distros |
+| Windows  | 10+, WSL2                          |
+
+### 2.3 Environment Setup
 
 ```sh
 # Create fresh test directory for each session

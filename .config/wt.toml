@@ -1,2 +1,4 @@
 [post-create]
 direnv = "[ -f \"{{ primary_worktree_path }}/.envrc\" ] && cp {{ primary_worktree_path }}/.envrc . && direnv allow"
+ralph = "[ -d \"{{ primary_worktree_path }}/.ralph\" ] && cp -r {{ primary_worktree_path }}/.ralph ."
+claude = "[ -d \"{{ primary_worktree_path }}/.claude\" ] && cp -r {{ primary_worktree_path }}/.claude ."
