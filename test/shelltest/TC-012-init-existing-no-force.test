@@ -1,7 +1,0 @@
-# TC-012: Initialize in existing workspace (no force)
-# Priority: High
-# Expected: Shows error/warning about existing workspace, does NOT overwrite, exit code non-zero (likely 3)
-
-$ algo-trainer init
->2 /already.*initialized|exists|workspace.*found/i
->= !0

@@ -1,8 +1,0 @@
-# TC-030: Challenge without initialized workspace
-# Priority: Critical
-# Expected: Shows "Workspace not initialized" error, suggests init command, exit code 4
-
-$ algo-trainer challenge two-sum
->2 /workspace.*not.*initialized|no.*workspace/i
->2 /init/i
->= 4

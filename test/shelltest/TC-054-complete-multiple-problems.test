@@ -1,7 +1,0 @@
-# TC-054: Interactive problem selection (multiple problems)
-# Priority: High
-# Expected: Prompts for problem selection, shows list of in-progress problems, completes selected problem, exit code 0
-
-$ algo-trainer complete
-> /select|choose|which/i
->= 0

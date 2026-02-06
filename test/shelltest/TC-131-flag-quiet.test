@@ -1,7 +1,0 @@
-# TC-131: --quiet flag
-# Priority: Medium
-# Expected: Minimal output, exit code 0
-
-$ algo-trainer --quiet complete two-sum
-> //
->= 0

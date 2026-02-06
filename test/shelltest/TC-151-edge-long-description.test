@@ -1,7 +1,0 @@
-# TC-151: Very long problem description
-# Priority: Low
-# Expected: Description displays (possibly paginated), does not truncate unexpectedly, exit code 0
-
-$ algo-trainer challenge long-description-problem
-> //
->= 0

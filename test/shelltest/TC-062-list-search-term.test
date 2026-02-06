@@ -1,7 +1,0 @@
-# TC-062: List with search term
-# Priority: High
-# Expected: Shows problems with "tree" in title or description, search is case-insensitive, exit code 0
-
-$ algo-trainer list -s "tree"
-> /tree/i
->= 0

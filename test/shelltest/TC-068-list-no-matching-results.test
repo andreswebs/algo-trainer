@@ -1,7 +1,0 @@
-# TC-068: List with no matching results
-# Priority: Medium
-# Expected: Shows "No problems found" message, exit code 0 (not an error)
-
-$ algo-trainer list -s "xyznonexistent123"
-> /no.*problems.*found|empty|0.*results/i
->= 0

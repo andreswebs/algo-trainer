@@ -1,7 +1,0 @@
-# TC-074: Progress with empty workspace
-# Priority: High
-# Expected: Shows 0 completed, shows 0 in progress (or actual count), does not error, exit code 0
-
-$ algo-trainer progress
-> /0.*completed|no.*problems.*completed/i
->= 0

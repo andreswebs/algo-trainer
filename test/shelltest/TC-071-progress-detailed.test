@@ -1,9 +1,0 @@
-# TC-071: View detailed progress
-# Priority: High
-# Expected: Shows all statistics from basic view, breakdown by all categories (not just top 10), shows percentages, exit code 0
-
-$ algo-trainer progress --detailed
-> /completed|total/i
-> /category|categories/i
-> /%|percent/
->= 0

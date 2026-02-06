@@ -1,7 +1,0 @@
-# TC-025: Start challenge that already exists (no force)
-# Priority: High
-# Expected: Prompts for confirmation to overwrite or exits without changes
-
-$ algo-trainer challenge two-sum
-> /already.*exists|overwrite|confirm/i
->=

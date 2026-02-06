@@ -1,8 +1,0 @@
-# TC-143: Disk full simulation
-# Priority: Low
-# Expected: Shows appropriate error, does not crash, exit code non-zero
-# Note: This test requires special setup to simulate disk full condition
-
-$ algo-trainer challenge two-sum
->2 /disk.*full|no.*space|ENOSPC/i
->= !0

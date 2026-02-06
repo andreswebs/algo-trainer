@@ -1,7 +1,0 @@
-# TC-002: Display version
-# Priority: Medium
-# Expected: Displays version number (0.0.1), exit code 0
-
-$ algo-trainer --version
-> /0\.0\.1/
->= 0

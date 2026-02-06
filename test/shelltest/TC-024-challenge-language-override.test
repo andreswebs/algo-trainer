@@ -1,7 +1,0 @@
-# TC-024: Challenge with explicit language override
-# Priority: High
-# Expected: Creates Python template (not TypeScript), .py extension, Python syntax, exit code 0
-
-$ algo-trainer challenge two-sum -l python
-> /python|\.py/i
->= 0

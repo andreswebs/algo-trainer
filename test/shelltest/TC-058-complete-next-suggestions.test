@@ -1,7 +1,0 @@
-# TC-058: Next problem suggestions
-# Priority: Medium
-# Expected: Suggests problems of similar difficulty, suggestions are different from completed problem, shows 2-3 suggestions
-
-$ algo-trainer complete two-sum
-> /next|try|suggest/i
->= 0

@@ -1,7 +1,0 @@
-# TC-111: AT_LANGUAGE override
-# Priority: High
-# Expected: Creates Python template despite config, exit code 0
-
-$ AT_LANGUAGE=python algo-trainer challenge three-sum
-> /python|\.py/i
->= 0

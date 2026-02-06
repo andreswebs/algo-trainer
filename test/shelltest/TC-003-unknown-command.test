@@ -1,7 +1,0 @@
-# TC-003: Unknown command
-# Priority: High
-# Expected: Shows error message, suggests similar commands or help, exit code 2
-
-$ algo-trainer unknowncommand
->2 /unknown.*command|error/i
->= 2

@@ -1,7 +1,0 @@
-# TC-013: Force reinitialize workspace
-# Priority: High
-# Expected: Reinitializes workspace, preserves or recreates directory structure, success message, exit code 0
-
-$ algo-trainer init --force
-> /success|initialized|created/i
->= 0

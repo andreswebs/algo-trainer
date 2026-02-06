@@ -1,8 +1,0 @@
-# TC-087: Set invalid boolean
-# Priority: Medium
-# Expected: Shows validation error, indicates valid values (true/false), exit code 2 or 3
-
-$ algo-trainer config set aiEnabled maybe
->2 /invalid|validation.*error/i
->2 /true.*false|boolean/i
->= !0

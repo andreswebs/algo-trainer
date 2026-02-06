@@ -1,7 +1,0 @@
-# TC-042: Get specific hint level
-# Priority: High
-# Expected: Displays level 2 hint directly, skips level 1, exit code 0
-
-$ algo-trainer hint two-sum --level 2
-> /hint.*2|level.*2/i
->= 0

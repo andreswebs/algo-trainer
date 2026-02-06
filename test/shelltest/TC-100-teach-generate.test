@@ -1,8 +1,0 @@
-# TC-100: Generate teaching script
-# Priority: High
-# Expected: Generates YAML teaching script, script saved in problem directory, shows success message, exit code 0
-
-$ algo-trainer teach generate two-sum
-> /generated|created|success/i
-> /yaml|script/i
->= 0

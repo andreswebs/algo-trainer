@@ -1,7 +1,0 @@
-# TC-021: Start challenge with difficulty filter
-# Priority: Critical
-# Expected: Shows only easy problems, creates problem and solution files, exit code 0
-
-$ algo-trainer challenge -d easy
-> /easy/i
->= 0

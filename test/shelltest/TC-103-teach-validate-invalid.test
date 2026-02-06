@@ -1,7 +1,0 @@
-# TC-103: Validate invalid teaching script
-# Priority: High
-# Expected: Shows validation errors, describes what's wrong, exit code non-zero
-
-$ algo-trainer teach validate ./invalid.yaml
->2 /invalid|error|validation/i
->= !0

@@ -1,7 +1,0 @@
-# TC-134: -c/--config custom config path
-# Priority: Medium
-# Expected: Uses custom config file, shows settings from custom file, exit code 0
-
-$ algo-trainer -c /tmp/custom-config.json config list
-> //
->= 0

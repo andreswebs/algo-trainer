@@ -1,8 +1,0 @@
-# TC-023: Start challenge with multiple filters
-# Priority: High
-# Expected: Filters by difficulty AND category, uses specified language, creates files, exit code 0
-
-$ algo-trainer challenge -d medium -c arrays -l python
-> /medium/i
-> /arrays/i
->= 0

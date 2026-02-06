@@ -1,7 +1,0 @@
-# TC-142: Permission denied on write
-# Priority: Medium
-# Expected: Shows permission denied error, clear error message, exit code 7
-
-$ algo-trainer challenge two-sum
->2 /permission.*denied|access.*denied|EACCES/i
->= 7

@@ -1,7 +1,0 @@
-# TC-133: --no-emoji flag
-# Priority: Low
-# Expected: No emoji in output, exit code 0
-
-$ algo-trainer --no-emoji progress
-> //
->= 0

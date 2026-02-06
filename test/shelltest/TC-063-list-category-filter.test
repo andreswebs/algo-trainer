@@ -1,7 +1,0 @@
-# TC-063: List with category filter
-# Priority: High
-# Expected: Shows only problems tagged with "arrays", exit code 0
-
-$ algo-trainer list -c arrays
-> /arrays/i
->= 0

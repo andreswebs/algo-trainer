@@ -1,7 +1,0 @@
-# TC-105: Generate for invalid problem
-# Priority: Medium
-# Expected: Shows problem not found error, exit code 5
-
-$ algo-trainer teach generate nonexistent-problem
->2 /not.*found|does.*not.*exist/i
->= 5

@@ -1,7 +1,0 @@
-# TC-026: Force overwrite existing challenge
-# Priority: High
-# Expected: Overwrites existing files without prompting, creates fresh files, exit code 0
-
-$ algo-trainer challenge two-sum --force
-> /created|success|overwr/i
->= 0

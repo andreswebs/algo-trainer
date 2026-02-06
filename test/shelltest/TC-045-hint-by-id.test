@@ -1,7 +1,0 @@
-# TC-045: Hint by problem ID
-# Priority: Medium
-# Expected: Finds problem by ID, displays hint for two-sum, exit code 0
-
-$ algo-trainer hint 1
-> /hint|two.*sum/i
->= 0

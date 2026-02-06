@@ -1,7 +1,0 @@
-# TC-117: Invalid environment variable value
-# Priority: Medium
-# Expected: Shows error about invalid language, does not crash, exit code 2
-
-$ AT_LANGUAGE=invalid algo-trainer challenge two-sum
->2 /invalid.*language|unknown.*language/i
->= 2

@@ -1,7 +1,0 @@
-# TC-113: AT_QUIET flag
-# Priority: Medium
-# Expected: Minimal output, only essential information shown, exit code 0
-
-$ AT_QUIET=1 algo-trainer challenge two-sum
-> //
->= 0

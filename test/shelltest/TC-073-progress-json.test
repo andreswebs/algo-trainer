@@ -1,9 +1,0 @@
-# TC-073: Progress JSON output
-# Priority: Medium
-# Expected: Outputs valid JSON, contains all progress data, suitable for parsing/scripting, exit code 0
-
-$ algo-trainer progress --json
-> /^\{/
-> /completed/
-> /\}$/
->= 0

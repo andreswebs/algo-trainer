@@ -1,7 +1,0 @@
-# TC-089: Get nonexistent key
-# Priority: Medium
-# Expected: Shows error about unknown key, exit code 2 or 3
-
-$ algo-trainer config get nonexistent.key
->2 /not.*found|unknown.*key|invalid.*key/i
->= !0

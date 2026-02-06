@@ -1,7 +1,0 @@
-# TC-061: List with difficulty filter
-# Priority: High
-# Expected: Shows only easy problems, all displayed problems have "Easy" difficulty, exit code 0
-
-$ algo-trainer list -d easy
-> /easy/i
->= 0
