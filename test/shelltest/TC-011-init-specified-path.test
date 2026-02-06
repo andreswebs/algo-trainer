@@ -1,0 +1,8 @@
+# TC-011: Initialize workspace at specified path
+# Priority: Critical
+# Expected: Creates directory at specified path with all subdirectories, success message with path, exit code 0
+
+$ algo-trainer init ~/my-algo-practice
+> /success|initialized|created/i
+> /my-algo-practice/
+>= 0

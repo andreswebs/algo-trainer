@@ -1,0 +1,7 @@
+# TC-112: AT_VERBOSE flag
+# Priority: Medium
+# Expected: Shows verbose/debug output, more detailed than normal, exit code 0
+
+$ AT_VERBOSE=1 algo-trainer list
+> //
+>= 0

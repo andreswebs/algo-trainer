@@ -1,0 +1,8 @@
+# TC-028: Challenge with invalid difficulty
+# Priority: Medium
+# Expected: Shows error about invalid difficulty, lists valid options (easy, medium, hard), exit code 2
+
+$ algo-trainer challenge -d impossible
+>2 /invalid.*difficulty|unknown.*difficulty/i
+>2 /easy.*medium.*hard/i
+>= 2

@@ -1,0 +1,7 @@
+# TC-056: Complete invalid problem
+# Priority: High
+# Expected: Shows "Problem not found" error, exit code 5
+
+$ algo-trainer complete nonexistent-problem
+>2 /not.*found|does.*not.*exist/i
+>= 5

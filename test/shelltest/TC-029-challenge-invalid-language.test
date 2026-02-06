@@ -1,0 +1,8 @@
+# TC-029: Challenge with invalid language
+# Priority: Medium
+# Expected: Shows error about invalid language, lists valid options, exit code 2
+
+$ algo-trainer challenge two-sum -l cobol
+>2 /invalid.*language|unknown.*language/i
+>2 /typescript.*javascript.*python.*java.*cpp.*rust.*go/i
+>= 2

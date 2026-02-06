@@ -1,0 +1,10 @@
+# TC-124: Problem selection prompt
+# Priority: High
+# Expected: Shows list of in-progress problems, accepts selection, completes selected problem, exit code 0
+# Note: Interactive prompts require stdin input
+
+<
+1
+$ algo-trainer complete
+> /select|choose|problems/i
+>= 0

@@ -1,0 +1,7 @@
+# TC-055: Complete with no problems in workspace
+# Priority: High
+# Expected: Shows message that no problems are in progress, suggests starting a challenge
+
+$ algo-trainer complete
+>2 /no.*problems|empty|nothing.*in.*progress/i
+>= !0

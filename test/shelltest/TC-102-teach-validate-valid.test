@@ -1,0 +1,7 @@
+# TC-102: Validate valid teaching script
+# Priority: High
+# Expected: Shows "Script is valid" or similar, exit code 0
+
+$ algo-trainer teach validate ./trainer.yaml
+> /valid|success/i
+>= 0

@@ -1,0 +1,9 @@
+# TC-080: List all configuration
+# Priority: Critical
+# Expected: Shows all configuration keys and values, shows language, workspace, aiEnabled, preferences, exit code 0
+
+$ algo-trainer config list
+> /language/i
+> /workspace/i
+> /aiEnabled/i
+>= 0

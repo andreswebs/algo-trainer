@@ -1,0 +1,7 @@
+# TC-057: Archive collision handling
+# Priority: Medium
+# Expected: Handles filename collision (timestamp suffix or prompt), archives without overwriting previous completion, exit code 0
+
+$ algo-trainer complete two-sum
+> /completed|success/i
+>= 0

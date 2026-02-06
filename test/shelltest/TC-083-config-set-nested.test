@@ -1,0 +1,11 @@
+# TC-083: Set nested preference
+# Priority: High
+# Expected: Set succeeds, Get shows "dark", exit code 0
+
+$ algo-trainer config set preferences.theme dark
+> /success|updated|set/i
+>= 0
+
+$ algo-trainer config get preferences.theme
+> /dark/i
+>= 0

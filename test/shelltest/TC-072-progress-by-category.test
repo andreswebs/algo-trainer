@@ -1,0 +1,7 @@
+# TC-072: View progress by category
+# Priority: High
+# Expected: Groups progress by problem category/tag, shows count per category, exit code 0
+
+$ algo-trainer progress --category
+> /category|categories/i
+>= 0

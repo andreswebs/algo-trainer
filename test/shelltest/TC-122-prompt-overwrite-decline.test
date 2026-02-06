@@ -1,0 +1,10 @@
+# TC-122: Overwrite confirmation (decline)
+# Priority: High
+# Expected: Does not overwrite files, shows appropriate message, exit code 0 or appropriate code
+# Note: Interactive prompts require stdin input
+
+<
+no
+$ algo-trainer challenge two-sum
+> /overwrite|confirm|already.*exists/i
+>=

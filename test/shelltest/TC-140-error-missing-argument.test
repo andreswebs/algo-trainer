@@ -1,0 +1,7 @@
+# TC-140: Missing required argument
+# Priority: High
+# Expected: Shows usage error, indicates required arguments, exit code 2
+
+$ algo-trainer config set
+>2 /usage|error|required.*argument|missing/i
+>= 2

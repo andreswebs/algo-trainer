@@ -1,0 +1,9 @@
+# TC-088: Config JSON output
+# Priority: Medium
+# Expected: Outputs valid JSON object, contains all configuration, exit code 0
+
+$ algo-trainer config list --json
+> /^\{/
+> /language/
+> /\}$/
+>= 0

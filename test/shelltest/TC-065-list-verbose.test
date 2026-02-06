@@ -1,0 +1,7 @@
+# TC-065: List with verbose output
+# Priority: Medium
+# Expected: Shows full descriptions for each problem, shows tags/categories, exit code 0
+
+$ algo-trainer list --verbose
+> /description|tags|categories/i
+>= 0

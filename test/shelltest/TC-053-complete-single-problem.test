@@ -1,0 +1,7 @@
+# TC-053: Interactive problem selection (single problem)
+# Priority: High
+# Expected: Auto-detects the single problem, completes it without prompting, exit code 0
+
+$ algo-trainer complete
+> /completed|success/i
+>= 0

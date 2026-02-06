@@ -1,0 +1,8 @@
+# TC-060: List all problems (default)
+# Priority: Critical
+# Expected: Shows table with ID, Difficulty, Title, displays up to 20 problems (default limit), shows total count, exit code 0
+
+$ algo-trainer list
+> /ID.*Difficulty.*Title/i
+> /total|problems/i
+>= 0

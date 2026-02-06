@@ -1,0 +1,7 @@
+# TC-110: AT_WORKSPACE override
+# Priority: High
+# Expected: Uses /tmp/other-ws as workspace, creates files there, exit code 0
+
+$ AT_WORKSPACE=/tmp/other-ws algo-trainer challenge two-sum
+> /two.*sum|created|success/i
+>= 0

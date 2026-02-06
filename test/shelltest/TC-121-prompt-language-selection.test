@@ -1,0 +1,10 @@
+# TC-121: Language selection prompt
+# Priority: High
+# Expected: Shows language options, creates Python template, exit code 0
+# Note: Interactive prompts require stdin input
+
+<
+python
+$ algo-trainer challenge two-sum
+> /python|language/i
+>= 0

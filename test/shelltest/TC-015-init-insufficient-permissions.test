@@ -1,0 +1,7 @@
+# TC-015: Initialize with insufficient permissions
+# Priority: Medium
+# Expected: Shows permission denied error, exit code 7
+
+$ algo-trainer init /tmp/readonly/workspace
+>2 /permission.*denied|access.*denied|EACCES/i
+>= 7

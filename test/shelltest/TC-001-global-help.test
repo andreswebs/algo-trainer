@@ -1,0 +1,10 @@
+# TC-001: Display global help
+# Priority: High
+# Expected: Shows application name, version, available commands, global options, exit code 0
+
+$ algo-trainer --help
+> /algo-trainer/i
+> /version/i
+> /commands/i
+> /options/i
+>= 0

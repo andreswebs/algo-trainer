@@ -1,0 +1,7 @@
+# TC-022: Start random challenge
+# Priority: High
+# Expected: Selects random problem, creates problem and solution files, displays details, exit code 0
+
+$ algo-trainer challenge --random
+> /problem|challenge/i
+>= 0

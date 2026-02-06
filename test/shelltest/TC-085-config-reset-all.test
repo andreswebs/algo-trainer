@@ -1,0 +1,7 @@
+# TC-085: Reset all configuration
+# Priority: High
+# Expected: All settings return to defaults, shows confirmation or success, exit code 0
+
+$ algo-trainer config reset
+> /reset|default|all/i
+>= 0

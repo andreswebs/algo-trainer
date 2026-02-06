@@ -1,0 +1,7 @@
+# TC-044: Hint for invalid problem
+# Priority: High
+# Expected: Shows "Problem not found" error, exit code 5
+
+$ algo-trainer hint nonexistent-problem
+>2 /not.*found|does.*not.*exist/i
+>= 5

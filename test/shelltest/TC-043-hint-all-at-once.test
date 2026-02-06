@@ -1,0 +1,9 @@
+# TC-043: Get all hints at once
+# Priority: High
+# Expected: Displays all 3 hint levels in order (1, 2, 3), exit code 0
+
+$ algo-trainer hint two-sum --all
+> /hint.*1|level.*1/i
+> /hint.*2|level.*2/i
+> /hint.*3|level.*3/i
+>= 0

@@ -1,0 +1,7 @@
+# TC-152: Special characters in file paths
+# Priority: Medium
+# Expected: Handles parentheses and spaces, creates valid directory, exit code 0
+
+$ algo-trainer init "/tmp/test workspace (1)"
+> /success|initialized|created/i
+>= 0

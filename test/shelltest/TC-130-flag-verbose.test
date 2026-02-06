@@ -1,0 +1,7 @@
+# TC-130: --verbose flag
+# Priority: Medium
+# Expected: Shows extra debug/verbose information, exit code 0
+
+$ algo-trainer --verbose challenge two-sum
+> //
+>= 0

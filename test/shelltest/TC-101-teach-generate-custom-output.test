@@ -1,0 +1,8 @@
+# TC-101: Generate with custom output path
+# Priority: Medium
+# Expected: Script saved to specified path, exit code 0
+
+$ algo-trainer teach generate two-sum --output ./custom-script.yaml
+> /generated|created|success/i
+> /custom-script\.yaml/i
+>= 0

@@ -1,0 +1,7 @@
+# TC-010: Initialize new workspace in current directory
+# Priority: Critical
+# Expected: Creates problems/, completed/, templates/, config/ directories, success message, exit code 0
+
+$ algo-trainer init
+> /success|initialized|created/i
+>= 0

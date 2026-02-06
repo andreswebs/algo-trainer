@@ -1,0 +1,7 @@
+# TC-052: Complete without archiving
+# Priority: High
+# Expected: Marks problem as complete, files remain in problems/ directory, metadata updated, exit code 0
+
+$ algo-trainer complete two-sum --no-archive
+> /completed|marked.*complete/i
+>= 0

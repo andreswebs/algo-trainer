@@ -1,0 +1,7 @@
+# TC-115: AT_NO_EMOJI flag
+# Priority: Low
+# Expected: No emoji characters in output, exit code 0
+
+$ AT_NO_EMOJI=1 algo-trainer progress
+> //
+>= 0

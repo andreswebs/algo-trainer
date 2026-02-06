@@ -1,0 +1,7 @@
+# TC-064: List with custom limit
+# Priority: Medium
+# Expected: Shows exactly 5 problems (or less if fewer exist), exit code 0
+
+$ algo-trainer list -l 5
+> //
+>= 0

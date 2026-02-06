@@ -1,0 +1,7 @@
+# TC-114: AT_NO_COLOR flag
+# Priority: Low
+# Expected: Output has no ANSI color codes, plain text only, exit code 0
+
+$ AT_NO_COLOR=1 algo-trainer list
+> !/\x1b\[/
+>= 0

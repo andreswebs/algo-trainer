@@ -1,0 +1,7 @@
+# TC-014: Initialize with path containing spaces
+# Priority: Medium
+# Expected: Creates workspace at path with spaces, all operations work correctly, exit code 0
+
+$ algo-trainer init "/tmp/my test workspace"
+> /success|initialized|created/i
+>= 0

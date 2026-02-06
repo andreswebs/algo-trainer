@@ -1,0 +1,7 @@
+# TC-081: Get specific configuration value
+# Priority: High
+# Expected: Shows only the language value, exit code 0
+
+$ algo-trainer config get language
+> /typescript|javascript|python|java|cpp|rust|go/i
+>= 0

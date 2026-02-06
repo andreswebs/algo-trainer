@@ -1,0 +1,9 @@
+# TC-070: View basic progress
+# Priority: Critical
+# Expected: Shows total completed count, in-progress count, breakdown by difficulty, exit code 0
+
+$ algo-trainer progress
+> /completed|total/i
+> /progress/i
+> /easy.*medium.*hard|difficulty/i
+>= 0

@@ -1,0 +1,6 @@
+# TC-047: Hint without problem specified
+# Priority: Medium
+# Expected: Auto-detects current problem OR shows error requesting problem specification
+
+$ algo-trainer hint
+>=

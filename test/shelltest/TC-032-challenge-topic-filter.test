@@ -1,0 +1,7 @@
+# TC-032: Challenge with topic filter
+# Priority: Medium
+# Expected: Shows problems tagged with hash-table, creates files, exit code 0
+
+$ algo-trainer challenge -t hash-table
+> /hash.*table/i
+>= 0

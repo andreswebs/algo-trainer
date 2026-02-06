@@ -1,0 +1,7 @@
+# TC-104: Teaching system info
+# Priority: Medium
+# Expected: Shows AI system status, shows whether aiEnabled, shows teaching capabilities, exit code 0
+
+$ algo-trainer teach info
+> /ai|teaching|status/i
+>= 0

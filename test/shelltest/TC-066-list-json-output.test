@@ -1,0 +1,8 @@
+# TC-066: List with JSON output
+# Priority: Medium
+# Expected: Outputs valid JSON array, each problem is a JSON object, no table formatting, exit code 0
+
+$ algo-trainer list --json
+> /^\[/
+> /\]$/
+>= 0

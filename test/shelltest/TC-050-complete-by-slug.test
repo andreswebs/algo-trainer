@@ -1,0 +1,8 @@
+# TC-050: Complete problem by slug
+# Priority: Critical
+# Expected: Moves problem files to completed/ directory, shows completion summary, displays hints used count, suggests next problems, exit code 0
+
+$ algo-trainer complete two-sum
+> /completed|success/i
+> /hints/i
+>= 0

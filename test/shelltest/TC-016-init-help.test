@@ -1,0 +1,9 @@
+# TC-016: Init help display
+# Priority: Low
+# Expected: Shows init command usage, lists available options (-f/--force), exit code 0
+
+$ algo-trainer init --help
+> /usage|help/i
+> /init/i
+> /force/i
+>= 0

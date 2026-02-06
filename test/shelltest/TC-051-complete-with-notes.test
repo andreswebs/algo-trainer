@@ -1,0 +1,8 @@
+# TC-051: Complete with notes
+# Priority: High
+# Expected: Archives problem with notes saved, notes stored in metadata, shows completion summary including notes, exit code 0
+
+$ algo-trainer complete two-sum -n "Used hash map for O(n) solution"
+> /completed|success/i
+> /notes|hash map/i
+>= 0

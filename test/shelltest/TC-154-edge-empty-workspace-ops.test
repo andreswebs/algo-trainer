@@ -1,0 +1,15 @@
+# TC-154: Empty workspace operations
+# Priority: Medium
+# Expected: Appropriate "no problems" messages, no crashes, sensible exit codes
+
+$ algo-trainer complete
+>2 /no.*problems|empty/i
+>= !0
+
+$ algo-trainer progress
+> /0.*completed|no.*problems/i
+>= 0
+
+$ algo-trainer hint
+>2 /not.*found|no.*problem/i
+>= !0

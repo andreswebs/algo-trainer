@@ -1,0 +1,8 @@
+# TC-086: Set invalid language
+# Priority: High
+# Expected: Shows validation error, lists valid languages, configuration not changed, exit code 2 or 3
+
+$ algo-trainer config set language invalid
+>2 /invalid.*language|validation.*error/i
+>2 /typescript.*javascript.*python.*java.*cpp.*rust.*go/i
+>= !0

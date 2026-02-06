@@ -1,0 +1,8 @@
+# TC-067: List with combined filters
+# Priority: High
+# Expected: Shows medium difficulty problems, all tagged with arrays, maximum 10 results, exit code 0
+
+$ algo-trainer list -d medium -c arrays -l 10
+> /medium/i
+> /arrays/i
+>= 0

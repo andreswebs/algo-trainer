@@ -1,0 +1,12 @@
+# TC-091: Set all valid themes
+# Priority: Low
+# Expected: All 3 themes accepted, exit code 0 for all
+
+$ algo-trainer config set preferences.theme light
+>= 0
+
+$ algo-trainer config set preferences.theme dark
+>= 0
+
+$ algo-trainer config set preferences.theme auto
+>= 0

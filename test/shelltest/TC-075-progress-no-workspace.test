@@ -1,0 +1,8 @@
+# TC-075: Progress without initialized workspace
+# Priority: High
+# Expected: Shows workspace not initialized error, suggests running init command, exit code 4
+
+$ algo-trainer progress
+>2 /workspace.*not.*initialized|no.*workspace/i
+>2 /init/i
+>= 4

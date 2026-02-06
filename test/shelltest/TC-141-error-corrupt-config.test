@@ -1,0 +1,8 @@
+# TC-141: Corrupt config file recovery
+# Priority: High
+# Expected: Shows error about corrupt config, suggests reset or manual fix, exit code 3
+
+$ algo-trainer config list
+>2 /corrupt|invalid.*config|parse.*error/i
+>2 /reset/i
+>= 3
