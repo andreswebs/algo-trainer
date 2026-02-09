@@ -1,0 +1,8 @@
+# TC-021: Start challenge with difficulty filter
+# Priority: Critical
+# Expected: Shows only easy problems
+# Exit code: 0
+
+$ rm -rf /tmp/ws-021 && EXE --no-emoji --no-color init /tmp/ws-021 >/dev/null 2>&1 && EXE --no-emoji --no-color challenge -d easy -l python
+>2 //
+>= 4

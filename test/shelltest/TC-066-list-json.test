@@ -1,0 +1,8 @@
+# TC-066: List with JSON output
+# Priority: Medium
+# Expected: Outputs valid JSON array
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list --json
+> /\[.*\]/
+>= 0

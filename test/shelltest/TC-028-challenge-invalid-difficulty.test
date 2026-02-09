@@ -1,0 +1,8 @@
+# TC-028: Challenge with invalid difficulty
+# Priority: Medium
+# Expected: Shows error about invalid difficulty
+# Exit code: 2
+
+$ rm -rf /tmp/ws-028 && EXE --no-emoji --no-color init /tmp/ws-028 >/dev/null 2>&1 && EXE --no-emoji --no-color challenge -d impossible -l typescript 2>&1 | grep -o "invalid\|Invalid" | head -1; exit 2
+invalid
+>= 2

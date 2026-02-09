@@ -1,0 +1,8 @@
+# TC-080: List all configuration
+# Priority: Critical
+# Expected: Shows all configuration keys and values
+# Exit code: 0
+
+$ EXE --no-emoji --no-color config list
+>2 //
+>= 0

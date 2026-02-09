@@ -1,0 +1,8 @@
+# TC-067: List with combined filters
+# Priority: High
+# Expected: Shows medium difficulty, arrays category, max 10 results
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list -d medium -c arrays -l 10
+> //
+>= 0

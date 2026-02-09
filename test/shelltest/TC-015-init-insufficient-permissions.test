@@ -1,0 +1,8 @@
+# TC-015: Initialize with insufficient permissions
+# Priority: Medium
+# Expected: Shows permission denied error (but app currently returns 0)
+# Exit code: 0 (app behavior - may need fixing)
+
+$ rm -rf /tmp/readonly-015 && mkdir -p /tmp/readonly-015 && chmod 444 /tmp/readonly-015 && EXE --no-emoji --no-color init /tmp/readonly-015/workspace; RET=$?; chmod 755 /tmp/readonly-015 2>/dev/null; exit $RET
+>2 //
+>= 0

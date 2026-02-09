@@ -1,0 +1,8 @@
+# TC-016: Init help display
+# Priority: Low
+# Expected: Shows init command usage and options
+# Exit code: 0
+
+$ EXE init --help
+>2 /init.*force|force.*init/
+>= 0

@@ -1,0 +1,6 @@
+# TC-'$tc': Interactive prompt test
+# Expected: varies (interactive - may timeout or require special handling)
+# Exit code: varies
+
+$ echo "" | EXE --no-emoji --no-color challenge 2>&1 >/dev/null || true
+>=

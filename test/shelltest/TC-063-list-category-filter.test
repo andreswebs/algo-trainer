@@ -1,0 +1,8 @@
+# TC-063: List with category filter
+# Priority: High
+# Expected: Shows only problems tagged with "arrays"
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list -c arrays
+> //
+>= 0

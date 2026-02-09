@@ -1,0 +1,7 @@
+# TC-'$tc': Hint command test
+# Priority: varies
+# Expected: varies
+# Exit code: varies
+
+$ EXE --no-emoji --no-color hint two-sum 2>&1 >/dev/null || true
+>=

@@ -1,0 +1,8 @@
+# TC-024: Challenge with explicit language override
+# Priority: High
+# Expected: Creates Python template despite config
+# Exit code: 0
+
+$ rm -rf /tmp/ws-024 && EXE --no-emoji --no-color init /tmp/ws-024 >/dev/null 2>&1 && EXE --no-emoji --no-color config set language typescript >/dev/null 2>&1 && EXE --no-emoji --no-color challenge two-sum -l python && test -f /tmp/ws-024/problems/two-sum.py
+>2 //
+>= 4

@@ -1,0 +1,8 @@
+# TC-027: Challenge with invalid slug
+# Priority: High
+# Expected: Shows "Problem not found" error
+# Exit code: 5
+
+$ rm -rf /tmp/ws-027 && EXE --no-emoji --no-color init /tmp/ws-027 >/dev/null 2>&1 && EXE --no-emoji --no-color challenge nonexistent-problem-xyz -l typescript
+>2 /Problem not found/
+>= 5

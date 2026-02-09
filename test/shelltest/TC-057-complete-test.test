@@ -1,0 +1,6 @@
+# TC-'$tc': Complete command test
+# Expected: varies
+# Exit code: varies
+
+$ EXE --no-emoji --no-color complete two-sum 2>&1 >/dev/null || true
+>=

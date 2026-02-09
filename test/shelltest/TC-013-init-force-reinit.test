@@ -1,0 +1,8 @@
+# TC-013: Force reinitialize workspace
+# Priority: High
+# Expected: Reinitializes workspace and shows success message
+# Exit code: 0
+
+$ rm -rf /tmp/test-ws-013 && EXE --no-emoji --no-color init /tmp/test-ws-013 && EXE --no-emoji --no-color init --force /tmp/test-ws-013
+>2 /initialized|SUCCESS/
+>= 0

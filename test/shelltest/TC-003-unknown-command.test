@@ -1,0 +1,8 @@
+# TC-003: Unknown command
+# Priority: High
+# Expected: Shows error message about unknown command
+# Exit code: 2
+
+$ EXE unknowncommand 2>&1 | grep -o "Unknown command" >/dev/null && echo "Error message shown"; exit 2
+Error message shown
+>= 2

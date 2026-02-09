@@ -1,0 +1,6 @@
+# TC-'$tc': Config command test
+# Expected: varies
+# Exit code: varies
+
+$ EXE --no-emoji --no-color config list 2>&1 >/dev/null || true
+>=

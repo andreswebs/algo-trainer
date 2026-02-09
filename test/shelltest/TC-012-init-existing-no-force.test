@@ -1,0 +1,8 @@
+# TC-012: Initialize in existing workspace (no force)
+# Priority: High
+# Expected: Shows error/warning about existing workspace
+# Exit code: 0 (app returns 0 even when already initialized)
+
+$ rm -rf /tmp/test-ws-012 && EXE --no-emoji --no-color init /tmp/test-ws-012 >/dev/null 2>&1 && EXE --no-emoji --no-color init /tmp/test-ws-012
+>2 /already.*initialized/
+>= 0

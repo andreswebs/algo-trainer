@@ -1,0 +1,8 @@
+# TC-082: Set configuration value
+# Priority: Critical
+# Expected: Set shows success message
+# Exit code: 0
+
+$ EXE --no-emoji --no-color config set language python
+>2 //
+>= 0

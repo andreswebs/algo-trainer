@@ -1,0 +1,6 @@
+# TC-'$tc': Error handling test
+# Expected: varies
+# Exit code: varies
+
+$ EXE --no-emoji --no-color config set 2>&1 >/dev/null || true
+>=

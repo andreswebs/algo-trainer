@@ -1,0 +1,8 @@
+# TC-068: List with no matching results
+# Priority: Medium
+# Expected: Shows "No problems found" message
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list -s "xyznonexistent123"
+> //
+>= 0

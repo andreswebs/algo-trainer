@@ -1,0 +1,8 @@
+# TC-014: Initialize with path containing spaces
+# Priority: Medium
+# Expected: Creates workspace at path with spaces
+# Exit code: 0
+
+$ rm -rf "/tmp/my test workspace 014" && EXE --no-emoji --no-color init "/tmp/my test workspace 014"
+>2 /initialized|SUCCESS/
+>= 0

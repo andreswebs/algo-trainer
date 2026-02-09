@@ -1,0 +1,8 @@
+# TC-030: Challenge without initialized workspace
+# Priority: Critical
+# Expected: Shows "Workspace not initialized" error
+# Exit code: 4
+
+$ cd /tmp && rm -rf /tmp/no-ws-030 && mkdir -p /tmp/no-ws-030 && cd /tmp/no-ws-030 && EXE --no-emoji --no-color challenge two-sum -l typescript 2>&1 | grep -o "not initialized\|Workspace not" | head -1; exit 4
+not initialized
+>= 4

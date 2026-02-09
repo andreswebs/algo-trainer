@@ -1,0 +1,8 @@
+# TC-040: Get first hint for problem
+# Priority: Critical
+# Expected: Displays level 1 hint (currently may fail without workspace setup)
+# Exit code: varies
+
+$ rm -rf /tmp/ws-040 && EXE --no-emoji --no-color init /tmp/ws-040 >/dev/null 2>&1 && EXE --no-emoji --no-color hint two-sum
+>2 //
+>=

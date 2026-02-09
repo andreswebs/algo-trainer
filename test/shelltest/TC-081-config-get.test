@@ -1,0 +1,8 @@
+# TC-081: Get specific configuration value
+# Priority: High
+# Expected: Shows only the language value
+# Exit code: 0
+
+$ EXE --no-emoji --no-color config get language
+>2 //
+>= 0

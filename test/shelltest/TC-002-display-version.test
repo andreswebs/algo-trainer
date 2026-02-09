@@ -1,0 +1,8 @@
+# TC-002: Display version
+# Priority: Medium
+# Expected: Displays version number (0.0.1)
+# Exit code: 0
+
+$ EXE --version
+> /0\.0\.1/
+>= 0

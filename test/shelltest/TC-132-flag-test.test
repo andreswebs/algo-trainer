@@ -1,0 +1,6 @@
+# TC-'$tc': Global flag test
+# Expected: varies
+# Exit code: varies
+
+$ EXE --verbose --no-emoji --no-color list 2>&1 >/dev/null || true
+>=

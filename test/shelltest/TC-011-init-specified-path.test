@@ -1,0 +1,8 @@
+# TC-011: Initialize workspace at specified path
+# Priority: Critical
+# Expected: Creates directory at specified path with subdirectories
+# Exit code: 0
+
+$ rm -rf /tmp/test-ws-011 && EXE --no-emoji --no-color init /tmp/test-ws-011
+>2 /initialized|SUCCESS/
+>= 0

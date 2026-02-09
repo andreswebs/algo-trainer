@@ -1,0 +1,8 @@
+# TC-025: Start challenge that already exists (no force)
+# Priority: High
+# Expected: Prompts for confirmation or shows message
+# Exit code: depends on implementation
+
+$ rm -rf /tmp/ws-025 && EXE --no-emoji --no-color init /tmp/ws-025 >/dev/null 2>&1 && EXE --no-emoji --no-color challenge two-sum -l typescript >/dev/null 2>&1 && EXE --no-emoji --no-color challenge two-sum -l typescript
+>2 //
+>=

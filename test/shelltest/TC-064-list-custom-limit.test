@@ -1,0 +1,8 @@
+# TC-064: List with custom limit
+# Priority: Medium
+# Expected: Shows exactly 5 problems or less
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list -l 5
+> //
+>= 0

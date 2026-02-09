@@ -1,0 +1,8 @@
+# TC-020: Start challenge by slug
+# Priority: Critical
+# Expected: Creates problem file and solution template (currently fails - template missing)
+# Exit code: 4 (workspace error - may change when templates are set up)
+
+$ rm -rf /tmp/ws-020 && EXE --no-emoji --no-color init /tmp/ws-020 >/dev/null 2>&1 && EXE --no-emoji --no-color challenge two-sum -l typescript
+>2 /Template.*not found|Two Sum/
+>= 4

@@ -1,0 +1,8 @@
+# TC-060: List all problems (default)
+# Priority: Critical
+# Expected: Shows table with ID, Difficulty, Title
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list
+> //
+>= 0

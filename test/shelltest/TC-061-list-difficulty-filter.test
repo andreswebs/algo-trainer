@@ -1,0 +1,8 @@
+# TC-061: List with difficulty filter
+# Priority: High
+# Expected: Shows only easy problems
+# Exit code: 0
+
+$ EXE --no-emoji --no-color list -d easy
+>2 /Easy|easy/
+>= 0

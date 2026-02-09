@@ -1,0 +1,8 @@
+# TC-010: Initialize new workspace in current directory
+# Priority: Critical
+# Expected: Creates directory structure and shows success message
+# Exit code: 0
+
+$ rm -rf /tmp/test-ws-010 && mkdir -p /tmp/test-ws-010 && cd /tmp/test-ws-010 && EXE --no-emoji --no-color init
+>2 /initialized|SUCCESS/
+>= 0

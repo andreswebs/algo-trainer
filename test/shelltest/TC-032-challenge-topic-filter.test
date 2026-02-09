@@ -1,0 +1,8 @@
+# TC-032: Challenge with topic filter
+# Priority: Medium
+# Expected: Shows problems tagged with hash-table
+# Exit code: 0
+
+$ rm -rf /tmp/ws-032 && EXE --no-emoji --no-color init /tmp/ws-032 >/dev/null 2>&1 && EXE --no-emoji --no-color challenge -t hash-table -l typescript
+>2 //
+>= 0

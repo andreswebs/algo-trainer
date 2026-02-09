@@ -1,0 +1,8 @@
+# TC-001: Display global help
+# Priority: High
+# Expected: Shows application name and version, lists all commands, shows global options
+# Exit code: 0
+
+$ EXE --help
+>2 /Algo/
+>= 0
