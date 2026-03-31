@@ -1,0 +1,3 @@
+[submodule "docs/refs/leetcode-cpp-harness"]
+	path = docs/refs/leetcode-cpp-harness
+	url = https://github.com/andreswebs/leetcode-cpp-harness.git

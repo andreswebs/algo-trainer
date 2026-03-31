@@ -28,7 +28,7 @@ const context: TriggerContext = {
   stdout: '',
   stderr: '',
   passed: false,
-  attempts: 3
+  attempts: 3,
 };
 
 // Simple comparisons
@@ -149,21 +149,24 @@ This approach provides security by explicitly controlling what operations and va
 Evaluates a trigger expression against a given context.
 
 **Parameters:**
+
 - `trigger` - The trigger expression string to evaluate
 - `context` - The context object containing variables for evaluation
 
 **Returns:**
+
 - `true` if the trigger condition is met
 - `false` if the trigger condition is not met or if evaluation fails
 
 **Example:**
+
 ```typescript
 const result = evaluateTrigger('attempts > 2', {
   code: 'function solve() {}',
   stdout: '',
   stderr: '',
   passed: false,
-  attempts: 3
+  attempts: 3,
 });
 // result === true
 ```
@@ -172,11 +175,11 @@ const result = evaluateTrigger('attempts > 2', {
 
 ```typescript
 interface TriggerContext {
-  code: string;      // User's current code
-  stdout: string;    // Execution output
-  stderr: string;    // Execution errors
-  passed: boolean;   // Test result
-  attempts: number;  // Attempt count
+  code: string; // User's current code
+  stdout: string; // Execution output
+  stderr: string; // Execution errors
+  passed: boolean; // Test result
+  attempts: number; // Attempt count
 }
 ```
 

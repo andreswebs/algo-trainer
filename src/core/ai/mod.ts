@@ -65,7 +65,7 @@
  * The trigger evaluator provides secure evaluation of JavaScript-like expressions
  * to determine when guidance should be shown. For comprehensive documentation on
  * supported operations, security features, and examples, see:
- * [Trigger Evaluator Documentation](../../../docs/TRIGGER_EVALUATOR.md)
+ * [Trigger Evaluator Documentation](../../../docs/trigger-evaluator.md)
  *
  * ```ts
  * import { evaluateTrigger } from './core/ai/mod.ts';

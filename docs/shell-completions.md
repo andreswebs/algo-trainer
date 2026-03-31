@@ -223,8 +223,8 @@ Found a bug or want to add completion for a new command? Contributions are welco
 
 ## See Also
 
-- [Environment Variables](./ENVIRONMENT_VARIABLES.md) - Configuration via environment variables
-- [Interactive Prompts](./INTERACTIVE_PROMPTS.md) - Interactive command prompts
+- [Environment Variables](./environment-variables.md) - Configuration via environment variables
+- [Interactive Prompts](./interactive-prompts.md) - Interactive command prompts
   Algo Trainer provides shell completion scripts to enhance your command-line experience with auto-completion for commands, subcommands, and options.
 
 ## Updating completions

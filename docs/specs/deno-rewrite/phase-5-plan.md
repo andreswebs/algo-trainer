@@ -184,10 +184,10 @@ Root Level:
 └── AGENTS.md              # Agent instructions, standards
 
 User-Facing (docs/):
-├── ENVIRONMENT_VARIABLES.md    # AT_* env var reference
-├── INTERACTIVE_PROMPTS.md      # Smart prompts documentation
-├── SHELL_COMPLETIONS.md        # Shell setup guides
-└── TRIGGER_EVALUATOR.md        # Trigger expression system
+├── environment-variables.md    # AT_* env var reference
+├── interactive-prompts.md      # Smart prompts documentation
+├── shell-completions.md        # Shell setup guides
+└── trigger-evaluator.md        # Trigger expression system
 
 Specifications (.specs/deno-rewrite/):
 ├── plan.md                      # Master implementation plan

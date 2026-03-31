@@ -364,7 +364,7 @@ AT_NO_COLOR=1 algo-trainer list
 AT_VERBOSE=1 algo-trainer challenge easy
 ```
 
-See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) for full list.
+See [environment-variables.md](./environment-variables.md) for full list.
 
 ---
 
@@ -794,6 +794,6 @@ algo-trainer --version
 
 For more advanced features, see:
 
-- [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)
-- [INTERACTIVE_PROMPTS.md](./INTERACTIVE_PROMPTS.md)
-- [SHELL_COMPLETIONS.md](./SHELL_COMPLETIONS.md)
+- [environment-variables.md](./environment-variables.md)
+- [interactive-prompts.md](./interactive-prompts.md)
+- [shell-completions.md](./shell-completions.md)

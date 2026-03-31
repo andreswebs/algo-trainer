@@ -2,7 +2,7 @@
 
 A CLI tool for practicing algorithmic problems offline. Work through coding challenges with hints, progress tracking, and AI-assisted teaching.
 
-**Note**: This is an experiment in AI spec-driven development. Don't take it too seriously. See the [story](docs/STORY.md) for more context.
+**Note**: This is an experiment in AI spec-driven development. Don't take it too seriously. See the [story](docs/story.md) for more context.
 
 ## Installation
 
