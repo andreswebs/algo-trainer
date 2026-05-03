@@ -1,8 +1,5 @@
 /*
- * Solution for {{PROBLEM_TITLE}}
- *
- * ## Problem Summary
- * {{PROBLEM_DESCRIPTION}}
+ * {{PROBLEM_TITLE}}
  *
  * ## Difficulty
  * {{PROBLEM_DIFFICULTY}}
@@ -16,64 +13,51 @@
  * ## Constraints
  * {{CONSTRAINTS}}
  *
+ * ## Problem
+ * {{PROBLEM_DESCRIPTION}}
+ *
  * See: {{LEETCODE_URL}}
- * Author: Algo Trainer
  * Date: {{DATE}}
+ *
+ * Run locally:
+ *   cmake -S . -B build && cmake --build build
+ *   ./bin/{{PROBLEM_SLUG}} input.txt
+ *
+ * The Solution class below is paste-compatible with the LeetCode editor.
+ * The harness around it (leetcode.hpp + main) is local-only and stripped
+ * out by the LC_LOCAL guard when submitting.
  */
 
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <algorithm>
-#include <queue>
-#include <stack>
-#include <stdexcept>
+using namespace std;
+
+#ifdef LC_LOCAL
+#include "leetcode.hpp"
+#else
+#define dbg(...)
+#endif
 
 class Solution {
 public:
     /*
-     * Main solution for {{PROBLEM_TITLE}}.
-     *
      * ## Approach
      * TODO: Describe your approach in detail
      *
      * ## Algorithm
      * 1. TODO: Step 1
      * 2. TODO: Step 2
-     * 3. TODO: Step 3
      *
      * ## Complexity Analysis
-     * - Time Complexity: O(?) - TODO: Explain
-     * - Space Complexity: O(?) - TODO: Explain
-     *
-     * ## Examples
-     * {{EXAMPLES}}
-     *
-     * @return The solution result
-     *
-     * Example:
-     *   // TODO: Add usage example
-     *   Solution sol;
-     *   auto result = sol.{{FUNCTION_NAME}}(...);
+     * - Time:  O(?) — TODO: explain
+     * - Space: O(?) — TODO: explain
      */
-    auto {{FUNCTION_NAME}}() {
+    {{SIGNATURE}} {
         // TODO: Implement your solution here
         throw std::runtime_error("Not implemented");
     }
-
-    /*
-     * Alternative solution (optional).
-     *
-     * ## Approach
-     * TODO: Describe alternative approach if any
-     *
-     * ## Trade-offs
-     * - Pros: TODO
-     * - Cons: TODO
-     */
-    auto {{FUNCTION_NAME}}Alternative() {
-        // TODO: Implement alternative solution if applicable
-        throw std::runtime_error("Not implemented");
-    }
 };
+
+#ifdef LC_LOCAL
+int main(int argc, char **argv) {
+    run(&Solution::{{FUNCTION_NAME}}, argc, argv);
+}
+#endif

@@ -1,40 +1,44 @@
 /*
- * Generated solution template.
- *
- * This file was generated from a problem definition.
- *
- * Problem title: {{PROBLEM_TITLE}}
- * Difficulty: {{PROBLEM_DIFFICULTY}}
+ * {{PROBLEM_TITLE}} ({{PROBLEM_DIFFICULTY}})
  * Tags: {{TAGS}}
  * See: {{LEETCODE_URL}}
  * Date: {{DATE}}
  *
- * Description:
- * {{PROBLEM_DESCRIPTION}}
+ * The Solution class below is paste-compatible with the LeetCode editor.
+ * The harness around it (leetcode.hpp + main) is local-only and stripped
+ * out by the LC_LOCAL guard when submitting.
+ *
+ * Run locally:
+ *   cmake -S . -B build && cmake --build build
+ *   ./bin/{{PROBLEM_SLUG}} input.txt
  */
 
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <algorithm>
-#include <stdexcept>
+using namespace std;
+
+#ifdef LC_LOCAL
+#include "leetcode.hpp"
+#else
+#define dbg(...)
+#endif
 
 class Solution {
 public:
     /*
-     * Solution for {{PROBLEM_TITLE}}.
-     *
      * ## Approach
      * TODO: Describe your approach here
      *
      * ## Complexity
      * - Time: O(?)
      * - Space: O(?)
-     *
-     * @return The result
      */
-    auto {{FUNCTION_NAME}}() {
+    {{SIGNATURE}} {
         // TODO: Implement your solution here
         throw std::runtime_error("Not implemented");
     }
 };
+
+#ifdef LC_LOCAL
+int main(int argc, char **argv) {
+    run(&Solution::{{FUNCTION_NAME}}, argc, argv);
+}
+#endif

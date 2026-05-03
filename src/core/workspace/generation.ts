@@ -39,6 +39,7 @@
  * ```
  */
 
+import { join } from '@std/path';
 import type {
   Problem,
   SupportedLanguage,
@@ -47,7 +48,15 @@ import type {
 } from '../../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
 import { createDirectory, pathExists, writeTextFile } from '../../utils/fs.ts';
-import { renderAllTemplates, type TemplateContext } from '../problem/templates.ts';
+import {
+  EXTRA_OUTPUT_FILES,
+  getLanguageScaffolding,
+  readSharedAsset,
+  renderAllTemplates,
+  renderExtraTemplate,
+  SHARED_ASSET_OUTPUT_FILES,
+  type TemplateContext,
+} from '../problem/templates.ts';
 import { getProblemPaths } from './files.ts';
 import type { WorkspacePathConfig } from './types.ts';
 
@@ -174,14 +183,63 @@ export async function generateProblemFiles(
     // Create problem directory
     await createDirectory(paths.dir);
 
-    // Check existing files and apply overwrite policy
-    const filesToGenerate = [
+    // Build template context
+    const templateConfig: TemplateConfig = {
+      language,
+      style: templateStyle,
+      includeImports,
+      includeTypes,
+      includeExample,
+    };
+
+    const templateContext: TemplateContext = {
+      problem,
+      config: templateConfig,
+    };
+
+    // Render style-specific templates per scaffolding spec
+    const scaffolding = getLanguageScaffolding(language);
+    const { solution, test, readme } = await renderAllTemplates(templateContext);
+
+    // Render shared `_shared/` extras (rendered with placeholders)
+    const extraContents: Array<{ path: string; content: string; name: string }> = [];
+    for (const extraKind of scaffolding.extras) {
+      const content = await renderExtraTemplate(templateContext, extraKind);
+      extraContents.push({
+        path: join(paths.dir, EXTRA_OUTPUT_FILES[extraKind]),
+        content,
+        name: EXTRA_OUTPUT_FILES[extraKind],
+      });
+    }
+
+    // Read raw shared assets (copied verbatim)
+    const assetContents: Array<{ path: string; content: string; name: string }> = [];
+    for (const assetKind of scaffolding.sharedAssets) {
+      const content = await readSharedAsset(language, assetKind);
+      assetContents.push({
+        path: join(paths.dir, SHARED_ASSET_OUTPUT_FILES[assetKind]),
+        content,
+        name: SHARED_ASSET_OUTPUT_FILES[assetKind],
+      });
+    }
+
+    // Build the full set of files to materialise based on scaffolding
+    const filesToGenerate: Array<{ path: string; name: string }> = [
       { path: paths.solutionFile, name: 'solution' },
-      { path: paths.testFile, name: 'test' },
       { path: paths.readmeFile, name: 'README' },
       { path: paths.metadataFile, name: 'metadata' },
     ];
+    if (test !== undefined) {
+      filesToGenerate.push({ path: paths.testFile, name: 'test' });
+    }
+    for (const e of extraContents) {
+      filesToGenerate.push({ path: e.path, name: e.name });
+    }
+    for (const a of assetContents) {
+      filesToGenerate.push({ path: a.path, name: a.name });
+    }
 
+    // Apply overwrite policy
     for (const file of filesToGenerate) {
       const exists = await pathExists(file.path);
       if (exists) {
@@ -200,24 +258,6 @@ export async function generateProblemFiles(
       }
     }
 
-    // Build template context
-    const templateConfig: TemplateConfig = {
-      language,
-      style: templateStyle,
-      includeImports,
-      includeTypes,
-      includeExample,
-    };
-
-    const templateContext: TemplateContext = {
-      problem,
-      config: templateConfig,
-    };
-
-    // Render all templates
-    const { solution, test, readme } = await renderAllTemplates(templateContext);
-
-    // Write files (respecting overwrite policy)
     const shouldOverwrite = overwritePolicy === 'overwrite';
 
     // Write solution file
@@ -229,8 +269,8 @@ export async function generateProblemFiles(
       filesCreated.push(paths.solutionFile);
     }
 
-    // Write test file
-    if (shouldOverwrite || !filesSkipped.includes(paths.testFile)) {
+    // Write test file (only when scaffolding includes it)
+    if (test !== undefined && (shouldOverwrite || !filesSkipped.includes(paths.testFile))) {
       await writeTextFile(paths.testFile, test, {
         ensureParents: true,
         overwrite: shouldOverwrite,
@@ -245,6 +285,28 @@ export async function generateProblemFiles(
         overwrite: shouldOverwrite,
       });
       filesCreated.push(paths.readmeFile);
+    }
+
+    // Write extras (CMakeLists.txt, input.txt, ...)
+    for (const e of extraContents) {
+      if (shouldOverwrite || !filesSkipped.includes(e.path)) {
+        await writeTextFile(e.path, e.content, {
+          ensureParents: true,
+          overwrite: shouldOverwrite,
+        });
+        filesCreated.push(e.path);
+      }
+    }
+
+    // Write shared assets (leetcode.hpp, ...)
+    for (const a of assetContents) {
+      if (shouldOverwrite || !filesSkipped.includes(a.path)) {
+        await writeTextFile(a.path, a.content, {
+          ensureParents: true,
+          overwrite: shouldOverwrite,
+        });
+        filesCreated.push(a.path);
+      }
     }
 
     // Write metadata file

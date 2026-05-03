@@ -9,11 +9,16 @@ import {
   formatCompanies,
   formatConstraints,
   formatExamples,
+  formatExamplesAsLCInput,
+  formatExamplesAsLCOutput,
   formatHints,
+  formatLCValue,
   formatTags,
+  getLanguageScaffolding,
   renderAllTemplates,
   renderTemplate,
   replacePlaceholders,
+  resolveSignature,
   resolveTemplatePath,
   slugToClassName,
   slugToFunctionName,
@@ -351,4 +356,115 @@ Deno.test('slugToFunctionName - handles complex edge cases', () => {
   assertEquals(slugToFunctionName('a-b-c-d-e'), 'aBCDE');
   assertEquals(slugToFunctionName('123-test'), 'oneTwoThreeTest');
   assertEquals(slugToFunctionName('test-123'), 'testOneTwoThree');
+});
+
+Deno.test('formatLCValue - encodes primitives in LeetCode wire format', () => {
+  assertEquals(formatLCValue(42), '42');
+  assertEquals(formatLCValue(-1), '-1');
+  assertEquals(formatLCValue(0), '0');
+  assertEquals(formatLCValue(true), 'true');
+  assertEquals(formatLCValue(false), 'false');
+  assertEquals(formatLCValue('hello'), '"hello"');
+  assertEquals(formatLCValue(''), '""');
+  assertEquals(formatLCValue(null), 'null');
+});
+
+Deno.test('formatLCValue - encodes arrays without spaces and recurses', () => {
+  assertEquals(formatLCValue([]), '[]');
+  assertEquals(formatLCValue([1, 2, 3]), '[1,2,3]');
+  assertEquals(formatLCValue([[1, 2], [3, 4]]), '[[1,2],[3,4]]');
+  assertEquals(formatLCValue(['a', 'b']), '["a","b"]');
+  // null entries are used in TreeNode array literals
+  assertEquals(formatLCValue([1, null, 2, 3]), '[1,null,2,3]');
+});
+
+Deno.test('formatLCValue - throws for unsupported types', () => {
+  // Bare objects are not valid wire-format input.
+  let threw = false;
+  try {
+    formatLCValue({ foo: 'bar' });
+  } catch {
+    threw = true;
+  }
+  assertEquals(threw, true);
+});
+
+Deno.test('formatExamplesAsLCInput - one whitespace-separated line per example', () => {
+  const out = formatExamplesAsLCInput(mockProblem);
+  assertEquals(out.split('\n').length, 2);
+  assertStringIncludes(out, '[2,7,11,15] 9');
+  assertStringIncludes(out, '[3,2,4] 6');
+});
+
+Deno.test('formatExamplesAsLCInput - returns empty string when there are no examples', () => {
+  const empty: Problem = {
+    ...mockProblem,
+    examples: [],
+  };
+  assertEquals(formatExamplesAsLCInput(empty), '');
+});
+
+Deno.test('formatExamplesAsLCOutput - joins outputs with `---` separator and matches harness format', () => {
+  // mockProblem has two examples with outputs [0,1] and [1,2].
+  assertEquals(formatExamplesAsLCOutput(mockProblem), '[0,1]\n---\n[1,2]');
+});
+
+Deno.test('formatExamplesAsLCOutput - encodes scalar outputs in LC wire format', () => {
+  const scalarOutputs: Problem = {
+    ...mockProblem,
+    examples: [
+      { input: { x: 1 }, output: 42 },
+      { input: { x: 2 }, output: true },
+      { input: { x: 3 }, output: 'hi' },
+    ],
+  };
+  assertEquals(formatExamplesAsLCOutput(scalarOutputs), '42\n---\ntrue\n---\n"hi"');
+});
+
+Deno.test('formatExamplesAsLCOutput - returns empty string for problems without examples', () => {
+  const empty: Problem = { ...mockProblem, examples: [] };
+  assertEquals(formatExamplesAsLCOutput(empty), '');
+});
+
+Deno.test('resolveSignature - uses curated per-language signature when present', () => {
+  const problem: Problem = {
+    ...mockProblem,
+    signatures: { cpp: 'vector<int> twoSum(vector<int>& nums, int target)' },
+  };
+  assertEquals(
+    resolveSignature(problem, 'cpp'),
+    'vector<int> twoSum(vector<int>& nums, int target)',
+  );
+});
+
+Deno.test('resolveSignature - falls back to a TODO declaration when missing', () => {
+  // Other languages do not have a signature for this problem; the fallback
+  // uses the camelCase function name with a TODO param list.
+  const fallback = resolveSignature(mockProblem, 'cpp');
+  assertStringIncludes(fallback, 'auto twoSum');
+  assertStringIncludes(fallback, 'TODO');
+});
+
+Deno.test('resolveSignature - treats whitespace-only signature as missing', () => {
+  const problem: Problem = {
+    ...mockProblem,
+    signatures: { cpp: '   ' },
+  };
+  assertStringIncludes(resolveSignature(problem, 'cpp'), 'auto twoSum');
+});
+
+Deno.test('getLanguageScaffolding - cpp uses harness scaffolding', () => {
+  const cpp = getLanguageScaffolding('cpp');
+  assertEquals(cpp.templates, ['solution', 'readme']);
+  assertEquals(cpp.extras, ['cmakelists', 'input', 'expected']);
+  assertEquals(cpp.sharedAssets, ['harness']);
+});
+
+Deno.test('getLanguageScaffolding - other languages keep the default test scaffolding', () => {
+  for (const lang of ['typescript', 'javascript', 'python', 'java', 'rust', 'go'] as const) {
+    const spec = getLanguageScaffolding(lang);
+    assertEquals(spec.templates, ['solution', 'test', 'readme']);
+    assertEquals(spec.extras, []);
+    assertEquals(spec.sharedAssets, []);
+  }
 });

@@ -240,7 +240,7 @@ Note: Environment variables take precedence over configuration file settings.
 export function validateEnvironmentVariables(): void {
   // Validate language
   const language = Deno.env.get(ENV_VARS.LANGUAGE);
-  if (language && language.trim()) {
+  if (language?.trim()) {
     const validated = validateLanguage(language);
     if (!validated) {
       throw new Error(
@@ -253,7 +253,7 @@ export function validateEnvironmentVariables(): void {
 
   // Validate template style
   const templateStyle = Deno.env.get(ENV_VARS.TEMPLATE_STYLE);
-  if (templateStyle && templateStyle.trim()) {
+  if (templateStyle?.trim()) {
     const validated = validateTemplateStyle(templateStyle);
     if (!validated) {
       throw new Error(
@@ -274,7 +274,7 @@ export function validateEnvironmentVariables(): void {
 
   for (const envVar of boolEnvVars) {
     const value = Deno.env.get(envVar);
-    if (value && value.trim()) {
+    if (value?.trim()) {
       const parsed = parseBooleanEnv(value);
       if (parsed === undefined) {
         throw new Error(

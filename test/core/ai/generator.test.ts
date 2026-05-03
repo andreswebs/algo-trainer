@@ -1338,9 +1338,7 @@ Deno.test('TeachingScriptGenerator - topic hints include relevant concepts', () 
     tags: ['graph', 'bfs'],
   };
   script = generator.generate(problem);
-  const graphHints = script.steps.filter((s) =>
-    s.type === 'hint' && s.content.includes('Graph')
-  );
+  const graphHints = script.steps.filter((s) => s.type === 'hint' && s.content.includes('Graph'));
   assertEquals(graphHints.length > 0, true, 'Should have graph hints');
   const graphContent = graphHints[0].content.toLowerCase();
   assertEquals(

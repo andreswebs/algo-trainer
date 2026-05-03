@@ -504,7 +504,7 @@ export class ProblemManager {
         // Log cleanup failure for debugging, but do not mask the original error
         try {
           logger.warn(
-            'Failed to clean up temporary problem file: ' + tempPath + ' - ' + String(cleanupError)
+            'Failed to clean up temporary problem file: ' + tempPath + ' - ' + String(cleanupError),
           );
         } catch {
           // If logging fails, swallow to avoid interfering with the original error

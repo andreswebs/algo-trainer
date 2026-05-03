@@ -639,10 +639,45 @@ export function validateProblem(value: unknown): ValidationResult {
     if (!result.valid) errors.push(...result.errors);
   }
 
+  // Validate signatures if present: object keyed by SupportedLanguage with
+  // non-empty string values
+  if ('signatures' in problem && problem.signatures !== undefined) {
+    const result = validateProblemSignatures(problem.signatures);
+    if (!result.valid) errors.push(...result.errors);
+  }
+
   // Validate metadata if present
   if ('metadata' in problem && problem.metadata !== undefined) {
     const result = validateProblemMetadata(problem.metadata);
     if (!result.valid) errors.push(...result.errors);
+  }
+
+  return createValidationResult(errors.length === 0, errors);
+}
+
+/**
+ * Validate per-language signatures map.
+ *
+ * Each key must be a SupportedLanguage; each value must be a non-empty string.
+ */
+function validateProblemSignatures(value: unknown): ValidationResult {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return createValidationResult(false, ['signatures must be an object']);
+  }
+
+  const errors: string[] = [];
+  const sigs = value as Record<string, unknown>;
+
+  for (const [lang, sig] of Object.entries(sigs)) {
+    const langResult = validateSupportedLanguage(lang);
+    if (!langResult.valid) {
+      errors.push(`signatures: unknown language '${lang}'`);
+      continue;
+    }
+    const sigResult = validateString(sig, `signatures.${lang}`, {
+      allowEmpty: false,
+    });
+    if (!sigResult.valid) errors.push(...sigResult.errors);
   }
 
   return createValidationResult(errors.length === 0, errors);

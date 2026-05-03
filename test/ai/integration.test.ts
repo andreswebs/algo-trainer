@@ -12,10 +12,7 @@ import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { ensureDir } from '@std/fs';
 import { join } from '@std/path';
 import { TeachingEngine, TeachingSession } from '../../src/core/ai/mod.ts';
-import {
-  findTeachingScript,
-  loadAndValidateScript,
-} from '../../src/core/ai/parser.ts';
+import { findTeachingScript, loadAndValidateScript } from '../../src/core/ai/parser.ts';
 import { initializeConfig } from '../../src/config/manager.ts';
 import { getConfigPaths } from '../../src/config/paths.ts';
 import type { ExecutionResult } from '../../src/core/ai/types.ts';
@@ -167,7 +164,7 @@ function solve(nums: number[]): number {
 
       const _feedback3 = engine.processExecution('optimized code', successResult);
       // on_run feedback is optional for success
-      
+
       // Step 11: Get success message
       const successMsg = engine.getSuccessMessage();
       assertExists(successMsg, 'Success message should exist');
@@ -219,7 +216,7 @@ steps:
       // Should return null for missing optional steps
       assertEquals(engine.getPrePrompt(), null, 'No pre-prompt available');
       assertEquals(engine.getHint('code'), null, 'No hints available');
-      
+
       const result: ExecutionResult = {
         stdout: '',
         stderr: '',
@@ -423,7 +420,7 @@ steps:
       // that custom scripts in data directory are checked first
       const paths = getConfigPaths();
       const _userCustomDir = join(paths.data, 'scripts', problemSlug);
-      
+
       // Test will verify that if custom script exists in user directory,
       // it takes priority over built-in
       // Since we can't easily override paths in test, we'll verify the logic
@@ -431,7 +428,7 @@ steps:
 
       const builtinPath = await findTeachingScript(problemSlug);
       assertExists(builtinPath, 'Should find script for two-sum');
-      
+
       // The built-in script should be found since we didn't actually
       // set up the user directory structure correctly in this test environment
       // In production, custom scripts in XDG_DATA_HOME would take precedence
@@ -581,7 +578,7 @@ steps:
 
     it('should reset session state for new problem', () => {
       const session = new TeachingSession('problem1');
-      
+
       // Do some work
       session.recordAttempt('code1');
       session.incrementHintsViewed();

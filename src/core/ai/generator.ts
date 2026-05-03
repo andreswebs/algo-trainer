@@ -773,7 +773,11 @@ Think about this problem in terms of subproblems:
 3. **Base cases**: What are the simplest cases you can solve directly?
 4. **Build up**: Can you solve from bottom-up or use memoization for top-down?
 
-${problem.difficulty === 'hard' ? '**Hard DP problems** often have multiple dimensions or complex state transitions. Start simple!' : 'Start by identifying what information you need to track at each step.'}`,
+${
+        problem.difficulty === 'hard'
+          ? '**Hard DP problems** often have multiple dimensions or complex state transitions. Start simple!'
+          : 'Start by identifying what information you need to track at each step.'
+      }`,
     ];
   }
 
@@ -818,7 +822,15 @@ Hash tables excel at trading space for time:
    - Complement/pair finding: Check if target - current exists
 
 In ${this.options.language}, use:
-${this.options.language === 'typescript' || this.options.language === 'javascript' ? '- Map for key-value pairs\n- Set for unique values' : this.options.language === 'python' ? '- dict for key-value pairs\n- set for unique values' : this.options.language === 'java' ? '- HashMap<K,V> for key-value pairs\n- HashSet<T> for unique values' : '- appropriate hash table data structure'}`,
+${
+        this.options.language === 'typescript' || this.options.language === 'javascript'
+          ? '- Map for key-value pairs\n- Set for unique values'
+          : this.options.language === 'python'
+          ? '- dict for key-value pairs\n- set for unique values'
+          : this.options.language === 'java'
+          ? '- HashMap<K,V> for key-value pairs\n- HashSet<T> for unique values'
+          : '- appropriate hash table data structure'
+      }`,
     ];
   }
 
@@ -864,7 +876,11 @@ Binary search isn't just for finding elements:
    - Is target at mid? Or in left/right half?
 5. **Final check**: After loop, verify left/right position
 
-${problem.difficulty === 'hard' ? '**Hard problems** might require binary search on the answer space rather than indices!' : 'Start with: What makes this problem monotonic?'}`,
+${
+        problem.difficulty === 'hard'
+          ? '**Hard problems** might require binary search on the answer space rather than indices!'
+          : 'Start with: What makes this problem monotonic?'
+      }`,
     ];
   }
 
@@ -919,7 +935,11 @@ Graph problems often come down to traversal strategy:
    - Cycles (directed/undirected)?
    - Self-loops?
 
-${problem.difficulty === 'hard' ? '**Complex graphs** might need advanced algorithms like Dijkstra, Topological Sort, or Union-Find!' : 'Start by choosing BFS or DFS based on what you need to find.'}`,
+${
+        problem.difficulty === 'hard'
+          ? '**Complex graphs** might need advanced algorithms like Dijkstra, Topological Sort, or Union-Find!'
+          : 'Start by choosing BFS or DFS based on what you need to find.'
+      }`,
     ];
   }
 }

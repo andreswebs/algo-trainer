@@ -9,7 +9,7 @@
 import { parseArgs } from '@std/cli/parse-args';
 import { exitWithError, logger, outputData, setOutputOptions } from '../utils/output.ts';
 import { formatError } from '../utils/errors.ts';
-import { getExitCodeForError, ExitCode } from './exit-codes.ts';
+import { ExitCode, getExitCodeForError } from './exit-codes.ts';
 import { initializeConfig } from '../config/manager.ts';
 import { dispatch, getAvailableCommands } from './commands/mod.ts';
 import { extractGlobalFlags } from './types.ts';
@@ -24,12 +24,14 @@ const PARSE_OPTIONS = {
   },
   boolean: ['help', 'version', 'verbose', 'quiet'],
   string: ['config'],
-  negatable: ['color', 'emoji'],
+  negatable: ['color', 'emoji', 'build', 'diff'],
   default: {
     verbose: false,
     quiet: false,
     color: true,
     emoji: true,
+    build: true,
+    diff: true,
   },
 } as const;
 

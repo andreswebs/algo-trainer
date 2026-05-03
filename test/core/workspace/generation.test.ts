@@ -338,7 +338,17 @@ Deno.test('generateProblemFiles - works for multiple languages', async () => {
 
       const result = await generateProblemFiles(options);
       assertEquals(result.success, true);
-      assertEquals(result.filesCreated.length, 4);
+
+      // Expected file count varies per language scaffolding spec.
+      // cpp emits: solution, README, metadata, CMakeLists.txt, input.txt,
+      //            expected.txt, leetcode.hpp.
+      // Other languages emit: solution, test, README, metadata.
+      const expectedCount = language === 'cpp' ? 7 : 4;
+      assertEquals(
+        result.filesCreated.length,
+        expectedCount,
+        `${language}: expected ${expectedCount} files, got ${result.filesCreated.length}`,
+      );
     }
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
@@ -638,3 +648,114 @@ Deno.test('generateProblemFiles - file extensions match language', async () => {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
+
+Deno.test(
+  'generateProblemFiles - cpp scaffolds harness, CMakeLists, input.txt and skips test file',
+  async () => {
+    const workspaceRoot = await createTempWorkspace();
+
+    try {
+      const cppProblem: Problem = {
+        ...mockProblem,
+        slug: 'two-sum',
+        signatures: { cpp: 'vector<int> twoSum(vector<int>& nums, int target)' },
+      };
+
+      const result = await generateProblemFiles({
+        problem: cppProblem,
+        workspaceRoot,
+        language: 'cpp',
+        templateStyle: 'documented',
+      });
+
+      assertEquals(result.success, true);
+
+      const paths = getProblemPaths(
+        { rootDir: workspaceRoot, language: 'cpp' },
+        'two-sum',
+      );
+
+      // Standard files for cpp scaffolding
+      assertEquals(await pathExists(paths.solutionFile), true);
+      assertEquals(await pathExists(paths.readmeFile), true);
+      assertEquals(await pathExists(paths.metadataFile), true);
+
+      // The standalone test file is intentionally NOT scaffolded for cpp
+      assertEquals(await pathExists(paths.testFile), false);
+
+      // Per-problem build + run kit
+      const cmakelistsPath = join(paths.dir, 'CMakeLists.txt');
+      const inputPath = join(paths.dir, 'input.txt');
+      const expectedPath = join(paths.dir, 'expected.txt');
+      const harnessPath = join(paths.dir, 'leetcode.hpp');
+      assertEquals(await pathExists(cmakelistsPath), true);
+      assertEquals(await pathExists(inputPath), true);
+      assertEquals(await pathExists(expectedPath), true);
+      assertEquals(await pathExists(harnessPath), true);
+
+      // Solution uses the curated signature, the LC_LOCAL guards, and the
+      // harness dispatch.
+      const solution = await Deno.readTextFile(paths.solutionFile);
+      assertStringIncludes(
+        solution,
+        'vector<int> twoSum(vector<int>& nums, int target)',
+      );
+      assertStringIncludes(solution, 'using namespace std;');
+      assertStringIncludes(solution, '#ifdef LC_LOCAL');
+      assertStringIncludes(solution, '#include "leetcode.hpp"');
+      assertStringIncludes(solution, 'run(&Solution::twoSum, argc, argv);');
+
+      // CMakeLists names the target after the slug.
+      const cmakelists = await Deno.readTextFile(cmakelistsPath);
+      assertStringIncludes(cmakelists, 'project(two-sum');
+      assertStringIncludes(cmakelists, 'CMAKE_CXX_STANDARD 23');
+      assertStringIncludes(cmakelists, 'LC_LOCAL');
+
+      // input.txt is in LeetCode wire format, one example per line.
+      const input = await Deno.readTextFile(inputPath);
+      assertStringIncludes(input, '[2,7,11,15] 9');
+      assertStringIncludes(input, '[3,2,4] 6');
+
+      // expected.txt mirrors what the harness prints when each output is
+      // returned in order, separated by `---` lines.
+      const expected = await Deno.readTextFile(expectedPath);
+      assertEquals(expected, '[0,1]\n---\n[1,2]\n');
+
+      // Harness is the vendored leetcode-driver header.
+      const harness = await Deno.readTextFile(harnessPath);
+      assertStringIncludes(harness, 'struct TreeNode');
+      assertStringIncludes(harness, 'struct ListNode');
+      assertStringIncludes(harness, 'void run(R (Solution::*fn)(Ts...)');
+    } finally {
+      await cleanupTempWorkspace(workspaceRoot);
+    }
+  },
+);
+
+Deno.test(
+  'generateProblemFiles - cpp falls back to a TODO signature when problem.signatures.cpp is absent',
+  async () => {
+    const workspaceRoot = await createTempWorkspace();
+
+    try {
+      const result = await generateProblemFiles({
+        problem: { ...mockProblem, slug: 'two-sum-no-sig' },
+        workspaceRoot,
+        language: 'cpp',
+        templateStyle: 'minimal',
+      });
+
+      assertEquals(result.success, true);
+
+      const paths = getProblemPaths(
+        { rootDir: workspaceRoot, language: 'cpp' },
+        'two-sum-no-sig',
+      );
+      const solution = await Deno.readTextFile(paths.solutionFile);
+      assertStringIncludes(solution, 'auto twoSumNoSig');
+      assertStringIncludes(solution, 'TODO: declare params');
+    } finally {
+      await cleanupTempWorkspace(workspaceRoot);
+    }
+  },
+);

@@ -318,7 +318,7 @@ export async function findTeachingScript(
   // 1. Check user custom scripts first (allows overriding built-in scripts)
   const paths = getConfigPaths();
   const userScriptPath = join(paths.data, 'scripts', problemSlug, 'trainer.yaml');
-  
+
   if (await pathExists(userScriptPath)) {
     return userScriptPath;
   }
@@ -329,7 +329,7 @@ export async function findTeachingScript(
   // Go up to src directory: src/core/ai -> src
   const srcDir = join(moduleDir, '..', '..');
   const builtinScriptPath = join(srcDir, 'data', 'scripts', problemSlug, 'trainer.yaml');
-  
+
   if (await pathExists(builtinScriptPath)) {
     return builtinScriptPath;
   }

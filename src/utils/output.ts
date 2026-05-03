@@ -239,9 +239,9 @@ export class Logger {
   log(message: string): void;
   log(...args: unknown[]): void;
   log(...args: unknown[]): void {
-    const message = args.map(arg =>
-      typeof arg === 'string' ? arg : JSON.stringify(arg)
-    ).join(' ');
+    const message = args.map((arg) => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(
+      ' ',
+    );
     this.writeToStderr(this.indent(message));
   }
 
@@ -295,14 +295,14 @@ export class Logger {
     const lines = content.split('\n');
     const maxWidth = Math.max(
       title.length,
-      ...lines.map(line => line.length)
+      ...lines.map((line) => line.length),
     );
     const width = Math.min(maxWidth + 4, 80);
 
     this.separator(width, '─');
     this.log(colorize(title.toUpperCase(), 'bold'));
     this.separator(width, '─');
-    lines.forEach(line => this.log(line));
+    lines.forEach((line) => this.log(line));
     this.separator(width, '─');
   }
 
@@ -318,30 +318,24 @@ export class Logger {
     // Calculate column widths
     const widths: Record<string, number> = {};
     for (const col of config.columns) {
-      const valueWidths = data.map(row =>
-        String(row[col.key] ?? '').length
-      );
+      const valueWidths = data.map((row) => String(row[col.key] ?? '').length);
       widths[col.key] = col.width ?? Math.max(
         col.label.length,
-        ...valueWidths
+        ...valueWidths,
       );
     }
 
     // Header
-    const headerParts = config.columns.map(col =>
-      col.label.padEnd(widths[col.key])
-    );
+    const headerParts = config.columns.map((col) => col.label.padEnd(widths[col.key]));
     this.log(headerParts.join('  '));
 
     // Separator
-    const separatorParts = config.columns.map(col =>
-      '─'.repeat(widths[col.key])
-    );
+    const separatorParts = config.columns.map((col) => '─'.repeat(widths[col.key]));
     this.log(separatorParts.join('  '));
 
     // Rows
     for (const row of data) {
-      const rowParts = config.columns.map(col => {
+      const rowParts = config.columns.map((col) => {
         const value = String(row[col.key] ?? '');
         const width = widths[col.key];
 

@@ -17,6 +17,7 @@ import { configCommand } from './config.ts';
 import { initCommand } from './init.ts';
 import { listCommand } from './list.ts';
 import { progressCommand } from './progress.ts';
+import { runCommand } from './run.ts';
 import { teachCommand } from './teach.ts';
 
 export type { CommandHandler } from '../types.ts';
@@ -35,6 +36,7 @@ const commands: Record<string, CommandEntry> = {
   init: { handler: initCommand, description: 'Initialize a new workspace' },
   list: { handler: listCommand, description: 'List and filter available problems' },
   progress: { handler: progressCommand, description: 'View progress stats and completion' },
+  run: { handler: runCommand, description: 'Build and run the scaffolded solution' },
   teach: { handler: teachCommand, description: 'Manage AI teaching scripts' },
 };
 
@@ -65,4 +67,5 @@ export { configCommand } from './config.ts';
 export { initCommand } from './init.ts';
 export { listCommand } from './list.ts';
 export { progressCommand } from './progress.ts';
+export { runCommand } from './run.ts';
 export { teachCommand } from './teach.ts';

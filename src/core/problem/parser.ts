@@ -123,6 +123,10 @@ export function normalizeProblem(raw: RawProblemJson): Problem {
     problem.leetcodeUrl = raw.leetcodeUrl;
   }
 
+  if (raw.signatures !== undefined) {
+    problem.signatures = { ...raw.signatures };
+  }
+
   if (raw.createdAt !== undefined) {
     const createdAt = parseIsoDate(raw.createdAt);
     if (createdAt !== undefined) {

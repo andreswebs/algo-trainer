@@ -6,7 +6,7 @@
 
 import { assertEquals, assertMatch, assertStringIncludes } from '@std/assert';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
-import { logger, Logger, resetOutputOptions, setOutputOptions } from '../src/utils/output.ts';
+import { Logger, logger, resetOutputOptions, setOutputOptions } from '../src/utils/output.ts';
 
 // Helper to capture console.error output
 class ConsoleErrorCapture {
@@ -20,7 +20,7 @@ class ConsoleErrorCapture {
   start(): void {
     this.captured = [];
     console.error = (...args: unknown[]) => {
-      this.captured.push(args.map(arg => String(arg)).join(' '));
+      this.captured.push(args.map((arg) => String(arg)).join(' '));
     };
   }
 
@@ -285,7 +285,7 @@ describe('Logger class', () => {
         ],
       });
       const lines = capture.getLines();
-      const dataLine = lines.find(line => line.includes('1'));
+      const dataLine = lines.find((line) => line.includes('1'));
       assertEquals(dataLine !== undefined, true);
       assertMatch(dataLine!, /\s+1/); // Should have leading spaces
     });

@@ -78,7 +78,7 @@ steps:
   it('should respect aiEnabled config setting', async () => {
     // This test verifies that the config setting exists and can be checked
     const config = await initializeConfig();
-    
+
     // Default should be true
     assertEquals(config.aiEnabled, true, 'aiEnabled should default to true');
 
@@ -128,7 +128,8 @@ steps:
     await engine.loadScript(problemDir);
 
     // Test hint with nested loops
-    const code = 'function solve() { for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) {} } }';
+    const code =
+      'function solve() { for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) {} } }';
     const hint = engine.getHint(code);
     assertExists(hint, 'Should provide hint for nested loops');
     assertEquals(hint?.includes('hash table'), true);

@@ -1,13 +1,23 @@
-// {{PROBLEM_TITLE}}
+// {{PROBLEM_TITLE}} — {{LEETCODE_URL}}
 
-#include <vector>
-#include <string>
-#include <unordered_map>
+using namespace std;
+
+#ifdef LC_LOCAL
+#include "leetcode.hpp"
+#else
+#define dbg(...)
+#endif
 
 class Solution {
 public:
-    // TODO: Implement solution
-    auto {{FUNCTION_NAME}}() {
+    {{SIGNATURE}} {
+        // TODO
         throw std::runtime_error("Not implemented");
     }
 };
+
+#ifdef LC_LOCAL
+int main(int argc, char **argv) {
+    run(&Solution::{{FUNCTION_NAME}}, argc, argv);
+}
+#endif

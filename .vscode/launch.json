@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/andre/programs/git-repos.self/algo-trainer/.local/workspace/problems/two-sum",
+      "program": "/Users/andre/programs/git-repos.self/algo-trainer/.local/workspace/problems/two-sum/build/Debug/outDebug"
+    }
+  ]
+}

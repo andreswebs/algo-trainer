@@ -186,11 +186,7 @@ export { evaluateTrigger } from './triggers.ts';
 
 // Generator
 export { TeachingScriptGenerator } from './generator.ts';
-export type {
-  ScriptGeneratorOptions,
-  ScriptTemplate,
-  ScriptTemplateType,
-} from './generator.ts';
+export type { ScriptGeneratorOptions, ScriptTemplate, ScriptTemplateType } from './generator.ts';
 
 // Types
 export * from './types.ts';

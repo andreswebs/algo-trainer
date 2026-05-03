@@ -7,7 +7,7 @@
  * @module test/core/problem/templates.integration
  */
 
-import { assertEquals, assertStringIncludes } from '@std/assert';
+import { assertEquals, assertExists, assertStringIncludes } from '@std/assert';
 import {
   renderAllTemplates,
   renderTemplate,
@@ -131,8 +131,9 @@ Deno.test('renderAllTemplates - renders all TypeScript minimal templates', async
 
   const { solution, test, readme } = await renderAllTemplates(context);
 
-  // Verify all three templates were rendered
+  // Verify all three templates were rendered (typescript scaffolding includes test)
   assertStringIncludes(solution, 'twoSum');
+  assertExists(test);
   assertStringIncludes(test, 'Two Sum');
   assertStringIncludes(readme, '# Two Sum');
 
@@ -213,21 +214,28 @@ Deno.test('renderAllTemplates - works for all supported languages (minimal style
 
     const { solution, test, readme } = await renderAllTemplates(context);
 
-    // Verify all templates rendered without errors
+    // Verify required templates rendered without errors
     assertEquals(typeof solution, 'string');
-    assertEquals(typeof test, 'string');
     assertEquals(typeof readme, 'string');
 
-    // Verify no unresolved placeholders
+    // cpp scaffolding skips the standalone test file (replaced by harness +
+    // input.txt + CMakeLists). All other languages still emit one.
+    if (language === 'cpp') {
+      assertEquals(test, undefined);
+    } else {
+      assertExists(test);
+      assertEquals(
+        test.includes('{{PROBLEM_'),
+        false,
+        `${language} test has unresolved placeholders`,
+      );
+    }
+
+    // Verify no unresolved placeholders in solution and readme
     assertEquals(
       solution.includes('{{PROBLEM_'),
       false,
       `${language} solution has unresolved placeholders`,
-    );
-    assertEquals(
-      test.includes('{{PROBLEM_'),
-      false,
-      `${language} test has unresolved placeholders`,
     );
     assertEquals(
       readme.includes('{{PROBLEM_'),

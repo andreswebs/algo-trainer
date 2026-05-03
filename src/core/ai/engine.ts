@@ -439,7 +439,9 @@ export class TeachingEngine {
       } catch (error) {
         // Log warning but continue checking other steps
         logger.warn(
-          `Failed to evaluate trigger: ${step.trigger} - ${error instanceof Error ? error.message : String(error)}`
+          `Failed to evaluate trigger: ${step.trigger} - ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
       }
     }

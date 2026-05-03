@@ -13,6 +13,7 @@ import type {
   Difficulty,
   Example,
   Problem,
+  ProblemSignatures,
   SupportedLanguage,
   UserPreferences,
 } from '../../types/global.ts';
@@ -49,6 +50,7 @@ export interface RawProblemJson {
   tags?: string[];
   companies?: string[];
   leetcodeUrl?: string;
+  signatures?: ProblemSignatures;
   createdAt?: string;
   updatedAt?: string;
   metadata?: RawProblemMetadata;
@@ -147,6 +149,8 @@ export const TEMPLATE_PLACEHOLDERS = {
 
   // Problem content
   EXAMPLES: 'EXAMPLES',
+  EXAMPLES_LC_INPUT: 'EXAMPLES_LC_INPUT',
+  EXAMPLES_LC_OUTPUT: 'EXAMPLES_LC_OUTPUT',
   CONSTRAINTS: 'CONSTRAINTS',
   HINTS: 'HINTS',
   TAGS: 'TAGS',
@@ -161,6 +165,7 @@ export const TEMPLATE_PLACEHOLDERS = {
   // Code generation
   FUNCTION_NAME: 'FUNCTION_NAME',
   CLASS_NAME: 'CLASS_NAME',
+  SIGNATURE: 'SIGNATURE',
   DATE: 'DATE',
   YEAR: 'YEAR',
 
@@ -196,6 +201,8 @@ export const PLACEHOLDER_ESCAPING_CONTEXTS: Record<TemplatePlaceholder, Escaping
 
   // Problem content - formatted output in various contexts
   EXAMPLES: ['block-comment', 'markdown'],
+  EXAMPLES_LC_INPUT: ['none'],
+  EXAMPLES_LC_OUTPUT: ['none'],
   CONSTRAINTS: ['markdown'],
   HINTS: ['markdown'],
   TAGS: ['none'],
@@ -207,9 +214,10 @@ export const PLACEHOLDER_ESCAPING_CONTEXTS: Record<TemplatePlaceholder, Escaping
   TEMPLATE_STYLE: ['none'],
   FILE_EXTENSION: ['none'],
 
-  // Code generation - safe values (derived from slug)
+  // Code generation - safe values (derived from slug or curated per-language)
   FUNCTION_NAME: ['none'],
   CLASS_NAME: ['none'],
+  SIGNATURE: ['none'],
   DATE: ['none'],
   YEAR: ['none'],
 

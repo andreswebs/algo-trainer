@@ -37,6 +37,19 @@ export interface Example {
 }
 
 /**
+ * Per-language solution signature (full method declaration including return
+ * type, name, and parameter list — no trailing brace).
+ *
+ * Example for two-sum / cpp:
+ *   `vector<int> twoSum(vector<int>& nums, int target)`
+ *
+ * The method name embedded in the signature must match
+ * `slugToFunctionName(problem.slug)` so the harness's
+ * `run(&Solution::<name>, ...)` dispatch resolves correctly.
+ */
+export type ProblemSignatures = Partial<Record<SupportedLanguage, string>>;
+
+/**
  * Core problem definition
  */
 export interface Problem {
@@ -62,6 +75,8 @@ export interface Problem {
   companies?: string[];
   /** LeetCode URL if available */
   leetcodeUrl?: string;
+  /** Per-language method signatures used by code-generation templates */
+  signatures?: ProblemSignatures;
   /** When the problem was created */
   createdAt?: Date;
   /** When the problem was last updated */
