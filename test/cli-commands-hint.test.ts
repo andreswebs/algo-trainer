@@ -10,6 +10,7 @@ import type { Args } from '@std/cli/parse-args';
 import { extractHintOptions, hintCommand } from '../src/cli/commands/hint.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
+import { ENV_VARS } from '../src/cli/env.ts';
 import { ensureDir } from '@std/fs';
 import { join } from '@std/path';
 
@@ -80,8 +81,16 @@ describe('extractHintOptions', () => {
 describe('hintCommand', () => {
   let tempDir: string;
   let originalWorkspace: string;
+  let originalAtEnv: Record<string, string | undefined>;
 
   beforeEach(async () => {
+    // Clear AT_* env vars so the user's shell doesn't override the test workspace.
+    originalAtEnv = {};
+    for (const key of Object.values(ENV_VARS)) {
+      originalAtEnv[key] = Deno.env.get(key);
+      Deno.env.delete(key);
+    }
+
     // Load config first
     await configManager.load();
 
@@ -115,6 +124,10 @@ describe('hintCommand', () => {
       await Deno.remove(tempDir, { recursive: true });
     } catch {
       // Ignore cleanup errors
+    }
+    for (const [key, value] of Object.entries(originalAtEnv)) {
+      if (value === undefined) Deno.env.delete(key);
+      else Deno.env.set(key, value);
     }
   });
 
@@ -191,8 +204,15 @@ describe('hintCommand', () => {
 describe('hintCommand with workspace tracking', () => {
   let tempDir: string;
   let originalWorkspace: string;
+  let originalAtEnv: Record<string, string | undefined>;
 
   beforeEach(async () => {
+    originalAtEnv = {};
+    for (const key of Object.values(ENV_VARS)) {
+      originalAtEnv[key] = Deno.env.get(key);
+      Deno.env.delete(key);
+    }
+
     // Load config first
     await configManager.load();
 
@@ -226,6 +246,10 @@ describe('hintCommand with workspace tracking', () => {
       await Deno.remove(tempDir, { recursive: true });
     } catch {
       // Ignore cleanup errors
+    }
+    for (const [key, value] of Object.entries(originalAtEnv)) {
+      if (value === undefined) Deno.env.delete(key);
+      else Deno.env.set(key, value);
     }
   });
 

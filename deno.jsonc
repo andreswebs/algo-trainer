@@ -13,7 +13,7 @@
   },
   "tasks": {
     "dev": "DENO_ENV=development deno run --allow-all --watch src/main.ts",
-    "generate-problems": "deno run --allow-read --allow-write --allow-env scripts/generate-problems.ts",
+    "generate-problems": "deno run --allow-read --allow-write --allow-env --allow-run=deno scripts/generate-problems.ts",
     "build": "deno task generate-problems && deno compile --allow-all --include=src/data/templates --output=bin/algo-trainer src/main.ts",
     "test": "DENO_ENV=test deno test --allow-write --allow-read --allow-env",
     "test:watch": "deno test --watch --allow-write --allow-read --allow-env",
@@ -21,6 +21,7 @@
     "lint": "deno lint",
     "lint:fix": "deno lint --fix",
     "fmt": "deno fmt",
+    "fmt:check": "deno fmt --check",
     "check": "deno check src/**/*.ts"
   },
   "imports": {
@@ -50,11 +51,19 @@
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"],
-      "include": ["ban-untagged-todo"]
+      "tags": [
+        "recommended"
+      ],
+      "include": [
+        "ban-untagged-todo"
+      ]
     },
-    "exclude": ["_.local-leetcode-trainer.legacy/**/*"]
+    "exclude": [
+      "_.local-leetcode-trainer.legacy/**/*"
+    ]
   },
-  "exclude": ["_.local-leetcode-trainer.legacy/"],
+  "exclude": [
+    "_.local-leetcode-trainer.legacy/"
+  ],
   "lock": true
 }

@@ -26,23 +26,27 @@ describe('Environment Variable Integration', () => {
     }
   };
 
+  // Clears ALL known AT_* vars on entry so pre-existing shell exports don't
+  // leak into tests that expect a clean environment.
   const withEnv = async (
     vars: Record<string, string>,
     fn: () => void | Promise<void>,
   ) => {
+    const managedKeys = new Set<string>([...Object.values(ENV_VARS), ...Object.keys(vars)]);
     const original: Record<string, string | undefined> = {};
 
-    // Save original values and set new ones
-    for (const [key, value] of Object.entries(vars)) {
+    for (const key of managedKeys) {
       original[key] = Deno.env.get(key);
+      Deno.env.delete(key);
+    }
+    for (const [key, value] of Object.entries(vars)) {
       Deno.env.set(key, value);
     }
 
     try {
       await fn();
     } finally {
-      // Restore original values
-      for (const key of Object.keys(vars)) {
+      for (const key of managedKeys) {
         const originalValue = original[key];
         if (originalValue === undefined) {
           Deno.env.delete(key);

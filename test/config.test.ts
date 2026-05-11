@@ -6,6 +6,7 @@
 
 import { assertEquals, assertExists } from '@std/assert';
 import { ConfigManager } from '../src/config/manager.ts';
+import { ENV_VARS } from '../src/cli/env.ts';
 
 interface TestEnv {
   tempDir: string;
@@ -15,12 +16,14 @@ interface TestEnv {
 async function setupTestEnv(): Promise<TestEnv> {
   const tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-test-' });
 
-  const original = {
-    XDG_CONFIG_HOME: Deno.env.get('XDG_CONFIG_HOME'),
-    XDG_DATA_HOME: Deno.env.get('XDG_DATA_HOME'),
-    XDG_CACHE_HOME: Deno.env.get('XDG_CACHE_HOME'),
-    XDG_STATE_HOME: Deno.env.get('XDG_STATE_HOME'),
-  };
+  const xdgKeys = ['XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'XDG_CACHE_HOME', 'XDG_STATE_HOME'];
+  // Clear AT_* vars so the user's shell exports don't override the loaded config.
+  const managedKeys = [...xdgKeys, ...Object.values(ENV_VARS)];
+  const original: Record<string, string | undefined> = {};
+  for (const key of managedKeys) {
+    original[key] = Deno.env.get(key);
+    Deno.env.delete(key);
+  }
 
   Deno.env.set('XDG_CONFIG_HOME', `${tempDir}/config`);
   Deno.env.set('XDG_DATA_HOME', `${tempDir}/data`);
@@ -30,7 +33,8 @@ async function setupTestEnv(): Promise<TestEnv> {
   return {
     tempDir,
     cleanup: async () => {
-      for (const [key, value] of Object.entries(original)) {
+      for (const key of managedKeys) {
+        const value = original[key];
         if (value === undefined) {
           Deno.env.delete(key);
         } else {

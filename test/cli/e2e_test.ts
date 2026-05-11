@@ -22,6 +22,7 @@ import { completeCommand } from '../../src/cli/commands/complete.ts';
 import { configCommand } from '../../src/cli/commands/config.ts';
 import { progressCommand } from '../../src/cli/commands/progress.ts';
 import { configManager } from '../../src/config/manager.ts';
+import { ENV_VARS } from '../../src/cli/env.ts';
 import { ExitCode } from '../../src/cli/exit-codes.ts';
 import { problemExists } from '../../src/core/mod.ts';
 import type { Args } from '@std/cli/parse-args';
@@ -54,8 +55,15 @@ function getCapturedOutput(): string {
 
 describe('E2E Workflow Tests - CLI-052', () => {
   let tempWorkspace: string;
+  let originalAtEnv: Record<string, string | undefined>;
 
   beforeEach(async () => {
+    // Clear AT_* env vars so user shell exports don't override config in tests.
+    originalAtEnv = {};
+    for (const key of Object.values(ENV_VARS)) {
+      originalAtEnv[key] = Deno.env.get(key);
+      Deno.env.delete(key);
+    }
     // Create a temporary workspace for each test
     tempWorkspace = await Deno.makeTempDir();
     setupConsoleCapture();
@@ -68,6 +76,10 @@ describe('E2E Workflow Tests - CLI-052', () => {
       await Deno.remove(tempWorkspace, { recursive: true });
     } catch {
       // Ignore errors during cleanup
+    }
+    for (const [key, value] of Object.entries(originalAtEnv)) {
+      if (value === undefined) Deno.env.delete(key);
+      else Deno.env.set(key, value);
     }
   });
 

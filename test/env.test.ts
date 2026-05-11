@@ -9,21 +9,24 @@ import { describe, it } from '@std/testing/bdd';
 import { ENV_VARS, getEnvVarDocumentation, loadEnvConfig } from '../src/cli/env.ts';
 
 describe('Environment Variable Configuration', () => {
-  // Helper to set env vars and clean up
+  // Helper to set env vars and clean up. Clears ALL known AT_* vars on entry
+  // so pre-existing shell exports don't leak into tests that expect defaults.
   const withEnv = async (vars: Record<string, string>, fn: () => void | Promise<void>) => {
+    const managedKeys = new Set<string>([...Object.values(ENV_VARS), ...Object.keys(vars)]);
     const original: Record<string, string | undefined> = {};
 
-    // Save original values and set new ones
-    for (const [key, value] of Object.entries(vars)) {
+    for (const key of managedKeys) {
       original[key] = Deno.env.get(key);
+      Deno.env.delete(key);
+    }
+    for (const [key, value] of Object.entries(vars)) {
       Deno.env.set(key, value);
     }
 
     try {
       await fn();
     } finally {
-      // Restore original values
-      for (const key of Object.keys(vars)) {
+      for (const key of managedKeys) {
         const originalValue = original[key];
         if (originalValue === undefined) {
           Deno.env.delete(key);

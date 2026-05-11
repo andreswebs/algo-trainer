@@ -22,30 +22,49 @@ import { progressCommand } from '../src/cli/commands/progress.ts';
 
 // Import utilities
 import { configManager } from '../src/config/manager.ts';
+import { ENV_VARS } from '../src/cli/env.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized, problemExists } from '../src/core/mod.ts';
+import { getFileExtension } from '../src/core/workspace/files.ts';
+import type { SupportedLanguage } from '../src/types/global.ts';
 
 describe('CLI Integration Tests - CLI-051', () => {
   let tempDir: string;
   let originalWorkspace: string;
+  let originalLanguage: SupportedLanguage;
+  let originalAtEnv: Record<string, string | undefined>;
 
   beforeEach(async () => {
+    // Clear AT_* env vars so user shell exports don't override the test workspace.
+    originalAtEnv = {};
+    for (const key of Object.values(ENV_VARS)) {
+      originalAtEnv[key] = Deno.env.get(key);
+      Deno.env.delete(key);
+    }
     tempDir = await Deno.makeTempDir();
-    // Save original workspace configuration
+    // Save original workspace + language so we don't permanently mutate user config.
     const config = await configManager.load();
     originalWorkspace = config.workspace;
-    // Set temporary workspace
-    await configManager.updateConfig({ workspace: tempDir });
+    originalLanguage = config.language;
+    // Pin workspace + language so tests don't depend on the user's persisted config.
+    await configManager.updateConfig({ workspace: tempDir, language: 'cpp' });
   });
 
   afterEach(async () => {
-    // Restore original workspace
-    await configManager.updateConfig({ workspace: originalWorkspace });
+    // Restore original config
+    await configManager.updateConfig({
+      workspace: originalWorkspace,
+      language: originalLanguage,
+    });
     // Clean up temp directory
     try {
       await Deno.remove(tempDir, { recursive: true });
     } catch {
       // Ignore cleanup errors
+    }
+    for (const [key, value] of Object.entries(originalAtEnv)) {
+      if (value === undefined) Deno.env.delete(key);
+      else Deno.env.set(key, value);
     }
   });
 
@@ -126,14 +145,7 @@ describe('CLI Integration Tests - CLI-051', () => {
       const readmeStat = await Deno.stat(readmeFile);
       assertEquals(readmeStat.isFile, true);
 
-      // Solution file name depends on language
-      const solutionFileName = config.language === 'typescript'
-        ? 'solution.ts'
-        : config.language === 'python'
-        ? 'solution.py'
-        : 'solution.js';
-
-      const solutionFile = join(problemDir, solutionFileName);
+      const solutionFile = join(problemDir, `solution${getFileExtension(config.language)}`);
       const solutionStat = await Deno.stat(solutionFile);
       assertEquals(solutionStat.isFile, true);
     });
@@ -177,14 +189,7 @@ describe('CLI Integration Tests - CLI-051', () => {
       const structure = getWorkspaceStructure(tempDir);
       const problemDir = join(structure.problems, 'two-sum');
 
-      // Get the actual solution file name based on language
-      const solutionFileName = config.language === 'typescript'
-        ? 'solution.ts'
-        : config.language === 'python'
-        ? 'solution.py'
-        : 'solution.js';
-
-      const solutionFile = join(problemDir, solutionFileName);
+      const solutionFile = join(problemDir, `solution${getFileExtension(config.language)}`);
 
       // Modify the file
       await Deno.writeTextFile(solutionFile, '// Modified content');

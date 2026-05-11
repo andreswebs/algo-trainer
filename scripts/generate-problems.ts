@@ -89,6 +89,14 @@ async function main() {
   // Write the generated file
   await Deno.writeTextFile(OUTPUT_FILE, output);
 
+  // Format the output so `deno task fmt:check` is stable after generation.
+  const fmt = new Deno.Command('deno', {
+    args: ['fmt', OUTPUT_FILE],
+    stdout: 'null',
+    stderr: 'null',
+  });
+  await fmt.output();
+
   logger.success(`Generated ${OUTPUT_FILE}`);
   logger.debug(`Output size: ${(output.length / 1024).toFixed(2)} KB`);
 }
