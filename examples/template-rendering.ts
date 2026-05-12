@@ -121,7 +121,7 @@ async function demonstrateRendering() {
 
     console.log('Generated files:');
     console.log(`- Solution: ${solution.split('\n').length} lines`);
-    console.log(`- Test: ${test.split('\n').length} lines`);
+    console.log(`- Test: ${test != null ? test.split('\n').length : 'N/A'} lines`);
     console.log(`- README: ${readme.split('\n').length} lines`);
     console.log();
   } catch (error) {

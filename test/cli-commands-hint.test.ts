@@ -7,12 +7,19 @@
 import { assertEquals } from '@std/assert';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import type { Args } from '@std/cli/parse-args';
-import { extractHintOptions, hintCommand } from '../src/cli/commands/hint.ts';
+import {
+  extractHintOptions,
+  hintCommand,
+  loadProblemState,
+  updateHintTracking,
+  validateHintLevel,
+} from '../src/cli/commands/hint.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
 import { ENV_VARS } from '../src/cli/env.ts';
 import { ensureDir } from '@std/fs';
 import { join } from '@std/path';
+import { getSolutionFileName } from '../src/core/workspace/files.ts';
 
 describe('extractHintOptions', () => {
   it('should extract problem slug from positional arguments', () => {
@@ -273,8 +280,8 @@ describe('hintCommand with workspace tracking', () => {
     };
     await Deno.writeTextFile(metadataPath, JSON.stringify(metadata, null, 2));
 
-    // Create a minimal solution file so problemExists returns true
-    const solutionPath = join(problemDir, 'solution.ts');
+    // Create solution file with the correct name for the configured language
+    const solutionPath = join(problemDir, getSolutionFileName(config.language));
     await Deno.writeTextFile(solutionPath, '// Solution placeholder');
 
     // Run hint command
@@ -325,8 +332,8 @@ describe('hintCommand with workspace tracking', () => {
     };
     await Deno.writeTextFile(metadataPath, JSON.stringify(metadata, null, 2));
 
-    // Create a minimal solution file
-    const solutionPath = join(problemDir, 'solution.ts');
+    // Create solution file with the correct name for the configured language
+    const solutionPath = join(problemDir, getSolutionFileName(config.language));
     await Deno.writeTextFile(solutionPath, '// Solution placeholder');
 
     // Run hint command - should show second hint
@@ -343,5 +350,155 @@ describe('hintCommand with workspace tracking', () => {
     const updatedMetadata = JSON.parse(await Deno.readTextFile(metadataPath));
     assertEquals(updatedMetadata.hintsUsed.includes(0), true);
     assertEquals(updatedMetadata.hintsUsed.includes(1), true);
+  });
+});
+
+describe('loadProblemState', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-state-test-' });
+  });
+
+  afterEach(async () => {
+    try {
+      await Deno.remove(tempDir, { recursive: true });
+    } catch {
+      // ignore
+    }
+  });
+
+  it('returns exists=false and empty hintsUsed when problem not in workspace', async () => {
+    const state = await loadProblemState(tempDir, 'two-sum', 'typescript');
+    assertEquals(state.exists, false);
+    assertEquals(state.hintsUsed, []);
+  });
+
+  it('returns exists=true when solution file is present', async () => {
+    const problemDir = join(tempDir, 'problems', 'two-sum');
+    await ensureDir(problemDir);
+    await Deno.writeTextFile(join(problemDir, 'solution.ts'), '// stub');
+
+    const state = await loadProblemState(tempDir, 'two-sum', 'typescript');
+    assertEquals(state.exists, true);
+  });
+
+  it('returns hintsUsed from metadata when problem exists', async () => {
+    const problemDir = join(tempDir, 'problems', 'two-sum');
+    await ensureDir(problemDir);
+    await Deno.writeTextFile(join(problemDir, 'solution.ts'), '// stub');
+    await Deno.writeTextFile(
+      join(problemDir, '.problem.json'),
+      JSON.stringify({
+        problemId: '1',
+        slug: 'two-sum',
+        language: 'typescript',
+        generatedAt: new Date().toISOString(),
+        templateStyle: 'documented',
+        lastModified: new Date().toISOString(),
+        hintsUsed: [0, 1],
+      }),
+    );
+
+    const state = await loadProblemState(tempDir, 'two-sum', 'typescript');
+    assertEquals(state.exists, true);
+    assertEquals(state.hintsUsed, [0, 1]);
+  });
+});
+
+describe('validateHintLevel', () => {
+  const hints = ['hint1', 'hint2', 'hint3'];
+
+  it('returns null for undefined level (no validation needed)', () => {
+    assertEquals(validateHintLevel(undefined, hints), null);
+  });
+
+  it('returns null for valid level within range', () => {
+    assertEquals(validateHintLevel(1, hints), null);
+    assertEquals(validateHintLevel(2, hints), null);
+    assertEquals(validateHintLevel(3, hints), null);
+  });
+
+  it('returns error message for level 0', () => {
+    const result = validateHintLevel(0, hints);
+    assertEquals(typeof result, 'string');
+  });
+
+  it('returns error message for level exceeding hint count', () => {
+    const result = validateHintLevel(4, hints);
+    assertEquals(typeof result, 'string');
+  });
+
+  it('returns error message for negative level', () => {
+    const result = validateHintLevel(-1, hints);
+    assertEquals(typeof result, 'string');
+  });
+});
+
+describe('updateHintTracking', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-tracking-test-' });
+  });
+
+  afterEach(async () => {
+    try {
+      await Deno.remove(tempDir, { recursive: true });
+    } catch {
+      // ignore
+    }
+  });
+
+  it('does nothing when problem does not exist in workspace', async () => {
+    // Should not throw even if problem doesn't exist
+    await updateHintTracking(tempDir, 'two-sum', 'typescript', false, [0], []);
+  });
+
+  it('does nothing when no new hints were added', async () => {
+    const problemDir = join(tempDir, 'problems', 'two-sum');
+    await ensureDir(problemDir);
+    const metadataPath = join(problemDir, '.problem.json');
+    await Deno.writeTextFile(
+      metadataPath,
+      JSON.stringify({
+        problemId: '1',
+        slug: 'two-sum',
+        language: 'typescript',
+        generatedAt: new Date().toISOString(),
+        templateStyle: 'documented',
+        lastModified: new Date().toISOString(),
+        hintsUsed: [0],
+      }),
+    );
+
+    await updateHintTracking(tempDir, 'two-sum', 'typescript', true, [0], [0]);
+
+    // Metadata should be unchanged (no new hints)
+    const meta = JSON.parse(await Deno.readTextFile(metadataPath));
+    assertEquals(meta.hintsUsed, [0]);
+  });
+
+  it('updates metadata when new hints were added', async () => {
+    const problemDir = join(tempDir, 'problems', 'two-sum');
+    await ensureDir(problemDir);
+    const metadataPath = join(problemDir, '.problem.json');
+    await Deno.writeTextFile(
+      metadataPath,
+      JSON.stringify({
+        problemId: '1',
+        slug: 'two-sum',
+        language: 'typescript',
+        generatedAt: new Date().toISOString(),
+        templateStyle: 'documented',
+        lastModified: new Date().toISOString(),
+        hintsUsed: [],
+      }),
+    );
+
+    await updateHintTracking(tempDir, 'two-sum', 'typescript', true, [0], []);
+
+    const meta = JSON.parse(await Deno.readTextFile(metadataPath));
+    assertEquals(meta.hintsUsed, [0]);
   });
 });

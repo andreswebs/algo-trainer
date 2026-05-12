@@ -8,13 +8,23 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult, ProblemQuery, SupportedLanguage } from '../../types/global.ts';
+import type {
+  CommandResult,
+  ProblemQuery,
+  SupportedLanguage,
+  WorkspaceStructure,
+} from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { archiveProblem, problemExists, ProblemManager } from '../../core/mod.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { logger } from '../../utils/output.ts';
 import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
-import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
+import {
+  CommandError,
+  createErrorContext,
+  ProblemError,
+  WorkspaceError,
+} from '../../utils/errors.ts';
 import { promptSelect, promptText } from '../prompts.ts';
 import { showCommandHelp } from './help.ts';
 
@@ -67,8 +77,155 @@ export function extractCompleteOptions(args: Args): CompleteOptions {
   };
 }
 
+/**
+ * Resolves the target problem slug from args or by scanning the workspace.
+ * Auto-selects if only one problem is present; prompts for multiple.
+ * Throws ProblemError if no problems found, CommandError if no selection made.
+ */
+export async function resolveTargetProblem(
+  options: CompleteOptions,
+  structure: WorkspaceStructure,
+): Promise<string> {
+  if (options.problemSlug) {
+    try {
+      const manager = new ProblemManager();
+      await manager.init();
+      const problem = resolveProblem(options.problemSlug, manager, structure.root);
+      if (problem) {
+        return problem.slug;
+      }
+    } catch {
+      // If resolution fails, continue with provided slug
+    }
+    return options.problemSlug;
+  }
+
+  const entries: string[] = [];
+  try {
+    for await (const entry of Deno.readDir(structure.problems)) {
+      if (entry.isDirectory) {
+        entries.push(entry.name);
+      }
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new CommandError(
+      `Failed to read problems directory: ${errorMessage}`,
+      createErrorContext('resolveTargetProblem', { error: errorMessage }),
+    );
+  }
+
+  if (entries.length === 0) {
+    throw new ProblemError(
+      'No problems found in workspace',
+      createErrorContext('resolveTargetProblem', { workspace: structure.problems }),
+    );
+  }
+
+  if (entries.length === 1) {
+    logger.info(`Auto-selected problem: ${entries[0]}`);
+    return entries[0];
+  }
+
+  const selected = await promptSelect('Select problem to complete:', entries);
+  if (!selected) {
+    throw new CommandError(
+      'No problem selected',
+      createErrorContext('resolveTargetProblem', { workspace: structure.problems }),
+    );
+  }
+  return selected;
+}
+
+/**
+ * Validates that the problem exists in the workspace.
+ * Throws ProblemError if the problem files are not found.
+ */
+export async function validateCompletion(
+  problemSlug: string,
+  workspaceRoot: string,
+  language: SupportedLanguage,
+): Promise<void> {
+  const exists = await problemExists(workspaceRoot, problemSlug, language);
+  if (!exists) {
+    throw new ProblemError(
+      `Problem '${problemSlug}' not found in workspace`,
+      createErrorContext('validateCompletion', { slug: problemSlug, workspaceRoot }),
+    );
+  }
+}
+
+/**
+ * Archives the problem (or marks it complete without moving files if noArchive).
+ * Throws on archive failure. Logs outcome to stderr.
+ */
+export async function markCompleted(
+  problemSlug: string,
+  workspaceRoot: string,
+  language: SupportedLanguage,
+  noArchive: boolean,
+): Promise<void> {
+  if (!noArchive) {
+    logger.info(`Archiving problem: ${problemSlug}`);
+    const archiveResult = await archiveProblem({ workspaceRoot, slug: problemSlug, language });
+    if (!archiveResult.success) {
+      throw new Error(`Failed to archive problem: ${archiveResult.error}`);
+    }
+    logger.success(`Completed and archived: ${problemSlug}`);
+    if (archiveResult.collisionHandled) {
+      logger.info('Note: A previous completion exists. Archived with timestamp.');
+    }
+    logger.info(`Archived to: ${archiveResult.archivedTo}`);
+  } else {
+    logger.success(`Marked as completed: ${problemSlug}`);
+    logger.info('Files kept in current workspace (--no-archive)');
+  }
+}
+
+/**
+ * Emits notes, problem summary, and next-challenge suggestions to stderr.
+ * Never throws.
+ */
+export async function emitCompletionSummary(
+  problemSlug: string,
+  notes: string | undefined,
+): Promise<void> {
+  if (notes) {
+    logger.info(`Notes: ${notes}`);
+  }
+
+  try {
+    const manager = new ProblemManager();
+    await manager.init();
+    const problem = manager.getBySlug(problemSlug);
+
+    if (problem) {
+      logger.newline();
+      logger.log(formatProblemSummary(problem));
+      logger.newline();
+
+      logger.info('Looking for next challenge...');
+      const query: ProblemQuery = { difficulty: problem.difficulty, limit: 3 };
+      const similarProblems = manager.list(query);
+
+      if (similarProblems.problems.length > 0) {
+        const suggestions = similarProblems.problems
+          .filter((p) => p.slug !== problemSlug)
+          .slice(0, 3);
+        if (suggestions.length > 0) {
+          for (const p of suggestions) {
+            logger.info(`  - ${p.title} (${p.slug})`);
+          }
+          logger.info(`\nStart with: algo-trainer challenge ${suggestions[0].slug}`);
+        }
+      }
+    }
+  } catch {
+    // Ignore errors in display/suggestion logic
+  }
+}
+
 export async function completeCommand(args: Args): Promise<CommandResult> {
-  // Handle help flag
   if (args.help || args.h) {
     showHelp();
     return { success: true, exitCode: ExitCode.SUCCESS };
@@ -77,157 +234,22 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
   try {
     const options = extractCompleteOptions(args);
     const config = configManager.getConfig();
-
-    // Validate workspace is initialized
     const structure = await requireWorkspace();
-
-    // Get language from config
     const language = (config.language || 'typescript') as SupportedLanguage;
 
-    // Get problem slug - prompt if not provided or resolve by ID
-    let problemSlug = options.problemSlug;
-    if (!problemSlug) {
-      // Try to find current problems in workspace
-      const problemsDir = structure.problems;
-      try {
-        const entries = [];
-        for await (const entry of Deno.readDir(problemsDir)) {
-          if (entry.isDirectory) {
-            entries.push(entry.name);
-          }
-        }
+    const problemSlug = await resolveTargetProblem(options, structure);
+    await validateCompletion(problemSlug, structure.root, language);
 
-        if (entries.length === 0) {
-          logger.error('No problems found in workspace');
-          logger.info('Start a challenge with: algo-trainer challenge');
-          return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
-        }
-
-        if (entries.length === 1) {
-          // Only one problem, use it
-          problemSlug = entries[0];
-          logger.info(`Auto-selected problem: ${problemSlug}`);
-        } else {
-          // Multiple problems, prompt user to select
-          const selected = await promptSelect(
-            'Select problem to complete:',
-            entries,
-          );
-          if (!selected) {
-            logger.error('No problem selected');
-            return { success: false, exitCode: ExitCode.USAGE_ERROR };
-          }
-          problemSlug = selected;
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        logger.error(`Failed to read problems directory: ${errorMessage}`);
-        return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
-      }
-    } else {
-      // Try to resolve by ID or slug
-      try {
-        const manager = new ProblemManager();
-        await manager.init();
-        const problem = resolveProblem(problemSlug, manager, structure.root);
-        if (problem) {
-          // Use the resolved slug (in case they provided an ID)
-          problemSlug = problem.slug;
-        }
-      } catch {
-        // If resolution fails, continue with the provided slug
-      }
-    }
-
-    // Verify problem exists in workspace
-    const exists = await problemExists(structure.root, problemSlug, language);
-    if (!exists) {
-      logger.error(`Problem '${problemSlug}' not found in workspace`);
-      logger.info(
-        'Use "algo-trainer challenge <slug>" to start working on this problem first',
-      );
-      return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
-    }
-
-    // Prompt for notes if not provided
     let notes = options.notes;
     if (!notes) {
-      const prompted = await promptText('Add completion notes (optional):', {
-        allowEmpty: true,
-      });
+      const prompted = await promptText('Add completion notes (optional):', { allowEmpty: true });
       if (prompted) {
         notes = prompted;
       }
     }
 
-    // Archive the problem unless --no-archive is set
-    if (!options.noArchive) {
-      logger.info(`Archiving problem: ${problemSlug}`);
-      const archiveResult = await archiveProblem({
-        workspaceRoot: structure.root,
-        slug: problemSlug,
-        language,
-      });
-
-      if (!archiveResult.success) {
-        logger.error(`Failed to archive problem: ${archiveResult.error}`);
-        return { success: false, exitCode: ExitCode.GENERAL_ERROR };
-      }
-
-      logger.success(`Completed and archived: ${problemSlug}`);
-      if (archiveResult.collisionHandled) {
-        logger.info(
-          'Note: A previous completion exists. Archived with timestamp.',
-        );
-      }
-      logger.info(`Archived to: ${archiveResult.archivedTo}`);
-    } else {
-      logger.success(`Marked as completed: ${problemSlug}`);
-      logger.info('Files kept in current workspace (--no-archive)');
-    }
-
-    // Show notes if provided
-    if (notes) {
-      logger.info(`Notes: ${notes}`);
-    }
-
-    // Get problem info for detailed display and suggestions
-    try {
-      const manager = new ProblemManager();
-      await manager.init();
-      const problem = manager.getBySlug(problemSlug);
-
-      if (problem) {
-        // Display problem summary
-        logger.newline();
-        logger.log(formatProblemSummary(problem));
-        logger.newline();
-
-        // Suggest next problems of similar difficulty
-        logger.info('Looking for next challenge...');
-        const query: ProblemQuery = {
-          difficulty: problem.difficulty,
-          limit: 3,
-        };
-        const similarProblems = manager.list(query);
-
-        if (similarProblems.problems.length > 0) {
-          const suggestions = similarProblems.problems
-            .filter((p) => p.slug !== problemSlug)
-            .slice(0, 3);
-          if (suggestions.length > 0) {
-            for (const p of suggestions) {
-              logger.info(`  - ${p.title} (${p.slug})`);
-            }
-            logger.info(
-              `\nStart with: algo-trainer challenge ${suggestions[0].slug}`,
-            );
-          }
-        }
-      }
-    } catch {
-      // Ignore errors in display/suggestion logic
-    }
+    await markCompleted(problemSlug, structure.root, language, options.noArchive);
+    await emitCompletionSummary(problemSlug, notes);
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
@@ -237,6 +259,9 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     } else if (error instanceof ProblemError) {
       logger.error('Problem error:', error.message);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
+    } else if (error instanceof CommandError) {
+      logger.error('Command error:', error.message);
+      return { success: false, exitCode: ExitCode.USAGE_ERROR };
     } else {
       logger.error(
         'Unexpected error:',

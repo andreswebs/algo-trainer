@@ -65,7 +65,7 @@ export interface ProgressOptions {
 /**
  * Statistics for a specific difficulty level
  */
-interface DifficultyStats {
+export interface DifficultyStats {
   difficulty: Difficulty;
   current: number;
   completed: number;
@@ -75,11 +75,19 @@ interface DifficultyStats {
 /**
  * Statistics for a specific category/tag
  */
-interface CategoryStats {
+export interface CategoryStats {
   category: string;
   current: number;
   completed: number;
   total: number;
+}
+
+/**
+ * Subset of problem metadata used for aggregation
+ */
+export interface ProblemStatusMetadata {
+  difficulty?: Difficulty;
+  tags?: string[];
 }
 
 /**
@@ -152,6 +160,82 @@ async function readProblemMetadata(
 }
 
 /**
+ * Count occurrences of each difficulty in a metadata list.
+ */
+export function countByDifficulty(metadata: ProblemStatusMetadata[]): Map<Difficulty, number> {
+  const counts = new Map<Difficulty, number>();
+  for (const item of metadata) {
+    if (item.difficulty !== undefined) {
+      counts.set(item.difficulty, (counts.get(item.difficulty) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+/**
+ * Count occurrences of each tag in a metadata list.
+ */
+export function countByTag(metadata: ProblemStatusMetadata[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of metadata) {
+    for (const tag of item.tags ?? []) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+/**
+ * Build the DifficultyStats array from pre-aggregated count maps.
+ */
+export function buildDifficultyStats(
+  currentCounts: Map<Difficulty, number>,
+  completedCounts: Map<Difficulty, number>,
+  totalCounts: Map<Difficulty, number>,
+): DifficultyStats[] {
+  return Array.from(totalCounts.keys()).map((difficulty) => ({
+    difficulty,
+    current: currentCounts.get(difficulty) ?? 0,
+    completed: completedCounts.get(difficulty) ?? 0,
+    total: totalCounts.get(difficulty) ?? 0,
+  }));
+}
+
+/**
+ * Build the CategoryStats array from pre-aggregated count maps, sorted by
+ * completed descending then category name ascending.
+ */
+export function buildCategoryStats(
+  currentCounts: Map<string, number>,
+  completedCounts: Map<string, number>,
+  totalCounts: Map<string, number>,
+): CategoryStats[] {
+  const allCategories = new Set([
+    ...currentCounts.keys(),
+    ...completedCounts.keys(),
+    ...totalCounts.keys(),
+  ]);
+  return Array.from(allCategories)
+    .map((category) => ({
+      category,
+      current: currentCounts.get(category) ?? 0,
+      completed: completedCounts.get(category) ?? 0,
+      total: totalCounts.get(category) ?? 0,
+    }))
+    .sort((a, b) => b.completed - a.completed || a.category.localeCompare(b.category));
+}
+
+/**
+ * Collect ProblemStatusMetadata for each slug by reading its .problem.json file.
+ */
+function collectWorkspaceMetadata(
+  slugs: string[],
+  dirPath: string,
+): Promise<ProblemStatusMetadata[]> {
+  return Promise.all(slugs.map((slug) => readProblemMetadata(dirPath, slug)));
+}
+
+/**
  * Calculate progress statistics by scanning workspace
  */
 async function calculateProgressStats(
@@ -160,120 +244,30 @@ async function calculateProgressStats(
   const structure = getWorkspaceStructure(workspaceRoot);
   const manager = await requireProblemManager();
 
-  // Scan current and completed directories
   const currentSlugs = await scanProblemDirectory(structure.problems);
   const completedSlugs = await scanProblemDirectory(structure.completed);
 
-  // Initialize stats by difficulty
-  const difficultyStats = new Map<Difficulty, DifficultyStats>([
-    ['easy', { difficulty: 'easy', current: 0, completed: 0, total: 0 }],
-    ['medium', { difficulty: 'medium', current: 0, completed: 0, total: 0 }],
-    ['hard', { difficulty: 'hard', current: 0, completed: 0, total: 0 }],
+  const [currentMeta, completedMeta] = await Promise.all([
+    collectWorkspaceMetadata(currentSlugs, structure.problems),
+    collectWorkspaceMetadata(completedSlugs, structure.completed),
   ]);
 
-  // Initialize stats by category
-  const categoryStats = new Map<string, CategoryStats>();
-
-  // Count current problems
-  for (const slug of currentSlugs) {
-    const metadata = await readProblemMetadata(structure.problems, slug);
-
-    if (metadata.difficulty) {
-      const stats = difficultyStats.get(metadata.difficulty);
-      if (stats) {
-        stats.current++;
-      }
-    }
-
-    if (metadata.tags) {
-      for (const tag of metadata.tags) {
-        const stats = categoryStats.get(tag) || {
-          category: tag,
-          current: 0,
-          completed: 0,
-          total: 0,
-        };
-        stats.current++;
-        categoryStats.set(tag, stats);
-      }
-    }
-  }
-
-  // Count completed problems
-  for (const slug of completedSlugs) {
-    const metadata = await readProblemMetadata(structure.completed, slug);
-
-    if (metadata.difficulty) {
-      const stats = difficultyStats.get(metadata.difficulty);
-      if (stats) {
-        stats.completed++;
-      }
-    }
-
-    if (metadata.tags) {
-      for (const tag of metadata.tags) {
-        const stats = categoryStats.get(tag) || {
-          category: tag,
-          current: 0,
-          completed: 0,
-          total: 0,
-        };
-        stats.completed++;
-        categoryStats.set(tag, stats);
-      }
-    }
-  }
-
-  // Get total counts from problem manager
-  const allProblems = manager.list({});
-  const totalByDifficulty = new Map<Difficulty, number>([
-    ['easy', 0],
-    ['medium', 0],
-    ['hard', 0],
-  ]);
-  const totalByCategory = new Map<string, number>();
-
-  for (const problem of allProblems.problems) {
-    // Count by difficulty
-    const count = totalByDifficulty.get(problem.difficulty) || 0;
-    totalByDifficulty.set(problem.difficulty, count + 1);
-
-    // Count by tags
-    for (const tag of problem.tags) {
-      const tagCount = totalByCategory.get(tag) || 0;
-      totalByCategory.set(tag, tagCount + 1);
-    }
-  }
-
-  // Update total counts
-  for (const [difficulty, total] of totalByDifficulty) {
-    const stats = difficultyStats.get(difficulty);
-    if (stats) {
-      stats.total = total;
-    }
-  }
-
-  for (const [category, total] of totalByCategory) {
-    const stats = categoryStats.get(category);
-    if (stats) {
-      stats.total = total;
-    } else {
-      categoryStats.set(category, {
-        category,
-        current: 0,
-        completed: 0,
-        total,
-      });
-    }
-  }
+  const queryResult = manager.list({});
+  const allProblems = queryResult.problems;
 
   return {
-    totalProblems: allProblems.total,
+    totalProblems: queryResult.total,
     currentProblems: currentSlugs.length,
     completedProblems: completedSlugs.length,
-    byDifficulty: Array.from(difficultyStats.values()),
-    byCategory: Array.from(categoryStats.values()).sort(
-      (a, b) => b.completed - a.completed || a.category.localeCompare(b.category),
+    byDifficulty: buildDifficultyStats(
+      countByDifficulty(currentMeta),
+      countByDifficulty(completedMeta),
+      countByDifficulty(allProblems),
+    ),
+    byCategory: buildCategoryStats(
+      countByTag(currentMeta),
+      countByTag(completedMeta),
+      countByTag(allProblems),
     ),
   };
 }

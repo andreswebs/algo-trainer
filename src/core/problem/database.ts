@@ -61,17 +61,11 @@ interface ProblemIndices {
 }
 
 /**
- * Database loading result with statistics
+ * Tracks loaded problem IDs and slugs to detect duplicates
  */
-export interface ProblemDatabaseLoadResult {
-  /** Total number of problems loaded */
-  total: number;
-  /** Number of built-in problems */
-  builtIn: number;
-  /** Number of custom problems */
-  custom: number;
-  /** Problems that failed to load (if using warn/silent mode) */
-  skipped: Array<{ path: string; error: string }>;
+interface DedupTracker {
+  ids: Set<string>;
+  slugs: Set<string>;
 }
 
 /**
@@ -84,16 +78,13 @@ export interface ProblemDatabaseLoadResult {
 export class ProblemDatabase {
   private readonly problems: Problem[];
   private readonly indices: ProblemIndices;
-  private readonly loadResult: ProblemDatabaseLoadResult;
 
   private constructor(
     problems: Problem[],
     indices: ProblemIndices,
-    loadResult: ProblemDatabaseLoadResult,
   ) {
     this.problems = problems;
     this.indices = indices;
-    this.loadResult = loadResult;
   }
 
   /**
@@ -111,189 +102,28 @@ export class ProblemDatabase {
       customProblemErrorBehavior = 'warn',
     } = options;
 
+    const tracker: DedupTracker = { ids: new Set(), slugs: new Set() };
     const problems: Problem[] = [];
-    const skipped: Array<{ path: string; error: string }> = [];
-    let builtInCount = 0;
-    let customCount = 0;
 
-    const loadedIds = new Set<string>();
-    const loadedSlugs = new Set<string>();
-
-    const loadProblem = async (
-      path: string,
-      isBuiltIn: boolean,
-    ): Promise<Problem | null> => {
-      try {
-        const problem = await parseProblemFromFile(path);
-
-        if (loadedIds.has(problem.id)) {
-          const errorMsg = isBuiltIn
-            ? `Duplicate problem ID: '${problem.id}' in ${path}`
-            : `Duplicate problem ID: '${problem.id}' in ${path}. Each problem must have a unique ID.`;
-          throw new ProblemError(
-            errorMsg,
-            createErrorContext('loadProblemDatabase', {
-              path,
-              reason: 'duplicate_id',
-              duplicateId: problem.id,
-            }),
-          );
-        }
-
-        if (loadedSlugs.has(problem.slug)) {
-          const errorMsg = isBuiltIn
-            ? `Duplicate problem slug: '${problem.slug}' in ${path}`
-            : `Duplicate problem slug: '${problem.slug}' in ${path}. Each problem must have a unique slug.`;
-          throw new ProblemError(
-            errorMsg,
-            createErrorContext('loadProblemDatabase', {
-              path,
-              reason: 'duplicate_slug',
-              duplicateSlug: problem.slug,
-            }),
-          );
-        }
-
-        loadedIds.add(problem.id);
-        loadedSlugs.add(problem.slug);
-
-        return problem;
-      } catch (error) {
-        if (isBuiltIn) {
-          if (error instanceof ProblemError) {
-            throw error;
-          }
-          throw new ProblemError(
-            `Failed to load built-in problem: ${path}`,
-            createErrorContext('loadProblemDatabase', {
-              path,
-              reason: 'parse_error',
-              originalError: String(error),
-            }),
-          );
-        }
-
-        const errorMsg = error instanceof Error ? error.message : String(error);
-
-        if (customProblemErrorBehavior === 'fail') {
-          throw new ProblemError(
-            `Failed to load custom problem: ${path}`,
-            createErrorContext('loadProblemDatabase', {
-              path,
-              reason: 'parse_error',
-              originalError: errorMsg,
-            }),
-          );
-        }
-
-        if (customProblemErrorBehavior === 'warn') {
-          logger.warn(`Skipping invalid custom problem: ${path} - ${errorMsg}`);
-        }
-
-        skipped.push({ path, error: errorMsg });
-        return null;
-      }
-    };
-
-    // Load built-in problems
-    // If builtInPath is specified (e.g., for testing), load from directory
-    // Otherwise, load from generated TypeScript module (for bundling with `deno compile`)
+    let builtIn: Problem[];
     if (builtInPath !== 'src/data/problems') {
-      // Load from custom directory (for testing)
-      if (await pathExists(builtInPath)) {
-        const builtInProblems = await loadProblemsFromDirectory(builtInPath);
-        for (const filePath of builtInProblems) {
-          const problem = await loadProblem(filePath, true);
-          if (problem) {
-            problems.push(problem);
-            builtInCount++;
-          }
-        }
-      }
+      builtIn = await loadBuiltInFromDirectory(builtInPath, tracker);
     } else {
-      // Load from generated TypeScript module (default for production)
-      const builtInSlugs = getAllProblemSlugs();
-      for (const slug of builtInSlugs) {
-        const jsonData = getProblemJson(slug);
-        if (!jsonData) continue;
-
-        try {
-          const problem = parseProblemFromJson(jsonData, `${slug}.json`);
-
-          if (loadedIds.has(problem.id)) {
-            throw new ProblemError(
-              `Duplicate problem ID: '${problem.id}' in ${slug}.json`,
-              createErrorContext('loadProblemDatabase', {
-                path: `${slug}.json`,
-                reason: 'duplicate_id',
-                duplicateId: problem.id,
-              }),
-            );
-          }
-
-          if (loadedSlugs.has(problem.slug)) {
-            throw new ProblemError(
-              `Duplicate problem slug: '${problem.slug}' in ${slug}.json`,
-              createErrorContext('loadProblemDatabase', {
-                path: `${slug}.json`,
-                reason: 'duplicate_slug',
-                duplicateSlug: problem.slug,
-              }),
-            );
-          }
-
-          loadedIds.add(problem.id);
-          loadedSlugs.add(problem.slug);
-
-          problems.push(problem);
-          builtInCount++;
-        } catch (error) {
-          if (error instanceof ProblemError) {
-            throw error;
-          }
-          throw new ProblemError(
-            `Failed to load built-in problem: ${slug}.json`,
-            createErrorContext('loadProblemDatabase', {
-              path: `${slug}.json`,
-              reason: 'parse_error',
-              originalError: String(error),
-            }),
-          );
-        }
-      }
+      builtIn = loadBuiltInFromGenerated(tracker);
     }
+    problems.push(...builtIn);
 
     if (loadCustomProblems) {
       const customProblemsPath = customPath ?? getCustomProblemsPath();
-      if (await pathExists(customProblemsPath)) {
-        const customProblems = await loadProblemsFromDirectory(customProblemsPath);
-        for (const filePath of customProblems) {
-          const problem = await loadProblem(filePath, false);
-          if (problem) {
-            problems.push(problem);
-            customCount++;
-          }
-        }
-      }
+      const custom = await loadCustomUserProblems(
+        customProblemsPath,
+        customProblemErrorBehavior,
+        tracker,
+      );
+      problems.push(...custom);
     }
 
-    const indices = buildIndices(problems);
-
-    const loadResult: ProblemDatabaseLoadResult = {
-      total: problems.length,
-      builtIn: builtInCount,
-      custom: customCount,
-      skipped,
-    };
-
-    return new ProblemDatabase(problems, indices, loadResult);
-  }
-
-  /**
-   * Get loading statistics
-   */
-  getLoadResult(): ProblemDatabaseLoadResult {
-    return { ...this.loadResult };
+    return new ProblemDatabase(problems, buildIndices(problems));
   }
 
   /**
@@ -301,13 +131,6 @@ export class ProblemDatabase {
    */
   getAll(): Problem[] {
     return [...this.problems];
-  }
-
-  /**
-   * Get total number of problems
-   */
-  count(): number {
-    return this.problems.length;
   }
 
   /**
@@ -336,6 +159,7 @@ export class ProblemDatabase {
    * @param difficulty - Difficulty level
    * @returns Array of matching problems (empty if none)
    */
+  // fallow-ignore-next-line unused-class-members
   getByDifficulty(difficulty: Difficulty): Problem[] {
     return [...(this.indices.byDifficulty.get(difficulty) ?? [])];
   }
@@ -348,6 +172,7 @@ export class ProblemDatabase {
    * @param tag - Tag to filter by
    * @returns Array of matching problems (empty if none)
    */
+  // fallow-ignore-next-line unused-class-members
   getByTag(tag: string): Problem[] {
     return [...(this.indices.byTag.get(tag.toLowerCase()) ?? [])];
   }
@@ -360,6 +185,7 @@ export class ProblemDatabase {
    * @param company - Company to filter by
    * @returns Array of matching problems (empty if none)
    */
+  // fallow-ignore-next-line unused-class-members
   getByCompany(company: string): Problem[] {
     return [...(this.indices.byCompany.get(company.toLowerCase()) ?? [])];
   }
@@ -367,6 +193,7 @@ export class ProblemDatabase {
   /**
    * Get all unique tags across all problems
    */
+  // fallow-ignore-next-line unused-class-members
   getAllTags(): string[] {
     return [...this.indices.byTag.keys()].sort();
   }
@@ -374,6 +201,7 @@ export class ProblemDatabase {
   /**
    * Get all unique companies across all problems
    */
+  // fallow-ignore-next-line unused-class-members
   getAllCompanies(): string[] {
     return [...this.indices.byCompany.keys()].sort();
   }
@@ -381,6 +209,7 @@ export class ProblemDatabase {
   /**
    * Get count of problems per difficulty
    */
+  // fallow-ignore-next-line unused-class-members
   getDifficultyDistribution(): Record<Difficulty, number> {
     return {
       easy: this.indices.byDifficulty.get('easy')?.length ?? 0,
@@ -413,12 +242,164 @@ export function getCustomProblemsPath(): string {
 }
 
 /**
- * Scan a directory for problem JSON files
- *
- * @param dirPath - Directory path to scan
- * @returns Array of absolute paths to problem JSON files
+ * Check a problem for duplicate ID/slug and register it in the tracker
  */
-async function loadProblemsFromDirectory(dirPath: string): Promise<string[]> {
+function trackProblem(problem: Problem, path: string, tracker: DedupTracker): void {
+  if (tracker.ids.has(problem.id)) {
+    throw new ProblemError(
+      `Duplicate problem ID: '${problem.id}' in ${path}`,
+      createErrorContext('loadProblemDatabase', {
+        path,
+        reason: 'duplicate_id',
+        duplicateId: problem.id,
+      }),
+    );
+  }
+  if (tracker.slugs.has(problem.slug)) {
+    throw new ProblemError(
+      `Duplicate problem slug: '${problem.slug}' in ${path}`,
+      createErrorContext('loadProblemDatabase', {
+        path,
+        reason: 'duplicate_slug',
+        duplicateSlug: problem.slug,
+      }),
+    );
+  }
+  tracker.ids.add(problem.id);
+  tracker.slugs.add(problem.slug);
+}
+
+/**
+ * Parse and track a single built-in problem from a file path
+ */
+async function parseBuiltInProblem(filePath: string, tracker: DedupTracker): Promise<Problem> {
+  try {
+    const problem = await parseProblemFromFile(filePath);
+    trackProblem(problem, filePath, tracker);
+    return problem;
+  } catch (error) {
+    if (error instanceof ProblemError) throw error;
+    throw new ProblemError(
+      `Failed to load built-in problem: ${filePath}`,
+      createErrorContext('loadProblemDatabase', {
+        path: filePath,
+        reason: 'parse_error',
+        originalError: String(error),
+      }),
+    );
+  }
+}
+
+/**
+ * Load built-in problems from a file system directory (used in tests)
+ */
+async function loadBuiltInFromDirectory(
+  dirPath: string,
+  tracker: DedupTracker,
+): Promise<Problem[]> {
+  if (!await pathExists(dirPath)) {
+    return [];
+  }
+  const filePaths = await discoverProblemFiles(dirPath);
+  const problems: Problem[] = [];
+  for (const filePath of filePaths) {
+    problems.push(await parseBuiltInProblem(filePath, tracker));
+  }
+  return problems;
+}
+
+/**
+ * Parse and track a single problem from the generated module
+ */
+function parseGeneratedProblem(jsonData: string, slug: string, tracker: DedupTracker): Problem {
+  const path = `${slug}.json`;
+  try {
+    const problem = parseProblemFromJson(jsonData, path);
+    trackProblem(problem, path, tracker);
+    return problem;
+  } catch (error) {
+    if (error instanceof ProblemError) throw error;
+    throw new ProblemError(
+      `Failed to load built-in problem: ${path}`,
+      createErrorContext('loadProblemDatabase', {
+        path,
+        reason: 'parse_error',
+        originalError: String(error),
+      }),
+    );
+  }
+}
+
+/**
+ * Load built-in problems from the generated TypeScript module (production default)
+ */
+function loadBuiltInFromGenerated(tracker: DedupTracker): Problem[] {
+  const problems: Problem[] = [];
+  for (const slug of getAllProblemSlugs()) {
+    const jsonData = getProblemJson(slug);
+    if (!jsonData) continue;
+    problems.push(parseGeneratedProblem(jsonData, slug, tracker));
+  }
+  return problems;
+}
+
+/**
+ * Parse and track a single custom user problem, applying error behavior policy
+ */
+async function parseCustomProblem(
+  filePath: string,
+  behavior: 'fail' | 'warn' | 'silent',
+  tracker: DedupTracker,
+): Promise<Problem | null> {
+  try {
+    const problem = await parseProblemFromFile(filePath);
+    trackProblem(problem, filePath, tracker);
+    return problem;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (behavior === 'fail') {
+      throw new ProblemError(
+        `Failed to load custom problem: ${filePath}`,
+        createErrorContext('loadProblemDatabase', {
+          path: filePath,
+          reason: 'parse_error',
+          originalError: errorMsg,
+        }),
+      );
+    }
+    if (behavior === 'warn') {
+      logger.warn(`Skipping invalid custom problem: ${filePath} - ${errorMsg}`);
+    }
+    return null;
+  }
+}
+
+/**
+ * Load custom user problems from a directory, applying error behavior policy
+ */
+async function loadCustomUserProblems(
+  dirPath: string,
+  behavior: 'fail' | 'warn' | 'silent',
+  tracker: DedupTracker,
+): Promise<Problem[]> {
+  if (!await pathExists(dirPath)) {
+    return [];
+  }
+  const filePaths = await discoverProblemFiles(dirPath);
+  const problems: Problem[] = [];
+  for (const filePath of filePaths) {
+    const problem = await parseCustomProblem(filePath, behavior, tracker);
+    if (problem) {
+      problems.push(problem);
+    }
+  }
+  return problems;
+}
+
+/**
+ * Scan a directory for problem JSON files, returning sorted absolute paths
+ */
+async function discoverProblemFiles(dirPath: string): Promise<string[]> {
   const entries = await listDirectory(dirPath, { recursive: false });
   return entries
     .filter((entry) => !entry.isDirectory && entry.name.endsWith('.json'))

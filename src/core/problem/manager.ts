@@ -54,26 +54,6 @@ export class ProblemManager {
   }
 
   /**
-   * Get the underlying database instance (for direct access if needed)
-   * Ensures the database is initialized first
-   */
-  async getDatabase(): Promise<ProblemDatabase> {
-    if (!this.db) {
-      await this.init();
-    }
-    return this.db!;
-  }
-
-  /**
-   * Get the underlying database instance (sync version)
-   * Throws if not initialized - use init() first
-   */
-  getDatabaseSync(): ProblemDatabase {
-    this.ensureInitialized();
-    return this.db!;
-  }
-
-  /**
    * Get a problem by ID
    */
   getById(id: string): Problem | null {
@@ -185,30 +165,6 @@ export class ProblemManager {
     }
     const randomIndex = Math.floor(Math.random() * result.problems.length);
     return result.problems[randomIndex];
-  }
-
-  /**
-   * Get all available tags
-   */
-  getAllTags(): string[] {
-    this.ensureInitialized();
-    return this.db!.getAllTags();
-  }
-
-  /**
-   * Get all available companies
-   */
-  getAllCompanies(): string[] {
-    this.ensureInitialized();
-    return this.db!.getAllCompanies();
-  }
-
-  /**
-   * Get difficulty distribution stats
-   */
-  getStats(): Record<Difficulty, number> {
-    this.ensureInitialized();
-    return this.db!.getDifficultyDistribution();
   }
 
   /**

@@ -20,9 +20,6 @@ import { progressCommand } from './progress.ts';
 import { runCommand } from './run.ts';
 import { teachCommand } from './teach.ts';
 
-export type { CommandHandler } from '../types.ts';
-export { ExitCode } from '../exit-codes.ts';
-
 interface CommandEntry {
   handler: CommandHandler;
   description: string;
@@ -59,13 +56,3 @@ export async function dispatch(command: string, args: Args): Promise<CommandResu
   }
   return await entry.handler(args);
 }
-
-export { challengeCommand } from './challenge.ts';
-export { completeCommand } from './complete.ts';
-export { hintCommand } from './hint.ts';
-export { configCommand } from './config.ts';
-export { initCommand } from './init.ts';
-export { listCommand } from './list.ts';
-export { progressCommand } from './progress.ts';
-export { runCommand } from './run.ts';
-export { teachCommand } from './teach.ts';

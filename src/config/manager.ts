@@ -206,27 +206,6 @@ export class ConfigManager {
   }
 
   /**
-   * Set workspace path
-   */
-  async setWorkspace(workspace: string): Promise<void> {
-    await this.updateConfig({ workspace });
-  }
-
-  /**
-   * Enable/disable AI features
-   */
-  async setAiEnabled(enabled: boolean): Promise<void> {
-    await this.updateConfig({ aiEnabled: enabled });
-  }
-
-  /**
-   * Set preferred companies
-   */
-  async setCompanies(companies: string[]): Promise<void> {
-    await this.updateConfig({ companies });
-  }
-
-  /**
    * Reset configuration to defaults
    */
   async reset(): Promise<void> {

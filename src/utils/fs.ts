@@ -6,15 +6,15 @@
  * @module utils/fs
  */
 
-import { basename, dirname, extname, join, relative, resolve } from '@std/path';
-import { copy, ensureDir, exists } from '@std/fs';
+import { dirname, join } from '@std/path';
+import { ensureDir, exists } from '@std/fs';
 import { createErrorContext, FileSystemError } from './errors.ts';
 import type { FileOperationResult } from '../types/global.ts';
 
 /**
  * File operation options
  */
-export interface FileOptions {
+interface FileOptions {
   /** Whether to create parent directories if they don't exist */
   ensureParents?: boolean;
   /** Whether to overwrite existing files */
@@ -26,7 +26,7 @@ export interface FileOptions {
 /**
  * Directory listing options
  */
-export interface ListOptions {
+interface ListOptions {
   /** Whether to include subdirectories recursively */
   recursive?: boolean;
   /** File patterns to include (glob) */
@@ -37,28 +37,16 @@ export interface ListOptions {
   includeHidden?: boolean;
 }
 
-/**
- * XDG Base Directory Specification paths
- */
-export interface XdgPaths {
-  /** User-specific configuration directory */
+interface XdgPaths {
   configHome: string;
-  /** User-specific data directory */
   dataHome: string;
-  /** User-specific cache directory */
   cacheHome: string;
-  /** User-specific state directory */
   stateHome: string;
-  /** System configuration directories */
   configDirs: string[];
-  /** System data directories */
   dataDirs: string[];
 }
 
-/**
- * Get XDG Base Directory paths
- */
-export function getXdgPaths(): XdgPaths {
+function getXdgPaths(): XdgPaths {
   const home = Deno.env.get('HOME') || '/tmp';
 
   return {
@@ -100,10 +88,7 @@ export async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-/**
- * Read file as text
- */
-export async function readTextFile(path: string): Promise<string> {
+async function readTextFile(path: string): Promise<string> {
   try {
     return await Deno.readTextFile(path);
   } catch (error) {
@@ -240,44 +225,6 @@ export async function remove(
 }
 
 /**
- * Copy file or directory
- */
-export async function copyPath(
-  src: string,
-  dest: string,
-  options: FileOptions = {},
-): Promise<FileOperationResult> {
-  try {
-    if (options.ensureParents) {
-      await ensureDir(dirname(dest));
-    }
-
-    if (!options.overwrite && (await pathExists(dest))) {
-      throw new FileSystemError(
-        `Destination already exists and overwrite is disabled: ${dest}`,
-        createErrorContext('copyPath', { src, dest, overwrite: false }),
-      );
-    }
-
-    await copy(src, dest, { overwrite: options.overwrite ?? false });
-
-    return {
-      success: true,
-      path: dest,
-      metadata: { source: src },
-    };
-  } catch (error) {
-    if (error instanceof FileSystemError) {
-      throw error;
-    }
-    throw new FileSystemError(
-      `Failed to copy from ${src} to ${dest}`,
-      createErrorContext('copyPath', { src, dest, error: String(error) }),
-    );
-  }
-}
-
-/**
  * List directory contents
  */
 export async function listDirectory(
@@ -321,104 +268,8 @@ export async function listDirectory(
 }
 
 /**
- * Get file/directory stats
- */
-export async function getStats(path: string): Promise<{
-  size: number;
-  isFile: boolean;
-  isDirectory: boolean;
-  mtime: Date | null;
-  atime: Date | null;
-  birthtime: Date | null;
-}> {
-  try {
-    const stats = await Deno.stat(path);
-    return {
-      size: stats.size,
-      isFile: stats.isFile,
-      isDirectory: stats.isDirectory,
-      mtime: stats.mtime,
-      atime: stats.atime,
-      birthtime: stats.birthtime,
-    };
-  } catch (error) {
-    throw new FileSystemError(
-      `Failed to get stats for: ${path}`,
-      createErrorContext('getStats', { path, error: String(error) }),
-    );
-  }
-}
-
-/**
- * Find files matching a pattern
- */
-export async function findFiles(
-  searchPath: string,
-  pattern: RegExp | string,
-  options: ListOptions = {},
-): Promise<string[]> {
-  try {
-    const entries = await listDirectory(searchPath, {
-      ...options,
-      recursive: true,
-    });
-    const matcher = typeof pattern === 'string'
-      ? new RegExp(pattern.replace(/\*/g, '.*').replace(/\?/g, '.'))
-      : pattern;
-
-    return entries
-      .filter((entry) => !entry.isDirectory && matcher.test(entry.name))
-      .map((entry) => entry.path);
-  } catch (error) {
-    throw new FileSystemError(
-      `Failed to find files in: ${searchPath}`,
-      createErrorContext('findFiles', {
-        searchPath,
-        pattern: String(pattern),
-        error: String(error),
-      }),
-    );
-  }
-}
-
-/**
- * Get relative path between two absolute paths
- */
-export function getRelativePath(from: string, to: string): string {
-  return relative(from, to);
-}
-
-/**
  * Join path segments
  */
 export function joinPath(first: string, ...paths: string[]): string {
   return join(first, ...paths);
-}
-
-/**
- * Resolve path to absolute
- */
-export function resolvePath(first: string, ...paths: string[]): string {
-  return resolve(first, ...paths);
-}
-
-/**
- * Get directory name
- */
-export function getDirname(path: string): string {
-  return dirname(path);
-}
-
-/**
- * Get base name
- */
-export function getBasename(path: string, ext?: string): string {
-  return basename(path, ext);
-}
-
-/**
- * Get file extension
- */
-export function getExtension(path: string): string {
-  return extname(path);
 }

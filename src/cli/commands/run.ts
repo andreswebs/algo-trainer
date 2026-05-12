@@ -14,6 +14,7 @@ import type { CommandResult, SupportedLanguage } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getProblemMetadata } from '../../core/mod.ts';
 import { diffStrings, runSolution } from '../../core/runner.ts';
+import type { RunResult } from '../../core/runner.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { logger, outputData } from '../../utils/output.ts';
 import { pathExists } from '../../utils/fs.ts';
@@ -67,7 +68,7 @@ function showHelp(): void {
   });
 }
 
-export interface RunOptions {
+export interface RunCommandOptions {
   slug: string | undefined;
   language: string | undefined;
   inputPath: string | undefined;
@@ -76,7 +77,7 @@ export interface RunOptions {
   noDiff: boolean;
 }
 
-export function extractRunOptions(args: Args): RunOptions {
+export function extractRunOptions(args: Args): RunCommandOptions {
   const positional = args._.slice(1);
   return {
     slug: positional[0] as string | undefined,
@@ -87,6 +88,51 @@ export function extractRunOptions(args: Args): RunOptions {
     noBuild: args.build === false,
     noDiff: args.diff === false,
   };
+}
+
+/**
+ * Resolve a file path: return `fallback` when undefined, absolute paths as-is,
+ * relative paths joined against `cwd`.
+ */
+export function resolveFilePath(
+  path: string | undefined,
+  fallback: string,
+  cwd: string = Deno.cwd(),
+): string {
+  if (path === undefined) return fallback;
+  if (path.startsWith('/')) return path;
+  return join(cwd, path);
+}
+
+/**
+ * Determine language for a problem directory.
+ *
+ * Priority: explicit flag → .problem.json `language` field →
+ * getProblemMetadata (handles older formats) → defaultLang.
+ */
+export async function resolveLanguage(
+  problemDir: string,
+  explicitLang: string | undefined,
+  workspaceRoot: string,
+  defaultLang: SupportedLanguage,
+): Promise<SupportedLanguage> {
+  if (explicitLang) return explicitLang as SupportedLanguage;
+
+  const metadataPath = join(problemDir, '.problem.json');
+  if (!(await pathExists(metadataPath))) return defaultLang;
+
+  try {
+    const raw = JSON.parse(await Deno.readTextFile(metadataPath));
+    if (typeof raw?.language === 'string') return raw.language as SupportedLanguage;
+    if (typeof raw?.slug === 'string') {
+      const meta = await getProblemMetadata(workspaceRoot, raw.slug, defaultLang);
+      if (meta?.language) return meta.language;
+    }
+  } catch {
+    // ignore — fall through to default
+  }
+
+  return defaultLang;
 }
 
 /**
@@ -127,6 +173,44 @@ async function resolveProblemDir(
   );
 }
 
+function reportRunFailure(result: RunResult): CommandResult {
+  logger.error(`Binary exited with code ${result.exitCode} after ${result.durationMs}ms`);
+  if (result.stderr) {
+    logger.log('--- stderr ---');
+    logger.log(result.stderr);
+  }
+  if (result.stdout) {
+    logger.log('--- stdout ---');
+    logger.log(result.stdout);
+  }
+  return { success: false, exitCode: ExitCode.GENERAL_ERROR };
+}
+
+async function checkDiff(
+  stdout: string,
+  expectedFile: string,
+  durationMs: number,
+): Promise<CommandResult> {
+  if (!(await pathExists(expectedFile))) {
+    logger.info(
+      `No expected.txt at ${expectedFile} — skipping diff. Run with --no-diff to silence this.`,
+    );
+    logger.info(`Run completed in ${durationMs}ms`);
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
+  const expected = await Deno.readTextFile(expectedFile);
+  if (expected === stdout) {
+    logger.info(`PASS — output matches expected.txt (${durationMs}ms)`);
+    return { success: true, exitCode: ExitCode.SUCCESS };
+  }
+
+  logger.error('FAIL — output does not match expected.txt');
+  logger.log('--- diff (- expected, + actual) ---');
+  logger.log(diffStrings(expected, stdout));
+  return { success: false, exitCode: ExitCode.GENERAL_ERROR };
+}
+
 export async function runCommand(args: Args): Promise<CommandResult> {
   if (args.help || args.h) {
     showHelp();
@@ -146,46 +230,16 @@ export async function runCommand(args: Args): Promise<CommandResult> {
       return { success: false, exitCode: ExitCode.WORKSPACE_ERROR };
     }
 
-    // Determine language. Prefer explicit --language, then .problem.json,
-    // then config default.
     const config = configManager.getConfig();
-    let language = opts.language as SupportedLanguage | undefined;
-    if (!language) {
-      // Slug isn't required to call getProblemMetadata; we already have the dir,
-      // so read the metadata file directly.
-      const metadataPath = join(problemDir, '.problem.json');
-      if (await pathExists(metadataPath)) {
-        try {
-          const raw = JSON.parse(await Deno.readTextFile(metadataPath));
-          if (typeof raw?.language === 'string') {
-            language = raw.language as SupportedLanguage;
-          }
-          // Fall back to manager-aware reader (handles older formats too)
-          if (!language && typeof raw?.slug === 'string') {
-            const meta = await getProblemMetadata(
-              structure.root,
-              raw.slug,
-              (config.language ?? 'typescript') as SupportedLanguage,
-            );
-            if (meta) language = meta.language;
-          }
-        } catch {
-          // ignore — fall through to config default
-        }
-      }
-    }
-    language = language ?? ((config.language ?? 'typescript') as SupportedLanguage);
-
-    const inputFile = opts.inputPath
-      ? (opts.inputPath.startsWith('/') ? opts.inputPath : join(Deno.cwd(), opts.inputPath))
-      : join(problemDir, 'input.txt');
+    const defaultLang = (config.language ?? 'typescript') as SupportedLanguage;
+    const language = await resolveLanguage(problemDir, opts.language, structure.root, defaultLang);
+    const cwd = Deno.cwd();
+    const inputFile = resolveFilePath(opts.inputPath, join(problemDir, 'input.txt'), cwd);
 
     logger.info(`Problem: ${problemDir}`);
     logger.info(`Language: ${language}`);
     logger.info(`Input: ${inputFile}`);
-    if (opts.noBuild) {
-      logger.info('Skipping build (--no-build)');
-    }
+    if (opts.noBuild) logger.info('Skipping build (--no-build)');
 
     const result = await runSolution(language, {
       problemDir,
@@ -199,24 +253,10 @@ export async function runCommand(args: Args): Promise<CommandResult> {
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
 
-    if (result.exitCode !== 0) {
-      logger.error(
-        `Binary exited with code ${result.exitCode} after ${result.durationMs}ms`,
-      );
-      if (result.stderr) {
-        logger.log('--- stderr ---');
-        logger.log(result.stderr);
-      }
-      if (result.stdout) {
-        logger.log('--- stdout ---');
-        logger.log(result.stdout);
-      }
-      return { success: false, exitCode: ExitCode.GENERAL_ERROR };
-    }
+    if (result.exitCode !== 0) return reportRunFailure(result);
 
     // Success path: print stdout to stdout for the user / scripting.
     outputData(result.stdout.endsWith('\n') ? result.stdout.slice(0, -1) : result.stdout);
-
     if (result.stderr) {
       logger.log('--- stderr ---');
       logger.log(result.stderr);
@@ -227,30 +267,8 @@ export async function runCommand(args: Args): Promise<CommandResult> {
       return { success: true, exitCode: ExitCode.SUCCESS };
     }
 
-    const expectedFile = opts.expectedPath
-      ? (opts.expectedPath.startsWith('/')
-        ? opts.expectedPath
-        : join(Deno.cwd(), opts.expectedPath))
-      : join(problemDir, 'expected.txt');
-
-    if (!(await pathExists(expectedFile))) {
-      logger.info(
-        `No expected.txt at ${expectedFile} — skipping diff. Run with --no-diff to silence this.`,
-      );
-      logger.info(`Run completed in ${result.durationMs}ms`);
-      return { success: true, exitCode: ExitCode.SUCCESS };
-    }
-
-    const expected = await Deno.readTextFile(expectedFile);
-    if (expected === result.stdout) {
-      logger.info(`PASS — output matches expected.txt (${result.durationMs}ms)`);
-      return { success: true, exitCode: ExitCode.SUCCESS };
-    }
-
-    logger.error('FAIL — output does not match expected.txt');
-    logger.log('--- diff (- expected, + actual) ---');
-    logger.log(diffStrings(expected, result.stdout));
-    return { success: false, exitCode: ExitCode.GENERAL_ERROR };
+    const expectedFile = resolveFilePath(opts.expectedPath, join(problemDir, 'expected.txt'), cwd);
+    return await checkDiff(result.stdout, expectedFile, result.durationMs);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`Run failed: ${message}`);

@@ -10,6 +10,7 @@ import type { Args } from '@std/cli/parse-args';
 import type {
   CommandResult,
   Difficulty,
+  Problem,
   ProblemQuery,
   SupportedLanguage,
 } from '../../types/global.ts';
@@ -115,8 +116,216 @@ export function extractChallengeOptions(args: Args): ChallengeOptions {
   };
 }
 
+const VALID_LANGUAGES: SupportedLanguage[] = [
+  'typescript',
+  'javascript',
+  'python',
+  'java',
+  'cpp',
+  'rust',
+  'go',
+];
+
+export async function resolveProblemSelection(
+  options: ChallengeOptions,
+  manager: {
+    getBySlug: (slug: string) => Problem | null;
+    getRandom: (query: ProblemQuery) => Problem | null;
+  },
+): Promise<Problem | null> {
+  if (options.slug) {
+    const problem = manager.getBySlug(options.slug);
+    if (!problem) {
+      logger.error(`Problem not found: ${options.slug}`);
+      logger.info(
+        'Use "algo-trainer list" to see available problems, or try a search with "algo-trainer list -s <term>"',
+      );
+    }
+    return problem;
+  }
+
+  const query: ProblemQuery = {};
+
+  let difficulty = options.difficulty;
+  if (!difficulty && !options.random) {
+    const prompted = await promptDifficulty();
+    if (prompted) {
+      difficulty = prompted;
+      logger.info(`Selected difficulty: ${difficulty}`);
+    }
+  }
+
+  if (difficulty) {
+    const diffLower = difficulty.toLowerCase();
+    if (!['easy', 'medium', 'hard'].includes(diffLower)) {
+      logger.error(`Invalid difficulty: ${difficulty}`);
+      logger.info('Valid difficulties: easy, medium, hard');
+      return null;
+    }
+    query.difficulty = diffLower as Difficulty;
+  }
+
+  if (options.category) {
+    query.tags = [options.category];
+  }
+  if (options.topic) {
+    query.tags = query.tags ? [...query.tags, options.topic] : [options.topic];
+  }
+
+  const problem = manager.getRandom(query);
+  if (!problem) {
+    logger.error('No problems found matching the specified filters');
+  }
+  return problem;
+}
+
+export async function resolveLanguage(
+  options: ChallengeOptions,
+  configLanguage: string | undefined,
+): Promise<SupportedLanguage | null> {
+  const effectiveLanguage = options.language || configLanguage;
+
+  let language: SupportedLanguage;
+  if (!effectiveLanguage) {
+    const prompted = await promptLanguage('typescript');
+    if (prompted) {
+      language = prompted;
+      logger.info(`Selected language: ${language}`);
+    } else {
+      language = 'typescript';
+    }
+  } else {
+    language = effectiveLanguage as SupportedLanguage;
+  }
+
+  if (!VALID_LANGUAGES.includes(language)) {
+    logger.error(`Invalid language: ${effectiveLanguage}`);
+    logger.info(`Valid languages: ${VALID_LANGUAGES.join(', ')}`);
+    return null;
+  }
+
+  return language;
+}
+
+async function ensureWorkspaceInitialized(workspaceRoot: string): Promise<void> {
+  const initialized = await isWorkspaceInitialized(workspaceRoot);
+  if (!initialized) {
+    logger.info('Workspace not initialized. Initializing now...');
+    await initWorkspace(workspaceRoot);
+    logger.info(`Workspace initialized at: ${workspaceRoot}`);
+  }
+}
+
+type PrepareOutcome =
+  | { status: 'ok'; result: Awaited<ReturnType<typeof generateProblemFiles>> }
+  | { status: 'cancelled' }
+  | { status: 'error' };
+
+async function prepareWorkspaceForChallenge(
+  problem: Problem,
+  workspaceRoot: string,
+  language: SupportedLanguage,
+  config: ReturnType<typeof configManager.getConfig>,
+  force: boolean,
+): Promise<PrepareOutcome> {
+  const exists = await problemExists(workspaceRoot, problem.slug, language);
+  if (exists && !force) {
+    logger.warn(`Problem '${problem.slug}' already exists in workspace`);
+    logger.info('Use --force to overwrite existing files');
+
+    const confirmed = await confirmAction('Do you want to overwrite existing files?', false);
+    if (!confirmed) {
+      logger.info('Operation cancelled');
+      return { status: 'cancelled' };
+    }
+  }
+
+  logger.info(`Generating files for: ${problem.title}`);
+  const result = await generateProblemFiles({
+    problem,
+    workspaceRoot,
+    language,
+    templateStyle: config.preferences.templateStyle,
+    overwritePolicy: force || exists ? 'overwrite' : 'skip',
+  });
+
+  if (!result.success) {
+    logger.error(`Failed to generate problem files: ${result.error}`);
+    return { status: 'error' };
+  }
+
+  return { status: 'ok', result };
+}
+
+function renderChallengeOutput(
+  problem: Problem,
+  result: Awaited<ReturnType<typeof generateProblemFiles>>,
+  language: SupportedLanguage,
+  config: ReturnType<typeof configManager.getConfig>,
+): void {
+  logger.success(`Started challenge: ${problem.title}`);
+  logger.newline();
+  logger.log(formatProblemSummary(problem));
+  logger.newline();
+
+  logger.info(`Language: ${language}`);
+  logger.info(`Template style: ${config.preferences.templateStyle}`);
+  logger.info(`Problem directory: ${result.problemDir}`);
+
+  if (result.filesCreated.length > 0) {
+    logger.info(`Created ${result.filesCreated.length} file(s)`);
+  }
+  if (result.filesSkipped.length > 0) {
+    logger.info(`Skipped ${result.filesSkipped.length} existing file(s)`);
+  }
+}
+
+async function loadTeachingGuidance(
+  problem: Problem,
+  workspaceRoot: string,
+  config: ReturnType<typeof configManager.getConfig>,
+): Promise<void> {
+  if (!config.aiEnabled) return;
+
+  try {
+    const session = new TeachingSession(problem.slug);
+    const engine = new TeachingEngine(session);
+    const problemDir = join(workspaceRoot, 'problems', problem.slug);
+    const loaded = await engine.loadScript(problemDir);
+
+    if (!loaded) return;
+
+    logger.newline();
+    const intro = engine.getIntroduction();
+    if (intro) {
+      logger.log('📚 Teaching Guide');
+      logger.separator(50, '═');
+      logger.newline();
+      logger.log(intro);
+      logger.newline();
+    }
+
+    const prePrompt = engine.getPrePrompt();
+    if (prePrompt) {
+      logger.log('💡 Getting Started');
+      logger.separator(50, '═');
+      logger.newline();
+      logger.log(prePrompt);
+      logger.newline();
+    }
+
+    if (intro || prePrompt) {
+      logger.info("💬 Use 'algo-trainer hint' for contextual hints during coding");
+    }
+  } catch (error) {
+    logger.warn(
+      'Note: Could not load teaching guidance: ' +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+}
+
 export async function challengeCommand(args: Args): Promise<CommandResult> {
-  // Handle help flag
   if (args.help || args.h) {
     showHelp();
     return { success: true, exitCode: ExitCode.SUCCESS };
@@ -125,204 +334,43 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
   try {
     const options = extractChallengeOptions(args);
     const config = configManager.getConfig();
-
-    // Get workspace root
     const workspaceRoot = config.workspace || Deno.cwd();
 
-    // Check if workspace is initialized, and initialize if not
-    const initialized = await isWorkspaceInitialized(workspaceRoot);
-    if (!initialized) {
-      logger.info('Workspace not initialized. Initializing now...');
-      await initWorkspace(workspaceRoot);
-      logger.info(`Workspace initialized at: ${workspaceRoot}`);
-    }
-
-    // Ensure workspace is valid
+    await ensureWorkspaceInitialized(workspaceRoot);
     const _workspace = await requireWorkspace();
-
-    // Initialize problem manager
     const manager = await requireProblemManager();
 
-    // Get problem (by slug or random with filters)
-    let problem;
-    if (options.slug) {
-      // Get specific problem by slug
-      problem = manager.getBySlug(options.slug);
-      if (!problem) {
-        logger.error(`Problem not found: ${options.slug}`);
-        logger.info(
-          'Use "algo-trainer list" to see available problems, or try a search with "algo-trainer list -s <term>"',
-        );
-        return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
+    const problem = await resolveProblemSelection(options, manager);
+    if (!problem) {
+      if (
+        options.difficulty && !['easy', 'medium', 'hard'].includes(options.difficulty.toLowerCase())
+      ) {
+        return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
-    } else {
-      // Get random problem with filters
-      const query: ProblemQuery = {};
-
-      // Prompt for difficulty if not provided and interactive
-      let difficulty = options.difficulty;
-      if (!difficulty && !options.random) {
-        // Note: config.preferences doesn't have difficulty field,
-        // so we default to undefined (will show all options)
-        const prompted = await promptDifficulty();
-        if (prompted) {
-          difficulty = prompted;
-          logger.info(`Selected difficulty: ${difficulty}`);
-        }
-      }
-
-      if (difficulty) {
-        const diffLower = difficulty.toLowerCase();
-        if (!['easy', 'medium', 'hard'].includes(diffLower)) {
-          logger.error(`Invalid difficulty: ${difficulty}`);
-          logger.info('Valid difficulties: easy, medium, hard');
-          return { success: false, exitCode: ExitCode.USAGE_ERROR };
-        }
-        query.difficulty = diffLower as Difficulty;
-      }
-
-      if (options.category) {
-        query.tags = [options.category];
-      }
-
-      if (options.topic) {
-        query.tags = query.tags ? [...query.tags, options.topic] : [options.topic];
-      }
-
-      problem = manager.getRandom(query);
-      if (!problem) {
-        logger.error('No problems found matching the specified filters');
-        return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
-      }
+      return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     }
 
-    // Determine language (prompt if not provided)
-    let language: SupportedLanguage;
-    const configLanguage = options.language || config.language;
-    if (!configLanguage) {
-      const prompted = await promptLanguage('typescript');
-      if (prompted) {
-        language = prompted;
-        logger.info(`Selected language: ${language}`);
-      } else {
-        // Use default if prompt returns null (non-interactive)
-        language = 'typescript';
-      }
-    } else {
-      language = configLanguage as SupportedLanguage;
-    }
-
-    // Validate language
-    const validLanguages: SupportedLanguage[] = [
-      'typescript',
-      'javascript',
-      'python',
-      'java',
-      'cpp',
-      'rust',
-      'go',
-    ];
-    if (!validLanguages.includes(language)) {
-      logger.error(`Invalid language: ${configLanguage}`);
-      logger.info(`Valid languages: ${validLanguages.join(', ')}`);
+    const language = await resolveLanguage(options, config.language);
+    if (!language) {
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
-    // Check if problem already exists
-    const exists = await problemExists(workspaceRoot, problem.slug, language);
-    if (exists && !options.force) {
-      logger.warn(`Problem '${problem.slug}' already exists in workspace`);
-      logger.info('Use --force to overwrite existing files');
-
-      const confirmed = await confirmAction(
-        'Do you want to overwrite existing files?',
-        false,
-      );
-      if (!confirmed) {
-        logger.info('Operation cancelled');
-        return { success: true, exitCode: ExitCode.SUCCESS };
-      }
-    }
-
-    // Generate problem files
-    logger.info(`Generating files for: ${problem.title}`);
-    const result = await generateProblemFiles({
+    const prepared = await prepareWorkspaceForChallenge(
       problem,
       workspaceRoot,
       language,
-      templateStyle: config.preferences.templateStyle,
-      overwritePolicy: options.force || exists ? 'overwrite' : 'skip',
-    });
-
-    if (!result.success) {
-      logger.error(`Failed to generate problem files: ${result.error}`);
+      config,
+      options.force,
+    );
+    if (prepared.status === 'cancelled') {
+      return { success: true, exitCode: ExitCode.SUCCESS };
+    }
+    if (prepared.status === 'error') {
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
 
-    // Display success message with problem summary
-    logger.success(`Started challenge: ${problem.title}`);
-    logger.newline();
-    logger.log(formatProblemSummary(problem));
-    logger.newline();
-
-    logger.info(`Language: ${language}`);
-    logger.info(`Template style: ${config.preferences.templateStyle}`);
-    logger.info(`Problem directory: ${result.problemDir}`);
-
-    if (result.filesCreated.length > 0) {
-      logger.info(`Created ${result.filesCreated.length} file(s)`);
-    }
-    if (result.filesSkipped.length > 0) {
-      logger.info(`Skipped ${result.filesSkipped.length} existing file(s)`);
-    }
-
-    // Load and display teaching script if AI is enabled
-    if (config.aiEnabled) {
-      try {
-        const session = new TeachingSession(problem.slug);
-        const engine = new TeachingEngine(session);
-
-        // Try to load teaching script from problem directory
-        const problemDir = join(workspaceRoot, 'problems', problem.slug);
-        const loaded = await engine.loadScript(problemDir);
-
-        if (loaded) {
-          logger.newline();
-
-          // Display introduction message
-          const intro = engine.getIntroduction();
-          if (intro) {
-            logger.log('📚 Teaching Guide');
-            logger.separator(50, '═');
-            logger.newline();
-            logger.log(intro);
-            logger.newline();
-          }
-
-          // Display pre-prompt guidance
-          const prePrompt = engine.getPrePrompt();
-          if (prePrompt) {
-            logger.log('💡 Getting Started');
-            logger.separator(50, '═');
-            logger.newline();
-            logger.log(prePrompt);
-            logger.newline();
-          }
-
-          if (intro || prePrompt) {
-            logger.info(
-              "💬 Use 'algo-trainer hint' for contextual hints during coding",
-            );
-          }
-        }
-      } catch (error) {
-        // Teaching system errors are non-fatal, just log a warning
-        logger.warn(
-          'Note: Could not load teaching guidance: ' +
-            (error instanceof Error ? error.message : String(error)),
-        );
-      }
-    }
+    renderChallengeOutput(problem, prepared.result, language, config);
+    await loadTeachingGuidance(problem, workspaceRoot, config);
 
     return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {

@@ -28,10 +28,7 @@ export function createValidationResult(
   return { valid, errors };
 }
 
-/**
- * Validate that a value is not null or undefined
- */
-export function validateRequired<T>(
+function validateRequired<T>(
   value: T | null | undefined,
   fieldName: string,
 ): ValidationResult {
@@ -88,49 +85,7 @@ export function validateString(
   return createValidationResult(errors.length === 0, errors);
 }
 
-/**
- * Validate number input
- */
-export function validateNumber(
-  value: unknown,
-  fieldName: string,
-  options: {
-    min?: number;
-    max?: number;
-    integer?: boolean;
-  } = {},
-): ValidationResult {
-  const {
-    min = Number.MIN_SAFE_INTEGER,
-    max = Number.MAX_SAFE_INTEGER,
-    integer = false,
-  } = options;
-  const errors: string[] = [];
-
-  if (typeof value !== 'number' || isNaN(value)) {
-    errors.push(`${fieldName} must be a number`);
-    return createValidationResult(false, errors);
-  }
-
-  if (integer && !Number.isInteger(value)) {
-    errors.push(`${fieldName} must be an integer`);
-  }
-
-  if (value < min) {
-    errors.push(`${fieldName} must be at least ${min}`);
-  }
-
-  if (value > max) {
-    errors.push(`${fieldName} must be no more than ${max}`);
-  }
-
-  return createValidationResult(errors.length === 0, errors);
-}
-
-/**
- * Validate boolean input
- */
-export function validateBoolean(
+function validateBoolean(
   value: unknown,
   fieldName: string,
 ): ValidationResult {
@@ -182,10 +137,7 @@ export function validateArray<T>(
   return createValidationResult(errors.length === 0, errors);
 }
 
-/**
- * Validate enum value
- */
-export function validateEnum<T extends string>(
+function validateEnum<T extends string>(
   value: unknown,
   fieldName: string,
   validValues: T[],
@@ -222,21 +174,7 @@ export function validateDifficulty(value: unknown): ValidationResult {
   return validateEnum(value, 'difficulty', validDifficulties);
 }
 
-/**
- * Validate email format
- */
-export function validateEmail(value: unknown): ValidationResult {
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return validateString(value, 'email', {
-    pattern: emailPattern,
-    allowEmpty: false,
-  });
-}
-
-/**
- * Validate URL format
- */
-export function validateUrl(
+function validateUrl(
   value: unknown,
   fieldName = 'URL',
 ): ValidationResult {
@@ -308,10 +246,7 @@ export function validateISODateString(
   return createValidationResult(true);
 }
 
-/**
- * Validate file path format
- */
-export function validateFilePath(
+function validateFilePath(
   value: unknown,
   fieldName = 'file path',
 ): ValidationResult {
@@ -327,7 +262,6 @@ export function validateFilePath(
   const path = value as string;
   const errors: string[] = [];
 
-  // Check for invalid characters (basic check)
   const invalidChars = /[<>:"|?*]/;
   if (invalidChars.test(path)) {
     errors.push(`${fieldName} contains invalid characters`);
@@ -336,10 +270,7 @@ export function validateFilePath(
   return createValidationResult(errors.length === 0, errors);
 }
 
-/**
- * Validate user preferences
- */
-export function validateUserPreferences(value: unknown): ValidationResult {
+function validateUserPreferences(value: unknown): ValidationResult {
   const errors: string[] = [];
 
   if (!value || typeof value !== 'object') {
@@ -348,7 +279,6 @@ export function validateUserPreferences(value: unknown): ValidationResult {
 
   const prefs = value as Record<string, unknown>;
 
-  // Validate theme
   if ('theme' in prefs) {
     const themeResult = validateEnum(prefs.theme, 'theme', [
       'light',
@@ -358,7 +288,6 @@ export function validateUserPreferences(value: unknown): ValidationResult {
     if (!themeResult.valid) errors.push(...themeResult.errors);
   }
 
-  // Validate verbosity
   if ('verbosity' in prefs) {
     const verbosityResult = validateEnum(prefs.verbosity, 'verbosity', [
       'quiet',
@@ -368,7 +297,6 @@ export function validateUserPreferences(value: unknown): ValidationResult {
     if (!verbosityResult.valid) errors.push(...verbosityResult.errors);
   }
 
-  // Validate templateStyle
   if ('templateStyle' in prefs) {
     const styleResult = validateEnum(prefs.templateStyle, 'templateStyle', [
       'minimal',
@@ -378,7 +306,6 @@ export function validateUserPreferences(value: unknown): ValidationResult {
     if (!styleResult.valid) errors.push(...styleResult.errors);
   }
 
-  // Validate boolean fields
   const booleanFields = ['autoSave', 'useEmoji', 'useColors'];
   for (const field of booleanFields) {
     if (field in prefs) {
@@ -402,17 +329,14 @@ export function validateConfig(value: unknown): ValidationResult {
 
   const config = value as Record<string, unknown>;
 
-  // Validate required fields
   const requiredResult = validateRequired(config.language, 'language');
   if (!requiredResult.valid) errors.push(...requiredResult.errors);
 
-  // Validate language
   if (config.language) {
     const languageResult = validateSupportedLanguage(config.language);
     if (!languageResult.valid) errors.push(...languageResult.errors);
   }
 
-  // Validate workspace - must be a string, can be empty (before init), but if non-empty must be valid path
   if ('workspace' in config) {
     if (typeof config.workspace !== 'string') {
       errors.push('workspace must be a string');
@@ -422,13 +346,11 @@ export function validateConfig(value: unknown): ValidationResult {
     }
   }
 
-  // Validate aiEnabled
   if ('aiEnabled' in config) {
     const aiResult = validateBoolean(config.aiEnabled, 'aiEnabled');
     if (!aiResult.valid) errors.push(...aiResult.errors);
   }
 
-  // Validate companies array
   if ('companies' in config) {
     const companiesResult = validateArray(
       config.companies,
@@ -438,13 +360,11 @@ export function validateConfig(value: unknown): ValidationResult {
     if (!companiesResult.valid) errors.push(...companiesResult.errors);
   }
 
-  // Validate preferences
   if ('preferences' in config) {
     const prefsResult = validateUserPreferences(config.preferences);
     if (!prefsResult.valid) errors.push(...prefsResult.errors);
   }
 
-  // Validate version
   if ('version' in config) {
     const versionResult = validateString(config.version, 'version', {
       allowEmpty: false,
@@ -471,7 +391,6 @@ function validateExample(
 
   const example = value as Record<string, unknown>;
 
-  // Validate input: must be an object (not null, not array)
   if (!('input' in example)) {
     errors.push(`${prefix}.input is required`);
   } else if (
@@ -482,12 +401,10 @@ function validateExample(
     errors.push(`${prefix}.input must be an object with named parameters`);
   }
 
-  // Validate output: must exist (any value including null is allowed)
   if (!('output' in example)) {
     errors.push(`${prefix}.output is required`);
   }
 
-  // Validate explanation if present: must be a non-empty string
   if ('explanation' in example && example.explanation !== undefined) {
     const explanationResult = validateString(
       example.explanation,
@@ -514,7 +431,6 @@ function validateProblemMetadata(
 
   const metadata = value as Record<string, unknown>;
 
-  // Validate date fields if present
   if ('createdAt' in metadata && metadata.createdAt !== undefined) {
     const result = validateISODateString(metadata.createdAt, 'metadata.createdAt');
     if (!result.valid) errors.push(...result.errors);
@@ -525,7 +441,6 @@ function validateProblemMetadata(
     if (!result.valid) errors.push(...result.errors);
   }
 
-  // Validate string fields if present
   if ('source' in metadata && metadata.source !== undefined) {
     const result = validateString(metadata.source, 'metadata.source', {
       allowEmpty: false,
@@ -537,118 +452,6 @@ function validateProblemMetadata(
     const result = validateString(metadata.sourceId, 'metadata.sourceId', {
       allowEmpty: false,
     });
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  return createValidationResult(errors.length === 0, errors);
-}
-
-/**
- * Validate problem object
- *
- * Validates all required and optional fields according to PMS-001 specification:
- * - Required: id, slug, title, difficulty, description, examples
- * - Optional: constraints, hints, tags, companies, leetcodeUrl, metadata
- */
-export function validateProblem(value: unknown): ValidationResult {
-  const errors: string[] = [];
-
-  if (!value || typeof value !== 'object') {
-    return createValidationResult(false, ['problem must be an object']);
-  }
-
-  const problem = value as Record<string, unknown>;
-
-  // Required fields
-  const requiredFields = [
-    'id',
-    'slug',
-    'title',
-    'difficulty',
-    'description',
-    'examples',
-  ];
-  for (const field of requiredFields) {
-    const result = validateRequired(problem[field], field);
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate id: non-empty string
-  if (problem.id !== undefined) {
-    const result = validateString(problem.id, 'id', { allowEmpty: false });
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate slug: kebab-case, 1-100 chars
-  if (problem.slug !== undefined) {
-    const result = validateSlug(problem.slug, 'slug');
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate title: non-empty string
-  if (problem.title !== undefined) {
-    const result = validateString(problem.title, 'title', { allowEmpty: false });
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate description: non-empty string
-  if (problem.description !== undefined) {
-    const result = validateString(problem.description, 'description', {
-      allowEmpty: false,
-    });
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate difficulty
-  if (problem.difficulty !== undefined) {
-    const difficultyResult = validateDifficulty(problem.difficulty);
-    if (!difficultyResult.valid) errors.push(...difficultyResult.errors);
-  }
-
-  // Validate examples: non-empty array of valid Example objects
-  if (problem.examples !== undefined) {
-    if (!Array.isArray(problem.examples)) {
-      errors.push('examples must be an array');
-    } else if (problem.examples.length === 0) {
-      errors.push('examples must have at least 1 item');
-    } else {
-      for (let i = 0; i < problem.examples.length; i++) {
-        const result = validateExample(problem.examples[i], i);
-        if (!result.valid) errors.push(...result.errors);
-      }
-    }
-  }
-
-  // Validate optional string arrays: constraints, hints, tags, companies
-  // All must be arrays of non-empty strings
-  const stringArrayFields = ['constraints', 'hints', 'tags', 'companies'];
-  for (const field of stringArrayFields) {
-    if (field in problem && problem[field] !== undefined) {
-      const result = validateArray(
-        problem[field],
-        field,
-        (item) => validateString(item, field, { allowEmpty: false }),
-      );
-      if (!result.valid) errors.push(...result.errors);
-    }
-  }
-
-  // Validate leetcodeUrl if present: must be a valid URL
-  if ('leetcodeUrl' in problem && problem.leetcodeUrl !== undefined) {
-    const result = validateUrl(problem.leetcodeUrl, 'leetcodeUrl');
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate signatures if present: object keyed by SupportedLanguage with
-  // non-empty string values
-  if ('signatures' in problem && problem.signatures !== undefined) {
-    const result = validateProblemSignatures(problem.signatures);
-    if (!result.valid) errors.push(...result.errors);
-  }
-
-  // Validate metadata if present
-  if ('metadata' in problem && problem.metadata !== undefined) {
-    const result = validateProblemMetadata(problem.metadata);
     if (!result.valid) errors.push(...result.errors);
   }
 
@@ -679,6 +482,124 @@ function validateProblemSignatures(value: unknown): ValidationResult {
     });
     if (!sigResult.valid) errors.push(...sigResult.errors);
   }
+
+  return createValidationResult(errors.length === 0, errors);
+}
+
+function validateProblemCoreFields(problem: Record<string, unknown>): string[] {
+  const errors: string[] = [];
+  const requiredFields = ['id', 'slug', 'title', 'difficulty', 'description', 'examples'];
+
+  for (const field of requiredFields) {
+    const result = validateRequired(problem[field], field);
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if (problem.id !== undefined) {
+    const result = validateString(problem.id, 'id', { allowEmpty: false });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if (problem.slug !== undefined) {
+    const result = validateSlug(problem.slug, 'slug');
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if (problem.title !== undefined) {
+    const result = validateString(problem.title, 'title', { allowEmpty: false });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if (problem.description !== undefined) {
+    const result = validateString(problem.description, 'description', { allowEmpty: false });
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if (problem.difficulty !== undefined) {
+    const result = validateDifficulty(problem.difficulty);
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  return errors;
+}
+
+function validateProblemExamplesField(problem: Record<string, unknown>): string[] {
+  if (problem.examples === undefined) return [];
+
+  const errors: string[] = [];
+
+  if (!Array.isArray(problem.examples)) {
+    errors.push('examples must be an array');
+  } else if (problem.examples.length === 0) {
+    errors.push('examples must have at least 1 item');
+  } else {
+    for (let i = 0; i < problem.examples.length; i++) {
+      const result = validateExample(problem.examples[i], i);
+      if (!result.valid) errors.push(...result.errors);
+    }
+  }
+
+  return errors;
+}
+
+function validateProblemArrayFields(problem: Record<string, unknown>): string[] {
+  const errors: string[] = [];
+  const stringArrayFields = ['constraints', 'hints', 'tags', 'companies'];
+
+  for (const field of stringArrayFields) {
+    if (field in problem && problem[field] !== undefined) {
+      const result = validateArray(
+        problem[field],
+        field,
+        (item) => validateString(item, field, { allowEmpty: false }),
+      );
+      if (!result.valid) errors.push(...result.errors);
+    }
+  }
+
+  return errors;
+}
+
+function validateProblemOptional(problem: Record<string, unknown>): string[] {
+  const errors: string[] = [];
+
+  if ('leetcodeUrl' in problem && problem.leetcodeUrl !== undefined) {
+    const result = validateUrl(problem.leetcodeUrl, 'leetcodeUrl');
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if ('signatures' in problem && problem.signatures !== undefined) {
+    const result = validateProblemSignatures(problem.signatures);
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  if ('metadata' in problem && problem.metadata !== undefined) {
+    const result = validateProblemMetadata(problem.metadata);
+    if (!result.valid) errors.push(...result.errors);
+  }
+
+  return errors;
+}
+
+/**
+ * Validate problem object
+ *
+ * Validates all required and optional fields according to PMS-001 specification:
+ * - Required: id, slug, title, difficulty, description, examples
+ * - Optional: constraints, hints, tags, companies, leetcodeUrl, metadata
+ */
+export function validateProblem(value: unknown): ValidationResult {
+  if (!value || typeof value !== 'object') {
+    return createValidationResult(false, ['problem must be an object']);
+  }
+
+  const problem = value as Record<string, unknown>;
+  const errors = [
+    ...validateProblemCoreFields(problem),
+    ...validateProblemExamplesField(problem),
+    ...validateProblemArrayFields(problem),
+    ...validateProblemOptional(problem),
+  ];
 
   return createValidationResult(errors.length === 0, errors);
 }

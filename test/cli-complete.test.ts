@@ -2,13 +2,23 @@
  * Tests for complete command
  */
 
-import { assertEquals } from '@std/assert';
+import { assert, assertEquals, assertFalse, assertRejects } from '@std/assert';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
-import { completeCommand, extractCompleteOptions } from '../src/cli/commands/complete.ts';
+import { exists } from '@std/fs';
+import { join } from '@std/path';
+import {
+  completeCommand,
+  extractCompleteOptions,
+  markCompleted,
+  resolveTargetProblem,
+  validateCompletion,
+} from '../src/cli/commands/complete.ts';
+import type { CompleteOptions } from '../src/cli/commands/complete.ts';
 import { challengeCommand } from '../src/cli/commands/challenge.ts';
 import { configManager } from '../src/config/manager.ts';
-import { initWorkspace } from '../src/core/mod.ts';
+import { getWorkspaceStructure, initWorkspace } from '../src/core/mod.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import { ProblemError } from '../src/utils/errors.ts';
 import type { Args } from '@std/cli/parse-args';
 
 describe('extractCompleteOptions', () => {
@@ -193,5 +203,105 @@ describe('completeCommand', () => {
     });
     assertEquals(result.success, true);
     assertEquals(result.exitCode, ExitCode.SUCCESS);
+  });
+});
+
+describe('resolveTargetProblem', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await Deno.makeTempDir();
+    await configManager.load();
+    await configManager.updateConfig({ workspace: tempDir });
+    await initWorkspace(tempDir);
+  });
+
+  afterEach(async () => {
+    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+  });
+
+  it('should return provided slug as-is', async () => {
+    const structure = getWorkspaceStructure(tempDir);
+    const options: CompleteOptions = { problemSlug: 'two-sum', notes: undefined, noArchive: false };
+    const slug = await resolveTargetProblem(options, structure);
+    assertEquals(slug, 'two-sum');
+  });
+
+  it('should resolve numeric ID to slug', async () => {
+    const structure = getWorkspaceStructure(tempDir);
+    const options: CompleteOptions = { problemSlug: '1', notes: undefined, noArchive: false };
+    const slug = await resolveTargetProblem(options, structure);
+    assertEquals(slug, 'two-sum');
+  });
+
+  it('should auto-select single problem when no slug provided', async () => {
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+    const structure = getWorkspaceStructure(tempDir);
+    const options: CompleteOptions = { problemSlug: undefined, notes: undefined, noArchive: false };
+    const slug = await resolveTargetProblem(options, structure);
+    assertEquals(slug, 'two-sum');
+  });
+
+  it('should throw ProblemError when no problems in workspace', async () => {
+    const structure = getWorkspaceStructure(tempDir);
+    const options: CompleteOptions = { problemSlug: undefined, notes: undefined, noArchive: false };
+    await assertRejects(
+      () => resolveTargetProblem(options, structure),
+      ProblemError,
+    );
+  });
+});
+
+describe('validateCompletion', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await Deno.makeTempDir();
+    await configManager.load();
+    await configManager.updateConfig({ workspace: tempDir });
+    await initWorkspace(tempDir);
+  });
+
+  afterEach(async () => {
+    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+  });
+
+  it('should not throw when problem exists in workspace', async () => {
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+    await validateCompletion('two-sum', tempDir, 'typescript');
+  });
+
+  it('should throw ProblemError when problem not in workspace', async () => {
+    await assertRejects(
+      () => validateCompletion('non-existent', tempDir, 'typescript'),
+      ProblemError,
+    );
+  });
+});
+
+describe('markCompleted', () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await Deno.makeTempDir();
+    await configManager.load();
+    await configManager.updateConfig({ workspace: tempDir });
+    await initWorkspace(tempDir);
+  });
+
+  afterEach(async () => {
+    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+  });
+
+  it('should archive problem when noArchive is false', async () => {
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+    await markCompleted('two-sum', tempDir, 'typescript', false);
+    assertFalse(await exists(join(tempDir, 'problems', 'two-sum')));
+  });
+
+  it('should keep files in workspace when noArchive is true', async () => {
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+    await markCompleted('two-sum', tempDir, 'typescript', true);
+    assert(await exists(join(tempDir, 'problems', 'two-sum')));
   });
 });

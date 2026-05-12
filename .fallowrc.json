@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/fallow/schema.json",
+  "entry": [
+    "test/**/*.test.ts",
+    "test/**/*_test.ts",
+    "scripts/**/*.ts",
+    "examples/**/*.ts"
+  ]
+}

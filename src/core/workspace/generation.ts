@@ -58,7 +58,9 @@ import {
   type TemplateContext,
 } from '../problem/templates.ts';
 import { getProblemPaths } from './files.ts';
-import type { WorkspacePathConfig } from './types.ts';
+import type { ProblemWorkspacePaths, WorkspacePathConfig } from './types.ts';
+
+type Artifact = { path: string; name: string; content: string };
 
 /**
  * Overwrite policy for file generation
@@ -155,195 +157,129 @@ export interface GenerationResult {
  * console.log(`Skipped ${result.filesSkipped.length} files`);
  * ```
  */
-export async function generateProblemFiles(
+async function buildArtifacts(
   options: GenerateProblemFilesOptions,
-): Promise<GenerationResult> {
+  paths: ProblemWorkspacePaths,
+): Promise<Artifact[]> {
   const {
     problem,
-    workspaceRoot,
     language,
     templateStyle,
-    overwritePolicy = 'skip',
     includeImports = true,
     includeTypes = true,
     includeExample = false,
   } = options;
 
-  const filesCreated: string[] = [];
-  const filesSkipped: string[] = [];
+  const templateConfig: TemplateConfig = {
+    language,
+    style: templateStyle,
+    includeImports,
+    includeTypes,
+    includeExample,
+  };
+  const context: TemplateContext = { problem, config: templateConfig };
+  const scaffolding = getLanguageScaffolding(language);
+  const { solution, test, readme } = await renderAllTemplates(context);
+
+  const artifacts: Artifact[] = [
+    { path: paths.solutionFile, name: 'solution', content: solution },
+    { path: paths.readmeFile, name: 'README', content: readme },
+  ];
+
+  if (test !== undefined) {
+    artifacts.push({ path: paths.testFile, name: 'test', content: test });
+  }
+
+  for (const extraKind of scaffolding.extras) {
+    const content = await renderExtraTemplate(context, extraKind);
+    artifacts.push({
+      path: join(paths.dir, EXTRA_OUTPUT_FILES[extraKind]),
+      name: EXTRA_OUTPUT_FILES[extraKind],
+      content,
+    });
+  }
+
+  for (const assetKind of scaffolding.sharedAssets) {
+    const content = await readSharedAsset(language, assetKind);
+    artifacts.push({
+      path: join(paths.dir, SHARED_ASSET_OUTPUT_FILES[assetKind]),
+      name: SHARED_ASSET_OUTPUT_FILES[assetKind],
+      content,
+    });
+  }
+
+  const now = new Date().toISOString();
+  const metadata: ProblemWorkspaceMetadata = {
+    problemId: problem.id,
+    slug: problem.slug,
+    language,
+    generatedAt: now,
+    templateStyle,
+    lastModified: now,
+  };
+  artifacts.push({
+    path: paths.metadataFile,
+    name: 'metadata',
+    content: JSON.stringify(metadata, null, 2),
+  });
+
+  return artifacts;
+}
+
+async function partitionArtifacts(
+  artifacts: Artifact[],
+  policy: OverwritePolicy,
+  problemSlug: string,
+): Promise<{ toWrite: Artifact[]; skipped: string[] }> {
+  const toWrite: Artifact[] = [];
+  const skipped: string[] = [];
+
+  for (const artifact of artifacts) {
+    const exists = await pathExists(artifact.path);
+    if (!exists || policy === 'overwrite') {
+      toWrite.push(artifact);
+    } else if (policy === 'error') {
+      throw new WorkspaceError(
+        `File already exists: ${artifact.name}`,
+        createErrorContext('generateProblemFiles', {
+          problemSlug,
+          filePath: artifact.path,
+          overwritePolicy: policy,
+        }),
+      );
+    } else {
+      skipped.push(artifact.path);
+    }
+  }
+
+  return { toWrite, skipped };
+}
+
+async function writeArtifacts(artifacts: Artifact[]): Promise<string[]> {
+  const created: string[] = [];
+  for (const artifact of artifacts) {
+    await writeTextFile(artifact.path, artifact.content, { ensureParents: true, overwrite: true });
+    created.push(artifact.path);
+  }
+  return created;
+}
+
+export async function generateProblemFiles(
+  options: GenerateProblemFilesOptions,
+): Promise<GenerationResult> {
+  const { problem, workspaceRoot, language, templateStyle, overwritePolicy = 'skip' } = options;
 
   try {
-    // Resolve paths for the problem
-    const config: WorkspacePathConfig = {
-      rootDir: workspaceRoot,
-      language,
-    };
-    const paths = getProblemPaths(config, problem.slug);
-
-    // Create problem directory
+    const paths = getProblemPaths({ rootDir: workspaceRoot, language }, problem.slug);
     await createDirectory(paths.dir);
 
-    // Build template context
-    const templateConfig: TemplateConfig = {
-      language,
-      style: templateStyle,
-      includeImports,
-      includeTypes,
-      includeExample,
-    };
+    const artifacts = await buildArtifacts(options, paths);
+    const { toWrite, skipped } = await partitionArtifacts(artifacts, overwritePolicy, problem.slug);
+    const filesCreated = await writeArtifacts(toWrite);
 
-    const templateContext: TemplateContext = {
-      problem,
-      config: templateConfig,
-    };
-
-    // Render style-specific templates per scaffolding spec
-    const scaffolding = getLanguageScaffolding(language);
-    const { solution, test, readme } = await renderAllTemplates(templateContext);
-
-    // Render shared `_shared/` extras (rendered with placeholders)
-    const extraContents: Array<{ path: string; content: string; name: string }> = [];
-    for (const extraKind of scaffolding.extras) {
-      const content = await renderExtraTemplate(templateContext, extraKind);
-      extraContents.push({
-        path: join(paths.dir, EXTRA_OUTPUT_FILES[extraKind]),
-        content,
-        name: EXTRA_OUTPUT_FILES[extraKind],
-      });
-    }
-
-    // Read raw shared assets (copied verbatim)
-    const assetContents: Array<{ path: string; content: string; name: string }> = [];
-    for (const assetKind of scaffolding.sharedAssets) {
-      const content = await readSharedAsset(language, assetKind);
-      assetContents.push({
-        path: join(paths.dir, SHARED_ASSET_OUTPUT_FILES[assetKind]),
-        content,
-        name: SHARED_ASSET_OUTPUT_FILES[assetKind],
-      });
-    }
-
-    // Build the full set of files to materialise based on scaffolding
-    const filesToGenerate: Array<{ path: string; name: string }> = [
-      { path: paths.solutionFile, name: 'solution' },
-      { path: paths.readmeFile, name: 'README' },
-      { path: paths.metadataFile, name: 'metadata' },
-    ];
-    if (test !== undefined) {
-      filesToGenerate.push({ path: paths.testFile, name: 'test' });
-    }
-    for (const e of extraContents) {
-      filesToGenerate.push({ path: e.path, name: e.name });
-    }
-    for (const a of assetContents) {
-      filesToGenerate.push({ path: a.path, name: a.name });
-    }
-
-    // Apply overwrite policy
-    for (const file of filesToGenerate) {
-      const exists = await pathExists(file.path);
-      if (exists) {
-        if (overwritePolicy === 'error') {
-          throw new WorkspaceError(
-            `File already exists: ${file.name}`,
-            createErrorContext('generateProblemFiles', {
-              problemSlug: problem.slug,
-              filePath: file.path,
-              overwritePolicy,
-            }),
-          );
-        } else if (overwritePolicy === 'skip') {
-          filesSkipped.push(file.path);
-        }
-      }
-    }
-
-    const shouldOverwrite = overwritePolicy === 'overwrite';
-
-    // Write solution file
-    if (shouldOverwrite || !filesSkipped.includes(paths.solutionFile)) {
-      await writeTextFile(paths.solutionFile, solution, {
-        ensureParents: true,
-        overwrite: shouldOverwrite,
-      });
-      filesCreated.push(paths.solutionFile);
-    }
-
-    // Write test file (only when scaffolding includes it)
-    if (test !== undefined && (shouldOverwrite || !filesSkipped.includes(paths.testFile))) {
-      await writeTextFile(paths.testFile, test, {
-        ensureParents: true,
-        overwrite: shouldOverwrite,
-      });
-      filesCreated.push(paths.testFile);
-    }
-
-    // Write README file
-    if (shouldOverwrite || !filesSkipped.includes(paths.readmeFile)) {
-      await writeTextFile(paths.readmeFile, readme, {
-        ensureParents: true,
-        overwrite: shouldOverwrite,
-      });
-      filesCreated.push(paths.readmeFile);
-    }
-
-    // Write extras (CMakeLists.txt, input.txt, ...)
-    for (const e of extraContents) {
-      if (shouldOverwrite || !filesSkipped.includes(e.path)) {
-        await writeTextFile(e.path, e.content, {
-          ensureParents: true,
-          overwrite: shouldOverwrite,
-        });
-        filesCreated.push(e.path);
-      }
-    }
-
-    // Write shared assets (leetcode.hpp, ...)
-    for (const a of assetContents) {
-      if (shouldOverwrite || !filesSkipped.includes(a.path)) {
-        await writeTextFile(a.path, a.content, {
-          ensureParents: true,
-          overwrite: shouldOverwrite,
-        });
-        filesCreated.push(a.path);
-      }
-    }
-
-    // Write metadata file
-    if (shouldOverwrite || !filesSkipped.includes(paths.metadataFile)) {
-      const metadata: ProblemWorkspaceMetadata = {
-        problemId: problem.id,
-        slug: problem.slug,
-        language,
-        generatedAt: new Date().toISOString(),
-        templateStyle,
-        lastModified: new Date().toISOString(),
-      };
-
-      await writeTextFile(
-        paths.metadataFile,
-        JSON.stringify(metadata, null, 2),
-        {
-          ensureParents: true,
-          overwrite: shouldOverwrite,
-        },
-      );
-      filesCreated.push(paths.metadataFile);
-    }
-
-    return {
-      success: true,
-      filesCreated,
-      filesSkipped,
-      problemDir: paths.dir,
-    };
+    return { success: true, filesCreated, filesSkipped: skipped, problemDir: paths.dir };
   } catch (error) {
-    // If it's already a WorkspaceError, let it propagate
-    if (error instanceof WorkspaceError) {
-      throw error;
-    }
-
-    // Otherwise, wrap in WorkspaceError
+    if (error instanceof WorkspaceError) throw error;
     throw new WorkspaceError(
       `Failed to generate problem files: ${error instanceof Error ? error.message : String(error)}`,
       createErrorContext('generateProblemFiles', {

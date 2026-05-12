@@ -270,75 +270,71 @@ function parseArguments(argsStr: string): (string | RegExp)[] {
   if (!argsStr.trim()) return [];
 
   const args: (string | RegExp)[] = [];
-  let current = '';
-  let inString = false;
-  let stringChar = '';
-  let inRegex = false;
+  let i = 0;
 
-  for (let i = 0; i < argsStr.length; i++) {
-    const char = argsStr[i];
-
-    // Handle string boundaries
-    if ((char === '"' || char === "'") && (i === 0 || argsStr[i - 1] !== '\\')) {
-      if (!inString && !inRegex) {
-        // Start of string - skip the quote
-        inString = true;
-        stringChar = char;
-        continue;
-      } else if (inString && char === stringChar) {
-        // End of string - add the argument and skip the quote
-        inString = false;
-        args.push(current);
-        current = '';
-        stringChar = '';
-        continue;
-      }
-    }
-
-    // Handle regex boundaries
-    if (char === '/' && !inString) {
-      if (!inRegex) {
-        inRegex = true;
-        continue;
-      } else {
-        // End of regex - parse flags if any
-        let flags = '';
-        let j = i + 1;
-        while (j < argsStr.length && /[gimsuvy]/.test(argsStr[j])) {
-          flags += argsStr[j];
-          j++;
-        }
-        try {
-          args.push(new RegExp(current, flags));
-        } catch {
-          throw new TriggerError(`Invalid regex: /${current}/${flags}`);
-        }
-        current = '';
-        inRegex = false;
-        i = j - 1;
-        continue;
-      }
-    }
-
-    // Handle commas (argument separators)
-    if (char === ',' && !inString && !inRegex) {
-      if (current.trim()) {
-        throw new TriggerError(`Unexpected argument format: ${current}`);
-      }
-      continue;
-    }
-
-    // Skip whitespace outside strings and regexes
-    if (!inString && !inRegex && /\s/.test(char)) {
-      continue;
-    }
-
-    if (inString || inRegex) {
-      current += char;
+  while (i < argsStr.length) {
+    const ch = argsStr[i];
+    if (ch === '"' || ch === "'") {
+      const { value, nextIndex } = consumeStringArg(argsStr, i, ch);
+      args.push(value);
+      i = nextIndex;
+    } else if (ch === '/') {
+      const { value, nextIndex } = consumeRegexArg(argsStr, i + 1);
+      args.push(value);
+      i = nextIndex;
+    } else {
+      i++;
     }
   }
 
   return args;
+}
+
+function consumeStringArg(
+  argsStr: string,
+  start: number,
+  quote: string,
+): { value: string; nextIndex: number } {
+  let value = '';
+  let i = start + 1;
+
+  while (i < argsStr.length) {
+    const ch = argsStr[i];
+    if (ch === quote && argsStr[i - 1] !== '\\') {
+      return { value, nextIndex: i + 1 };
+    }
+    value += ch;
+    i++;
+  }
+
+  return { value, nextIndex: i };
+}
+
+function consumeRegexArg(
+  argsStr: string,
+  patternStart: number,
+): { value: RegExp; nextIndex: number } {
+  let pattern = '';
+  let i = patternStart;
+
+  while (i < argsStr.length && argsStr[i] !== '/') {
+    pattern += argsStr[i];
+    i++;
+  }
+
+  i++; // skip closing '/'
+
+  let flags = '';
+  while (i < argsStr.length && /[gimsuvy]/.test(argsStr[i])) {
+    flags += argsStr[i];
+    i++;
+  }
+
+  try {
+    return { value: new RegExp(pattern, flags), nextIndex: i };
+  } catch {
+    throw new TriggerError(`Invalid regex: /${pattern}/${flags}`);
+  }
 }
 
 /**

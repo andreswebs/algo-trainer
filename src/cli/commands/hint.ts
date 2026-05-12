@@ -7,7 +7,7 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult } from '../../types/global.ts';
+import type { CommandResult, Config, Problem, SupportedLanguage } from '../../types/global.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
 import { logger } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
@@ -174,8 +174,104 @@ function displayHints(
   return newHintsUsed.sort((a, b) => a - b);
 }
 
+/**
+ * Load workspace existence and hint-usage state for a problem.
+ */
+export async function loadProblemState(
+  workspaceRoot: string,
+  slug: string,
+  language: SupportedLanguage,
+): Promise<{ exists: boolean; hintsUsed: number[] }> {
+  const exists = await problemExists(workspaceRoot, slug, language);
+  if (!exists) {
+    return { exists: false, hintsUsed: [] };
+  }
+  const metadata = await getProblemMetadata(workspaceRoot, slug, language);
+  return { exists: true, hintsUsed: metadata?.hintsUsed ?? [] };
+}
+
+/**
+ * Validate the requested hint level against available hints.
+ * Returns an error message string if invalid, null if valid (or undefined level).
+ */
+export function validateHintLevel(
+  level: number | undefined,
+  hints: string[],
+): string | null {
+  if (level === undefined) {
+    return null;
+  }
+  if (level < 1 || level > hints.length) {
+    return `Invalid hint level: ${level}. Available levels: 1-${hints.length}`;
+  }
+  return null;
+}
+
+/**
+ * Persist updated hint usage to workspace metadata.
+ * No-op when problem doesn't exist in workspace or no new hints were viewed.
+ */
+export async function updateHintTracking(
+  workspaceRoot: string,
+  slug: string,
+  language: SupportedLanguage,
+  exists: boolean,
+  updatedHintsUsed: number[],
+  originalHintsUsed: number[],
+): Promise<void> {
+  if (!exists || updatedHintsUsed.length <= originalHintsUsed.length) {
+    return;
+  }
+  const updated = await updateProblemMetadata(workspaceRoot, slug, language, {
+    hintsUsed: updatedHintsUsed,
+  });
+  if (!updated) {
+    logger.warn('Could not update hint tracking metadata.');
+  }
+}
+
+/**
+ * Try to emit an AI contextual hint. Returns true if a hint was shown.
+ */
+async function tryEmitAiHint(
+  config: Config,
+  problem: Problem,
+  options: HintOptions,
+  exists: boolean,
+): Promise<boolean> {
+  if (!config.aiEnabled || !exists || options.all || options.level !== undefined) {
+    return false;
+  }
+  try {
+    const session = new TeachingSession(problem.slug);
+    const engine = new TeachingEngine(session);
+    const problemDir = join(config.workspace, 'problems', problem.slug);
+    const loaded = await engine.loadScript(problemDir);
+    if (!loaded) {
+      return false;
+    }
+    const aiHint = engine.getHint('');
+    if (!aiHint) {
+      return false;
+    }
+    logger.newline();
+    logger.log('🤖 AI Teaching Assistant');
+    logger.newline();
+    logger.separator(50);
+    logger.log(aiHint);
+    logger.separator(50);
+    logger.newline();
+    logger.log('💬 For more structured hints, use --all or --level flags');
+    logger.newline();
+    return true;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.warn(`Note: Could not load AI hints: ${errorMsg}`);
+    return false;
+  }
+}
+
 export async function hintCommand(args: Args): Promise<CommandResult> {
-  // Handle help flag
   if (args.help || args.h) {
     showHelp();
     return { success: true, exitCode: ExitCode.SUCCESS };
@@ -185,162 +281,65 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     const options = extractHintOptions(args);
     const config = configManager.getConfig();
 
-    // Ensure workspace is initialized (throws WorkspaceError if not)
-    const _workspace = await requireWorkspace();
-
-    // Initialize problem manager
+    await requireWorkspace();
     const manager = await requireProblemManager();
 
-    // Resolve problem identifier
-    const problemSlug = options.problemSlug;
-
-    // If no slug provided, try to detect from workspace
-    if (!problemSlug) {
+    if (!options.problemSlug) {
       // FUTURE ENHANCEMENT(CLI-021): Auto-detect current problem from workspace
-      // This would use the same detection mechanism as CLI-001 in shared.ts
-      // to identify which problem the user is currently working on
-      // Decision: Deferred to post-v1.0 as explicit problem identifiers work well
       logger.error('Problem slug is required. Usage: algo-trainer hint <slug>');
-      return {
-        success: false,
-        exitCode: ExitCode.USAGE_ERROR,
-        error: 'Problem slug is required',
-      };
+      return { success: false, exitCode: ExitCode.USAGE_ERROR, error: 'Problem slug is required' };
     }
 
-    // Resolve problem
-    const problem = resolveProblem(problemSlug, manager);
+    const problem = resolveProblem(options.problemSlug, manager);
     if (!problem) {
-      logger.error(`Problem '${problemSlug}' not found.`);
+      logger.error(`Problem '${options.problemSlug}' not found.`);
       logger.info(
         'Use "algo-trainer list" to see available problems, or provide a valid problem ID or slug',
       );
       return {
         success: false,
         exitCode: ExitCode.PROBLEM_ERROR,
-        error: `Problem '${problemSlug}' not found`,
+        error: `Problem '${options.problemSlug}' not found`,
       };
     }
 
-    // Check if problem exists in workspace
-    const exists = await problemExists(
+    const levelError = validateHintLevel(options.level, problem.hints);
+    if (levelError) {
+      logger.error(levelError);
+      logger.info(`Available hint levels for this problem: 1-${problem.hints.length}`);
+      return { success: false, exitCode: ExitCode.USAGE_ERROR, error: levelError };
+    }
+
+    const { exists, hintsUsed } = await loadProblemState(
       config.workspace,
       problem.slug,
       config.language,
     );
 
-    let metadata = null;
-    if (exists) {
-      // Get metadata to track hint usage
-      metadata = await getProblemMetadata(
-        config.workspace,
-        problem.slug,
-        config.language,
-      );
-    }
-
-    const hintsUsed = metadata?.hintsUsed ?? [];
-
-    // Validate hint level if provided
-    if (options.level !== undefined) {
-      const maxLevel = problem.hints.length;
-      if (options.level < 1 || options.level > maxLevel) {
-        logger.error(`Invalid hint level: ${options.level}`);
-        logger.info(`Available hint levels for this problem: 1-${maxLevel}`);
-        return {
-          success: false,
-          exitCode: ExitCode.USAGE_ERROR,
-          error: `Invalid hint level: ${options.level}`,
-        };
-      }
-    }
-
-    // Display problem information
     logger.newline();
     logger.log(`📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
 
-    // Try to get AI contextual hint if enabled and problem exists in workspace
-    let aiHintShown = false;
-    if (
-      config.aiEnabled &&
-      exists &&
-      !options.all &&
-      options.level === undefined
-    ) {
-      try {
-        const session = new TeachingSession(problem.slug);
-        const engine = new TeachingEngine(session);
+    const aiHintShown = await tryEmitAiHint(config, problem, options, exists);
 
-        // Load teaching script from workspace problem directory
-        const problemDir = join(config.workspace, 'problems', problem.slug);
-        const loaded = await engine.loadScript(problemDir);
-
-        if (loaded) {
-          // Try to get user's current code for contextual hints
-          // For now, we'll use empty code - in the future this could read the solution file
-          const userCode = '';
-          const aiHint = engine.getHint(userCode);
-
-          if (aiHint) {
-            logger.newline();
-            logger.log('🤖 AI Teaching Assistant');
-            logger.newline();
-            logger.separator(50);
-            logger.log(aiHint);
-            logger.separator(50);
-            logger.newline();
-            logger.log(
-              '💬 For more structured hints, use --all or --level flags',
-            );
-            logger.newline();
-            aiHintShown = true;
-          }
-        }
-      } catch (error) {
-        // Teaching system errors are non-fatal, fall back to regular hints
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        logger.warn(`Note: Could not load AI hints: ${errorMsg}`);
-      }
-    }
-
-    // Display regular hints if AI hint wasn't shown or if specific options were used
     if (!aiHintShown) {
-      const updatedHintsUsed = displayHints(
-        problem.hints,
+      const updatedHintsUsed = displayHints(problem.hints, hintsUsed, options.level, options.all);
+      await updateHintTracking(
+        config.workspace,
+        problem.slug,
+        config.language,
+        exists,
+        updatedHintsUsed,
         hintsUsed,
-        options.level,
-        options.all,
       );
-
-      // Update metadata if problem exists in workspace and hints were viewed
-      if (exists && updatedHintsUsed.length > hintsUsed.length) {
-        const updated = await updateProblemMetadata(
-          config.workspace,
-          problem.slug,
-          config.language,
-          { hintsUsed: updatedHintsUsed },
-        );
-
-        if (!updated) {
-          logger.warn('Could not update hint tracking metadata.');
-        }
-      }
     }
 
-    logger.newline(); // Empty line for spacing
+    logger.newline();
 
-    return {
-      success: true,
-      exitCode: ExitCode.SUCCESS,
-    };
+    return { success: true, exitCode: ExitCode.SUCCESS };
   } catch (error) {
     const exitCode = getExitCodeForError(error);
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`Error: ${message}`);
-    return {
-      success: false,
-      exitCode,
-      error: message,
-    };
+    return { success: false, exitCode, error: message };
   }
 }

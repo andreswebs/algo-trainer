@@ -95,10 +95,7 @@ Deno.test('ProblemDatabase.load - loads problems from directory', async () => {
       loadCustomProblems: false,
     });
 
-    assertEquals(db.count(), 2);
-    assertEquals(db.getLoadResult().builtIn, 2);
-    assertEquals(db.getLoadResult().custom, 0);
-    assertEquals(db.getLoadResult().skipped.length, 0);
+    assertEquals(db.getAll().length, 2);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
@@ -329,7 +326,6 @@ Deno.test('ProblemDatabase.load - handles empty directory', async () => {
       loadCustomProblems: false,
     });
 
-    assertEquals(db.count(), 0);
     assertEquals(db.getAll().length, 0);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
@@ -342,7 +338,7 @@ Deno.test('ProblemDatabase.load - handles non-existent directory', async () => {
     loadCustomProblems: false,
   });
 
-  assertEquals(db.count(), 0);
+  assertEquals(db.getAll().length, 0);
 });
 
 Deno.test('ProblemDatabase - getAll returns copy of problems array', async () => {
@@ -470,7 +466,7 @@ Deno.test('ProblemDatabase.load - loads from real src/data/problems', async () =
     loadCustomProblems: false,
   });
 
-  assertEquals(db.count() >= 1, true);
+  assertEquals(db.getAll().length >= 1, true);
 
   const twoSum = db.getBySlug('two-sum');
   assertEquals(twoSum !== null, true);

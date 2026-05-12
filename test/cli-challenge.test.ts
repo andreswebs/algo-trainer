@@ -2,13 +2,19 @@
  * Tests for challenge command
  */
 
-import { assertEquals } from '@std/assert';
+import { assertEquals, assertNotEquals } from '@std/assert';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
-import { challengeCommand, extractChallengeOptions } from '../src/cli/commands/challenge.ts';
+import {
+  challengeCommand,
+  extractChallengeOptions,
+  resolveLanguage,
+  resolveProblemSelection,
+} from '../src/cli/commands/challenge.ts';
 import { configManager } from '../src/config/manager.ts';
-import { initWorkspace } from '../src/core/mod.ts';
+import { initWorkspace, ProblemManager } from '../src/core/mod.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import type { Args } from '@std/cli/parse-args';
+import type { ChallengeOptions } from '../src/cli/commands/challenge.ts';
 
 describe('extractChallengeOptions', () => {
   it('should extract slug from first positional arg', () => {
@@ -263,5 +269,92 @@ describe('challengeCommand', () => {
     });
     // May or may not find a problem depending on database
     assertEquals(typeof result.success, 'boolean');
+  });
+});
+
+describe('resolveProblemSelection', () => {
+  let manager: ProblemManager;
+
+  beforeEach(async () => {
+    manager = new ProblemManager();
+    await manager.init();
+  });
+
+  const baseOptions: ChallengeOptions = {
+    slug: undefined,
+    difficulty: undefined,
+    category: undefined,
+    topic: undefined,
+    language: undefined,
+    force: false,
+    random: true,
+  };
+
+  it('should return problem for valid slug', async () => {
+    const options = { ...baseOptions, slug: 'two-sum', random: false };
+    const problem = await resolveProblemSelection(options, manager);
+    assertEquals(problem?.slug, 'two-sum');
+  });
+
+  it('should return null for non-existent slug', async () => {
+    const options = { ...baseOptions, slug: 'does-not-exist', random: false };
+    const problem = await resolveProblemSelection(options, manager);
+    assertEquals(problem, null);
+  });
+
+  it('should return a problem for random selection', async () => {
+    const problem = await resolveProblemSelection(baseOptions, manager);
+    assertNotEquals(problem, null);
+  });
+
+  it('should return a problem matching difficulty filter', async () => {
+    const options = { ...baseOptions, difficulty: 'easy' };
+    const problem = await resolveProblemSelection(options, manager);
+    assertEquals(problem?.difficulty, 'easy');
+  });
+
+  it('should return null when no problems match filters', async () => {
+    const options = { ...baseOptions, difficulty: 'easy', category: 'nonexistent-category-xyz' };
+    const problem = await resolveProblemSelection(options, manager);
+    assertEquals(problem, null);
+  });
+});
+
+describe('resolveLanguage', () => {
+  const baseOptions: ChallengeOptions = {
+    slug: undefined,
+    difficulty: undefined,
+    category: undefined,
+    topic: undefined,
+    language: undefined,
+    force: false,
+    random: false,
+  };
+
+  it('should return language specified in options', async () => {
+    const options = { ...baseOptions, language: 'python' };
+    const lang = await resolveLanguage(options, undefined);
+    assertEquals(lang, 'python');
+  });
+
+  it('should return config language when no option is given', async () => {
+    const lang = await resolveLanguage(baseOptions, 'go');
+    assertEquals(lang, 'go');
+  });
+
+  it('should default to typescript in non-interactive mode', async () => {
+    const lang = await resolveLanguage(baseOptions, undefined);
+    assertEquals(lang, 'typescript');
+  });
+
+  it('should return null for invalid language in options', async () => {
+    const options = { ...baseOptions, language: 'cobol' };
+    const lang = await resolveLanguage(options, undefined);
+    assertEquals(lang, null);
+  });
+
+  it('should return null for invalid config language', async () => {
+    const lang = await resolveLanguage(baseOptions, 'brainfuck');
+    assertEquals(lang, null);
   });
 });
