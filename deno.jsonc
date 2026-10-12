@@ -63,7 +63,8 @@
     ]
   },
   "exclude": [
-    "_.local-leetcode-trainer.legacy/"
+    "_.local-leetcode-trainer.legacy/",
+    ".local/"
   ],
   "lock": true
 }
