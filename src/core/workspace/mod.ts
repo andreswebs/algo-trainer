@@ -106,4 +106,3 @@ export * from './files.ts';
 export * from './generation.ts';
 export * from './manager.ts';
 export * from './types.ts';
-export * from './watcher.ts';
