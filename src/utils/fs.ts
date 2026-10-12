@@ -6,8 +6,8 @@
  * @module utils/fs
  */
 
-import { ensureDir, exists } from '@std/fs';
-import { dirname, join } from '@std/path';
+import { lstat, mkdir, readdir, readFile, rm, rmdir, stat, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import type { FileOperationResult } from '../types/global.ts';
 import { createErrorContext, FileSystemError } from './errors.ts';
 
@@ -47,15 +47,15 @@ interface XdgPaths {
 }
 
 function getXdgPaths(): XdgPaths {
-  const home = Deno.env.get('HOME') || '/tmp';
+  const home = process.env.HOME || '/tmp';
 
   return {
-    configHome: Deno.env.get('XDG_CONFIG_HOME') || join(home, '.config'),
-    dataHome: Deno.env.get('XDG_DATA_HOME') || join(home, '.local', 'share'),
-    cacheHome: Deno.env.get('XDG_CACHE_HOME') || join(home, '.cache'),
-    stateHome: Deno.env.get('XDG_STATE_HOME') || join(home, '.local', 'state'),
-    configDirs: (Deno.env.get('XDG_CONFIG_DIRS') || '/etc/xdg').split(':'),
-    dataDirs: (Deno.env.get('XDG_DATA_DIRS') || '/usr/local/share:/usr/share').split(':'),
+    configHome: process.env.XDG_CONFIG_HOME || join(home, '.config'),
+    dataHome: process.env.XDG_DATA_HOME || join(home, '.local', 'share'),
+    cacheHome: process.env.XDG_CACHE_HOME || join(home, '.cache'),
+    stateHome: process.env.XDG_STATE_HOME || join(home, '.local', 'state'),
+    configDirs: (process.env.XDG_CONFIG_DIRS || '/etc/xdg').split(':'),
+    dataDirs: (process.env.XDG_DATA_DIRS || '/usr/local/share:/usr/share').split(':'),
   };
 }
 
@@ -77,7 +77,10 @@ export function getAppPaths(appName: string): Record<string, string> {
  */
 export async function pathExists(path: string): Promise<boolean> {
   try {
-    return await exists(path);
+    return await stat(path).then(
+      () => true,
+      () => false,
+    );
   } catch (error) {
     throw new FileSystemError(
       `Failed to check if path exists: ${path}`,
@@ -88,7 +91,7 @@ export async function pathExists(path: string): Promise<boolean> {
 
 async function readTextFile(path: string): Promise<string> {
   try {
-    return await Deno.readTextFile(path);
+    return await readFile(path, 'utf8');
   } catch (error) {
     throw new FileSystemError(
       `Failed to read file: ${path}`,
@@ -107,7 +110,7 @@ export async function writeTextFile(
 ): Promise<FileOperationResult> {
   try {
     if (options.ensureParents) {
-      await ensureDir(dirname(path));
+      await mkdir(dirname(path), { recursive: true });
     }
 
     // Check if file exists and handle overwrite
@@ -119,7 +122,7 @@ export async function writeTextFile(
     }
 
     const writeOptions = options.mode !== undefined ? { mode: options.mode } : undefined;
-    await Deno.writeTextFile(path, content, writeOptions);
+    await writeFile(path, content, writeOptions);
 
     return {
       success: true,
@@ -183,7 +186,7 @@ export async function writeJsonFile<T>(
  */
 export async function createDirectory(path: string): Promise<FileOperationResult> {
   try {
-    await ensureDir(path);
+    await mkdir(path, { recursive: true });
     return {
       success: true,
       path,
@@ -204,9 +207,14 @@ export async function remove(
   options: { recursive?: boolean } = {},
 ): Promise<FileOperationResult> {
   try {
-    const removeOptions =
-      options.recursive !== undefined ? { recursive: options.recursive } : undefined;
-    await Deno.remove(path, removeOptions);
+    if (options.recursive) {
+      await rm(path, { recursive: true });
+    } else if ((await lstat(path)).isDirectory()) {
+      // rm refuses every directory without recursive, but an empty one must still be removable.
+      await rmdir(path);
+    } else {
+      await rm(path);
+    }
     return {
       success: true,
       path,
@@ -229,7 +237,7 @@ export async function listDirectory(
   try {
     const result: Array<{ name: string; path: string; isDirectory: boolean }> = [];
 
-    for await (const entry of Deno.readDir(path)) {
+    for (const entry of await readdir(path, { withFileTypes: true })) {
       const { includeHidden = false } = options;
 
       // Skip hidden files if not requested
@@ -241,13 +249,13 @@ export async function listDirectory(
       const item = {
         name: entry.name,
         path: entryPath,
-        isDirectory: entry.isDirectory,
+        isDirectory: entry.isDirectory(),
       };
 
       result.push(item);
 
       // Recurse into directories if requested
-      if (options.recursive && entry.isDirectory) {
+      if (options.recursive && entry.isDirectory()) {
         const subdirContents = await listDirectory(entryPath, options);
         result.push(...subdirContents);
       }
