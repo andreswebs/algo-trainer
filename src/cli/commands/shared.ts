@@ -12,6 +12,7 @@ import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized, ProblemManager } from '../../core/mod.ts';
 import type { Problem, WorkspaceStructure } from '../../types/global.ts';
 import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/errors.ts';
+import { readLine } from '../prompts.ts';
 
 /**
  * Validates that the workspace is initialized and returns its structure.
@@ -38,7 +39,7 @@ import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/er
 export async function requireWorkspace(workspaceRoot?: string): Promise<WorkspaceStructure> {
   try {
     // Mirrors `init` with no path: an unconfigured workspace means the current directory
-    const root = workspaceRoot || configManager.getConfig().workspace || Deno.cwd();
+    const root = workspaceRoot || configManager.getConfig().workspace || process.cwd();
 
     // Check if root is empty or not provided
     if (!root || root.trim().length === 0) {
@@ -270,20 +271,16 @@ export async function confirmAction(message: string, defaultValue = false): Prom
   const defaultIndicator = defaultValue ? '[Y/n]' : '[y/N]';
   const prompt = `${message} ${defaultIndicator}: `;
 
-  // Write prompt to stderr (for user interaction)
-  await Deno.stderr.write(new TextEncoder().encode(prompt));
+  // Write prompt to stderr and read one line from stdin
+  const line = await readLine(prompt);
 
-  // Read user input from stdin
-  const buf = new Uint8Array(1024);
-  const n = await Deno.stdin.read(buf);
-
-  if (n === null) {
+  if (line === null) {
     // EOF or error, return default
     return defaultValue;
   }
 
   // Parse input
-  const input = new TextDecoder().decode(buf.subarray(0, n)).trim().toLowerCase();
+  const input = line.trim().toLowerCase();
 
   // Empty input means use default
   if (input === '') {

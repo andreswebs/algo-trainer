@@ -8,7 +8,13 @@
  * @module cli/prompts
  */
 
+import { createInterface, type Interface } from 'node:readline';
 import type { Difficulty, SupportedLanguage } from '../types/global.ts';
+
+// One interface per process: closing and recreating it per prompt drops buffered piped lines.
+let rl: Interface | undefined;
+let lines: AsyncIterator<string> | undefined;
+let ended = false;
 
 /**
  * Checks if the current environment is interactive (TTY).
@@ -19,7 +25,40 @@ import type { Difficulty, SupportedLanguage } from '../types/global.ts';
  * @returns true if running in an interactive terminal, false otherwise
  */
 export function isInteractive(): boolean {
-  return Deno.stdin.isTerminal() && Deno.stdout.isTerminal();
+  return process.stdin.isTTY === true && process.stdout.isTTY === true;
+}
+
+/**
+ * Writes a prompt to stderr and reads one line from stdin.
+ *
+ * @param message - Prompt text written to stderr before reading
+ * @returns The line without its terminator, or null at end of input
+ */
+export async function readLine(message: string): Promise<string | null> {
+  process.stderr.write(message);
+  if (ended) {
+    return null;
+  }
+  if (!lines) {
+    rl = createInterface({ input: process.stdin, terminal: false, crlfDelay: Infinity });
+    lines = rl[Symbol.asyncIterator]();
+  }
+  const result = await lines.next();
+  if (result.done) {
+    ended = true;
+    closeInput();
+    return null;
+  }
+  return result.value;
+}
+
+/**
+ * Releases stdin so the process can exit after the last prompt.
+ */
+export function closeInput(): void {
+  rl?.close();
+  rl = undefined;
+  lines = undefined;
 }
 
 /**
@@ -58,20 +97,15 @@ export async function promptText(
   while (true) {
     // Display prompt
     const defaultIndicator = defaultValue ? ` [${defaultValue}]` : '';
-    const prompt = `${message}${defaultIndicator}: `;
-    await Deno.stderr.write(new TextEncoder().encode(prompt));
+    const line = await readLine(`${message}${defaultIndicator}: `);
 
-    // Read user input
-    const buf = new Uint8Array(1024);
-    const n = await Deno.stdin.read(buf);
-
-    if (n === null) {
+    if (line === null) {
       // EOF or error, return default or null
       return defaultValue ?? null;
     }
 
     // Parse input
-    const input = new TextDecoder().decode(buf.subarray(0, n)).trim();
+    const input = line.trim();
 
     // Use default if empty and default exists
     if (input === '' && defaultValue !== undefined) {
@@ -80,7 +114,7 @@ export async function promptText(
 
     // Check if empty is allowed
     if (input === '' && !allowEmpty) {
-      await Deno.stderr.write(new TextEncoder().encode('Input cannot be empty\n'));
+      process.stderr.write('Input cannot be empty\n');
       continue;
     }
 
@@ -88,7 +122,7 @@ export async function promptText(
     if (validate) {
       const validationResult = validate(input);
       if (validationResult !== true) {
-        await Deno.stderr.write(new TextEncoder().encode(`${validationResult}\n`));
+        process.stderr.write(`${validationResult}\n`);
         continue;
       }
     }
@@ -132,30 +166,25 @@ export async function promptSelect<T extends string>(
   const { defaultValue } = config;
 
   // Display message and options
-  await Deno.stderr.write(new TextEncoder().encode(`${message}\n`));
+  process.stderr.write(`${message}\n`);
   for (let i = 0; i < options.length; i++) {
     const isDefault = options[i] === defaultValue;
     const marker = isDefault ? ' (default)' : '';
-    await Deno.stderr.write(new TextEncoder().encode(`  ${i + 1}. ${options[i]}${marker}\n`));
+    process.stderr.write(`  ${i + 1}. ${options[i]}${marker}\n`);
   }
 
   while (true) {
     // Prompt for selection
     const defaultIndicator = defaultValue ? ` [${defaultValue}]` : '';
-    const prompt = `Enter number or name${defaultIndicator}: `;
-    await Deno.stderr.write(new TextEncoder().encode(prompt));
+    const line = await readLine(`Enter number or name${defaultIndicator}: `);
 
-    // Read user input
-    const buf = new Uint8Array(1024);
-    const n = await Deno.stdin.read(buf);
-
-    if (n === null) {
+    if (line === null) {
       // EOF or error, return default or null
       return defaultValue ?? null;
     }
 
     // Parse input
-    const input = new TextDecoder().decode(buf.subarray(0, n)).trim();
+    const input = line.trim();
 
     // Use default if empty and default exists
     if (input === '' && defaultValue !== undefined) {
@@ -175,10 +204,8 @@ export async function promptSelect<T extends string>(
     }
 
     // Invalid input
-    await Deno.stderr.write(
-      new TextEncoder().encode(
-        `Invalid selection. Enter a number (1-${options.length}) or option name.\n`,
-      ),
+    process.stderr.write(
+      `Invalid selection. Enter a number (1-${options.length}) or option name.\n`,
     );
   }
 }
@@ -212,20 +239,16 @@ export async function promptConfirm(message: string, defaultValue = false): Prom
   const defaultIndicator = defaultValue ? '[Y/n]' : '[y/N]';
   const prompt = `${message} ${defaultIndicator}: `;
 
-  // Write prompt to stderr (for user interaction)
-  await Deno.stderr.write(new TextEncoder().encode(prompt));
+  // Write prompt to stderr and read one line from stdin
+  const line = await readLine(prompt);
 
-  // Read user input from stdin
-  const buf = new Uint8Array(1024);
-  const n = await Deno.stdin.read(buf);
-
-  if (n === null) {
+  if (line === null) {
     // EOF or error, return default
     return defaultValue;
   }
 
   // Parse input
-  const input = new TextDecoder().decode(buf.subarray(0, n)).trim().toLowerCase();
+  const input = line.trim().toLowerCase();
 
   // Empty input means use default
   if (input === '') {
