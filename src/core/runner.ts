@@ -8,6 +8,9 @@
  * @module core/runner
  */
 
+import { Buffer } from 'node:buffer';
+import { spawn } from 'node:child_process';
+import { constants } from 'node:os';
 import { basename, join } from '@std/path';
 import type { SupportedLanguage } from '../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../utils/errors.ts';
@@ -185,46 +188,36 @@ interface SeparateExec {
 }
 
 /**
+ * Execute a command, capturing stdout and stderr separately. Used for the
+ * binary itself so the diff against expected.txt is byte-for-byte clean.
+ * Rejects when the executable cannot be spawned. A child killed by a signal
+ * reports 128 plus the signal number, as shells and the previous runtime did.
+ */
+function execCaptureSeparate(cmd: string, args: string[], cwd: string): Promise<SeparateExec> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+    const out: Buffer[] = [];
+    const err: Buffer[] = [];
+    child.stdout.on('data', (chunk: Buffer) => out.push(chunk));
+    child.stderr.on('data', (chunk: Buffer) => err.push(chunk));
+    child.on('error', reject);
+    child.on('close', (code, signal) => {
+      resolve({
+        code: code ?? (signal ? 128 + constants.signals[signal] : 1),
+        stdout: Buffer.concat(out).toString('utf8'),
+        stderr: Buffer.concat(err).toString('utf8'),
+      });
+    });
+  });
+}
+
+/**
  * Execute a command, capturing stdout+stderr together (in order they were
  * written, but interleaved by line; sufficient for human-readable build logs).
  */
 async function execCapture(cmd: string, args: string[], cwd: string): Promise<CombinedExec> {
-  const command = new Deno.Command(cmd, {
-    args,
-    cwd,
-    stdout: 'piped',
-    stderr: 'piped',
-  });
-  const { code, stdout, stderr } = await command.output();
-  const decoder = new TextDecoder();
-  return {
-    code,
-    combined: decoder.decode(stdout) + decoder.decode(stderr),
-  };
-}
-
-/**
- * Execute a command, capturing stdout and stderr separately. Used for the
- * binary itself so the diff against expected.txt is byte-for-byte clean.
- */
-async function execCaptureSeparate(
-  cmd: string,
-  args: string[],
-  cwd: string,
-): Promise<SeparateExec> {
-  const command = new Deno.Command(cmd, {
-    args,
-    cwd,
-    stdout: 'piped',
-    stderr: 'piped',
-  });
-  const { code, stdout, stderr } = await command.output();
-  const decoder = new TextDecoder();
-  return {
-    code,
-    stdout: decoder.decode(stdout),
-    stderr: decoder.decode(stderr),
-  };
+  const { code, stdout, stderr } = await execCaptureSeparate(cmd, args, cwd);
+  return { code, combined: stdout + stderr };
 }
 
 /**
