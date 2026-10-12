@@ -10,6 +10,7 @@
  * @module cli/commands/progress
  */
 
+import { readdir, readFile } from 'node:fs/promises';
 import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
 import { configManager } from '../../config/manager.ts';
@@ -119,8 +120,8 @@ async function scanProblemDirectory(dirPath: string): Promise<string[]> {
   const problems: string[] = [];
 
   try {
-    for await (const entry of Deno.readDir(dirPath)) {
-      if (entry.isDirectory) {
+    for (const entry of await readdir(dirPath, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
         // Check if it's a valid problem directory (has .problem.json)
         const metadataPath = join(dirPath, entry.name, '.problem.json');
         if (await pathExists(metadataPath)) {
@@ -130,7 +131,7 @@ async function scanProblemDirectory(dirPath: string): Promise<string[]> {
     }
   } catch (error) {
     // Directory doesn't exist or can't be read, return empty array
-    if (error instanceof Deno.errors.NotFound) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return [];
     }
     throw error;
@@ -148,7 +149,7 @@ async function readProblemMetadata(
 ): Promise<{ difficulty?: Difficulty; tags?: string[] }> {
   try {
     const metadataPath = join(dirPath, slug, '.problem.json');
-    const content = await Deno.readTextFile(metadataPath);
+    const content = await readFile(metadataPath, 'utf8');
     const metadata = JSON.parse(content);
     return {
       difficulty: metadata.difficulty,

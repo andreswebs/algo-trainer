@@ -74,10 +74,10 @@ export async function initCommand(args: Args): Promise<CommandResult> {
         const config = configManager.getConfig();
         // Use config workspace if it's not empty, otherwise use current directory
         workspaceRoot =
-          config.workspace && config.workspace.trim().length > 0 ? config.workspace : Deno.cwd();
+          config.workspace && config.workspace.trim().length > 0 ? config.workspace : process.cwd();
       } catch {
         // Config not loaded, use current directory
-        workspaceRoot = Deno.cwd();
+        workspaceRoot = process.cwd();
       }
     }
 

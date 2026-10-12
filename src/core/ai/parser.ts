@@ -7,6 +7,7 @@
  * @module core/ai/parser
  */
 
+import { readFile } from 'node:fs/promises';
 import { dirname, fromFileUrl, join } from '@std/path';
 import { parse as parseYaml } from '@std/yaml';
 import { getConfigPaths } from '../../config/paths.ts';
@@ -182,7 +183,7 @@ export async function loadTeachingScript(filePath: string): Promise<TeachingScri
   // Read file content
   let content: string;
   try {
-    content = await Deno.readTextFile(filePath);
+    content = await readFile(filePath, 'utf8');
   } catch (error) {
     throw new ScriptError(
       'Failed to read teaching script file',

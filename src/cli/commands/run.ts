@@ -8,6 +8,7 @@
  * @module cli/commands/run
  */
 
+import { readFile, realpath } from 'node:fs/promises';
 import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
 import { configManager } from '../../config/manager.ts';
@@ -97,7 +98,7 @@ export function extractRunOptions(args: Args): RunCommandOptions {
 export function resolveFilePath(
   path: string | undefined,
   fallback: string,
-  cwd: string = Deno.cwd(),
+  cwd: string = process.cwd(),
 ): string {
   if (path === undefined) return fallback;
   if (path.startsWith('/')) return path;
@@ -122,7 +123,7 @@ export async function resolveLanguage(
   if (!(await pathExists(metadataPath))) return defaultLang;
 
   try {
-    const raw = JSON.parse(await Deno.readTextFile(metadataPath));
+    const raw = JSON.parse(await readFile(metadataPath, 'utf8'));
     if (typeof raw?.language === 'string') return raw.language as SupportedLanguage;
     if (typeof raw?.slug === 'string') {
       const meta = await getProblemMetadata(workspaceRoot, raw.slug, defaultLang);
@@ -158,14 +159,14 @@ async function resolveProblemDir(
   }
 
   // Walk up from cwd
-  let current = Deno.cwd();
+  let current = process.cwd();
   for (let i = 0; i < 10; i++) {
     if (await pathExists(join(current, '.problem.json'))) {
       return { dir: current, resolvedFrom: 'cwd' };
     }
     const parent = join(current, '..');
     if (parent === current) break;
-    current = await Deno.realPath(parent).catch(() => parent);
+    current = await realpath(parent).catch(() => parent);
   }
 
   throw new Error(
@@ -199,7 +200,7 @@ async function checkDiff(
     return { success: true, exitCode: ExitCode.SUCCESS };
   }
 
-  const expected = await Deno.readTextFile(expectedFile);
+  const expected = await readFile(expectedFile, 'utf8');
   if (expected === stdout) {
     logger.info(`PASS — output matches expected.txt (${durationMs}ms)`);
     return { success: true, exitCode: ExitCode.SUCCESS };
@@ -233,7 +234,7 @@ export async function runCommand(args: Args): Promise<CommandResult> {
     const config = configManager.getConfig();
     const defaultLang = (config.language ?? 'cpp') as SupportedLanguage;
     const language = await resolveLanguage(problemDir, opts.language, structure.root, defaultLang);
-    const cwd = Deno.cwd();
+    const cwd = process.cwd();
     const inputFile = resolveFilePath(opts.inputPath, join(problemDir, 'input.txt'), cwd);
 
     logger.info(`Problem: ${problemDir}`);

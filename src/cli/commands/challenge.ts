@@ -334,7 +334,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
   try {
     const options = extractChallengeOptions(args);
     const config = configManager.getConfig();
-    const workspaceRoot = config.workspace || Deno.cwd();
+    const workspaceRoot = config.workspace || process.cwd();
 
     await ensureWorkspaceInitialized(workspaceRoot);
     await requireWorkspace(workspaceRoot);

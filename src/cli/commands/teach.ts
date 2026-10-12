@@ -6,6 +6,7 @@
  * @module cli/commands/teach
  */
 
+import { readFile, writeFile } from 'node:fs/promises';
 import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
 import { parse as parseYaml } from '@std/yaml';
@@ -147,7 +148,7 @@ async function handleGenerate(
   }
 
   // Write file
-  await Deno.writeTextFile(outputPath, yamlContent);
+  await writeFile(outputPath, yamlContent);
 
   logger.success(`Teaching script generated: ${outputPath}`);
   logger.info(`Language: ${problem.difficulty}`);
@@ -164,7 +165,7 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
 
   // Read and parse YAML file
   logger.info(`Validating teaching script: ${options.path}`);
-  const content = await Deno.readTextFile(options.path);
+  const content = await readFile(options.path, 'utf8');
   const script = parseYaml(content);
 
   // Validate

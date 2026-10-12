@@ -7,7 +7,7 @@
  * @module core/problem/templates
  */
 
-import { exists } from '@std/fs';
+import { readFile } from 'node:fs/promises';
 import { join } from '@std/path';
 import type {
   Problem,
@@ -16,6 +16,7 @@ import type {
   UserPreferences,
 } from '../../types/global.ts';
 import { createErrorContext, TemplateError } from '../../utils/errors.ts';
+import { pathExists } from '../../utils/fs.ts';
 
 /**
  * Template file kind
@@ -211,7 +212,7 @@ export async function resolveTemplatePath(
   const baseDir = getTemplatesBaseDir();
   const templatePath = join(baseDir, language, style, `${kind}.tpl`);
 
-  if (!(await exists(templatePath))) {
+  if (!(await pathExists(templatePath))) {
     throw new TemplateError(
       `Template file not found: ${kind}.tpl`,
       createErrorContext('resolveTemplatePath', {
@@ -665,7 +666,7 @@ export async function renderTemplate(
     );
 
     // Read template file
-    const templateContent = await Deno.readTextFile(templatePath);
+    const templateContent = await readFile(templatePath, 'utf8');
 
     // Build placeholder values
     const placeholderValues = buildPlaceholderValues(context);
@@ -711,7 +712,7 @@ export async function renderExtraTemplate(
     const fileName = SHARED_TEMPLATE_FILES[kind];
     const templatePath = resolveSharedTemplatePath(context.config.language, fileName);
 
-    if (!(await exists(templatePath))) {
+    if (!(await pathExists(templatePath))) {
       throw new TemplateError(
         `Shared template file not found: ${fileName}`,
         createErrorContext('renderExtraTemplate', {
@@ -722,7 +723,7 @@ export async function renderExtraTemplate(
       );
     }
 
-    const templateContent = await Deno.readTextFile(templatePath);
+    const templateContent = await readFile(templatePath, 'utf8');
     const placeholderValues = buildPlaceholderValues(context);
     const allValues = {
       ...placeholderValues,
@@ -757,7 +758,7 @@ export async function readSharedAsset(
   const fileName = SHARED_ASSET_FILES[kind];
   const assetPath = resolveSharedTemplatePath(language, fileName);
 
-  if (!(await exists(assetPath))) {
+  if (!(await pathExists(assetPath))) {
     throw new TemplateError(
       `Shared asset not found: ${fileName}`,
       createErrorContext('readSharedAsset', {
@@ -768,7 +769,7 @@ export async function readSharedAsset(
     );
   }
 
-  return await Deno.readTextFile(assetPath);
+  return await readFile(assetPath, 'utf8');
 }
 
 /**

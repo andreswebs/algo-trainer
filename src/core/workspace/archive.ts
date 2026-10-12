@@ -43,6 +43,7 @@
  * ```
  */
 
+import { readdir, rename, rm } from 'node:fs/promises';
 import { join } from '@std/path';
 import type { SupportedLanguage } from '../../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
@@ -147,7 +148,7 @@ function generateTimestampSuffix(): string {
 /**
  * Move a directory and all its contents
  *
- * This is a wrapper around Deno.rename that provides better error handling.
+ * This is a wrapper around rename that provides better error handling.
  *
  * @param from - Source directory path
  * @param to - Destination directory path
@@ -157,7 +158,7 @@ function generateTimestampSuffix(): string {
  */
 async function moveDirectory(from: string, to: string): Promise<void> {
   try {
-    await Deno.rename(from, to);
+    await rename(from, to);
   } catch (error) {
     throw new WorkspaceError(
       `Failed to move directory: ${error instanceof Error ? error.message : String(error)}`,
@@ -242,7 +243,7 @@ export async function archiveProblem(options: ArchiveProblemOptions): Promise<Ar
         );
       } else if (onCollision === 'overwrite') {
         // Remove existing archived problem
-        await Deno.remove(destinationPaths.dir, { recursive: true });
+        await rm(destinationPaths.dir, { recursive: true });
       } else {
         // onCollision === 'timestamp'
         // Add timestamp suffix to avoid collision
@@ -388,7 +389,7 @@ export async function unarchiveProblem(options: UnarchiveProblemOptions): Promis
         );
       } else if (onCollision === 'overwrite') {
         // Remove existing active problem
-        await Deno.remove(destinationPaths.dir, { recursive: true });
+        await rm(destinationPaths.dir, { recursive: true });
       } else {
         // onCollision === 'timestamp'
         // Add timestamp suffix to avoid collision
@@ -517,8 +518,8 @@ export async function listArchivedProblems(workspaceRoot: string): Promise<strin
 
     // List all directories in completed
     const entries: string[] = [];
-    for await (const entry of Deno.readDir(completedDir)) {
-      if (entry.isDirectory) {
+    for (const entry of await readdir(completedDir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
         entries.push(entry.name);
       }
     }

@@ -7,6 +7,7 @@
  * @module core/problem/parser
  */
 
+import { readFile } from 'node:fs/promises';
 import { basename } from '@std/path';
 import type { Problem, ProblemMetadata } from '../../types/global.ts';
 import { createErrorContext, ProblemError } from '../../utils/errors.ts';
@@ -24,7 +25,7 @@ export async function parseProblemFromFile(path: string): Promise<Problem> {
   let content: string;
 
   try {
-    content = await Deno.readTextFile(path);
+    content = await readFile(path, 'utf8');
   } catch (error) {
     throw new ProblemError(
       `Failed to read problem file: ${path}`,

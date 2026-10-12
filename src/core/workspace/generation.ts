@@ -39,6 +39,7 @@
  * ```
  */
 
+import { readFile } from 'node:fs/promises';
 import { join } from '@std/path';
 import type {
   Problem,
@@ -365,7 +366,7 @@ export async function getProblemMetadata(
       return null;
     }
 
-    const content = await Deno.readTextFile(paths.metadataFile);
+    const content = await readFile(paths.metadataFile, 'utf8');
     return JSON.parse(content) as ProblemWorkspaceMetadata;
   } catch (_error) {
     // If there's an error reading/parsing, return null

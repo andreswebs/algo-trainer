@@ -26,6 +26,7 @@
  * ```
  */
 
+import { stat } from 'node:fs/promises';
 import type { WorkspaceStructure } from '../../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
 import { createDirectory, pathExists } from '../../utils/fs.ts';
@@ -248,8 +249,8 @@ export async function validateWorkspace(root: string): Promise<void> {
     // and are accessible
     for (const { path, name } of directories) {
       try {
-        const stat = await Deno.stat(path);
-        if (!stat.isDirectory) {
+        const stats = await stat(path);
+        if (!stats.isDirectory()) {
           throw new WorkspaceError(
             `Workspace path exists but is not a directory: ${name}`,
             createErrorContext('validateWorkspace', {

@@ -9,6 +9,7 @@
  * @module core/problem/manager
  */
 
+import { rename } from 'node:fs/promises';
 import { join } from '@std/path';
 import type {
   Difficulty,
@@ -449,7 +450,7 @@ export class ProblemManager {
 
     try {
       await writeTextFile(tempPath, content, { ensureParents: true, overwrite: true });
-      await Deno.rename(tempPath, path);
+      await rename(tempPath, path);
     } catch (error) {
       // Clean up temp file if write or rename fails
       try {

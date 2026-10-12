@@ -7,6 +7,7 @@
  * @module cli/commands/complete
  */
 
+import { readdir } from 'node:fs/promises';
 import type { Args } from '@std/cli/parse-args';
 import { configManager } from '../../config/manager.ts';
 import { archiveProblem, ProblemManager, problemExists } from '../../core/mod.ts';
@@ -102,8 +103,8 @@ export async function resolveTargetProblem(
 
   const entries: string[] = [];
   try {
-    for await (const entry of Deno.readDir(structure.problems)) {
-      if (entry.isDirectory) {
+    for (const entry of await readdir(structure.problems, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
         entries.push(entry.name);
       }
     }
