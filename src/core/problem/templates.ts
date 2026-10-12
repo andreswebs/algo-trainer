@@ -9,6 +9,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { join } from '@std/path';
+import { getDataRoot } from '../../config/paths.ts';
 import type {
   Problem,
   SupportedLanguage,
@@ -172,10 +173,7 @@ function getFileExtension(language: SupportedLanguage): string {
  * Get the base templates directory path
  */
 function getTemplatesBaseDir(): string {
-  // Templates are in src/data/templates
-  // From src/core/problem/ we need to go up two levels to src/, then into data/templates
-  const moduleDir = new URL('.', import.meta.url).pathname;
-  return join(moduleDir, '../../data/templates');
+  return join(getDataRoot(), 'templates');
 }
 
 /**

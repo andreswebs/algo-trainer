@@ -6,12 +6,22 @@
  * @module config/paths
  */
 
+import { fileURLToPath } from 'node:url';
 import { getAppPaths, joinPath } from '../utils/fs.ts';
 
 /**
  * Application name for configuration paths
  */
 export const APP_NAME = 'algo-trainer';
+
+/**
+ * Get the directory holding the bundled data (templates and teaching scripts).
+ *
+ * Resolved relative to this module, so it must stay one directory below `src/`.
+ */
+export function getDataRoot(): string {
+  return fileURLToPath(new URL('../data', import.meta.url));
+}
 
 /**
  * Get all application-specific paths

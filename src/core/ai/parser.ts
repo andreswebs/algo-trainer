@@ -8,9 +8,9 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { dirname, fromFileUrl, join } from '@std/path';
+import { join } from '@std/path';
 import { parse as parseYaml } from '@std/yaml';
-import { getConfigPaths } from '../../config/paths.ts';
+import { getConfigPaths, getDataRoot } from '../../config/paths.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';
 import type { TeachingScript } from './types.ts';
@@ -316,11 +316,7 @@ export async function findTeachingScript(problemSlug: string): Promise<string | 
   }
 
   // 2. Check built-in scripts
-  // Get the directory where this module is located
-  const moduleDir = dirname(fromFileUrl(import.meta.url));
-  // Go up to src directory: src/core/ai -> src
-  const srcDir = join(moduleDir, '..', '..');
-  const builtinScriptPath = join(srcDir, 'data', 'scripts', problemSlug, 'trainer.yaml');
+  const builtinScriptPath = join(getDataRoot(), 'scripts', problemSlug, 'trainer.yaml');
 
   if (await pathExists(builtinScriptPath)) {
     return builtinScriptPath;
