@@ -10,6 +10,8 @@
  *   deno run --allow-read --allow-write scripts/generate-problems.ts
  */
 
+import { spawnSync } from 'node:child_process';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { logger } from '../src/utils/output.ts';
 
@@ -26,10 +28,10 @@ async function main() {
 
   // Read all JSON files from problems directory
   const problems: ProblemFile[] = [];
-  for await (const entry of Deno.readDir(PROBLEMS_DIR)) {
-    if (entry.isFile && entry.name.endsWith('.json')) {
+  for (const entry of await readdir(PROBLEMS_DIR, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith('.json')) {
       const path = join(PROBLEMS_DIR, entry.name);
-      const content = await Deno.readTextFile(path);
+      const content = await readFile(path, 'utf8');
       problems.push({ filename: entry.name, content });
       logger.debug(`Found: ${entry.name}`);
     }
@@ -85,19 +87,18 @@ async function main() {
   const output = lines.join('\n');
 
   // Write the generated file
-  await Deno.writeTextFile(OUTPUT_FILE, output);
+  await writeFile(OUTPUT_FILE, output);
 
   // Format the output so `deno task fmt:check` is stable after generation.
-  const fmt = new Deno.Command('bunx', {
-    args: ['@biomejs/biome@2.5.15', 'format', '--write', OUTPUT_FILE],
-    stdout: 'null',
-    stderr: 'piped',
+  const result = spawnSync('bunx', ['@biomejs/biome@2.5.15', 'format', '--write', OUTPUT_FILE], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+    encoding: 'utf8',
   });
-  const result = await fmt.output();
-  if (!result.success) {
-    throw new Error(
-      `Formatting ${OUTPUT_FILE} failed: ${new TextDecoder().decode(result.stderr).trim()}`,
-    );
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(`Formatting ${OUTPUT_FILE} failed: ${result.stderr.trim()}`);
   }
 
   logger.success(`Generated ${OUTPUT_FILE}`);
@@ -107,6 +108,6 @@ async function main() {
 if (import.meta.main) {
   main().catch((error) => {
     logger.error('Failed to generate problems', String(error));
-    Deno.exit(1);
+    process.exit(1);
   });
 }
