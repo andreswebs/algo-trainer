@@ -164,13 +164,12 @@
  * @module core/ai
  */
 
+export type { ScriptInfo } from './engine.ts';
 // Core engine
 export { TeachingEngine } from './engine.ts';
-export type { ScriptInfo } from './engine.ts';
-
-// Session management
-export { TeachingSession } from './session.ts';
-
+export type { ScriptGeneratorOptions, ScriptTemplate, ScriptTemplateType } from './generator.ts';
+// Generator
+export { TeachingScriptGenerator } from './generator.ts';
 // Parser and validator
 export {
   findScriptPath,
@@ -179,14 +178,10 @@ export {
   loadTeachingScript,
   parseTeachingScript,
 } from './parser.ts';
-export { isValidTeachingScript, validateTeachingScript } from './validator.ts';
-
+// Session management
+export { TeachingSession } from './session.ts';
 // Trigger evaluator
 export { evaluateTrigger } from './triggers.ts';
-
-// Generator
-export { TeachingScriptGenerator } from './generator.ts';
-export type { ScriptGeneratorOptions, ScriptTemplate, ScriptTemplateType } from './generator.ts';
-
 // Types
 export * from './types.ts';
+export { isValidTeachingScript, validateTeachingScript } from './validator.ts';

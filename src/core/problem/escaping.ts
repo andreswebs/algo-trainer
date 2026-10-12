@@ -70,9 +70,7 @@ export function escapeForSingleLineComment(value: string): string {
  * escapeForSingleQuotedString("Two Sum', evil(), '") // Returns "Two Sum\\', evil(), \\'"
  */
 export function escapeForSingleQuotedString(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "\\'");
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 /**
@@ -87,9 +85,7 @@ export function escapeForSingleQuotedString(value: string): string {
  * escapeForDoubleQuotedString('Two Sum", evil(), "') // Returns 'Two Sum\\", evil(), \\"'
  */
 export function escapeForDoubleQuotedString(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"');
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 /**
@@ -104,10 +100,7 @@ export function escapeForDoubleQuotedString(value: string): string {
  * escapeForTemplateLiteral('Sum: ${evil()}') // Returns 'Sum: \\${evil()}'
  */
 export function escapeForTemplateLiteral(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/`/g, '\\`')
-    .replace(/\$\{/g, '\\${');
+  return value.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 }
 
 /**

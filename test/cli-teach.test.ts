@@ -3,13 +3,13 @@
  */
 
 import { assertEquals } from '@std/assert';
+import type { Args } from '@std/cli/parse-args';
+import { ensureDir } from '@std/fs';
+import { join } from '@std/path';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { extractTeachOptions, teachCommand } from '../src/cli/commands/teach.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { initializeConfig } from '../src/config/manager.ts';
-import type { Args } from '@std/cli/parse-args';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
 
 describe('extractTeachOptions', () => {
   it('should extract generate subcommand with slug', () => {

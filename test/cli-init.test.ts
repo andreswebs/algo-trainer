@@ -5,11 +5,11 @@
  */
 
 import { assertEquals } from '@std/assert';
+import type { Args } from '@std/cli/parse-args';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { extractInitOptions, initCommand } from '../src/cli/commands/init.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { isWorkspaceInitialized } from '../src/core/mod.ts';
-import type { Args } from '@std/cli/parse-args';
 
 describe('extractInitOptions', () => {
   it('should extract path from positional args', () => {
@@ -189,10 +189,7 @@ describe('initCommand', () => {
     };
 
     // Add some existing files to make the directory non-empty
-    await Deno.writeTextFile(
-      `${tempDir}/existing-file.txt`,
-      'This is an existing file',
-    );
+    await Deno.writeTextFile(`${tempDir}/existing-file.txt`, 'This is an existing file');
     await Deno.mkdir(`${tempDir}/existing-folder`, { recursive: true });
     await Deno.writeTextFile(
       `${tempDir}/existing-folder/another-file.js`,
@@ -209,9 +206,7 @@ describe('initCommand', () => {
     assertEquals(initialized, true);
 
     // Verify existing files are still there
-    const existingFile = await Deno.readTextFile(
-      `${tempDir}/existing-file.txt`,
-    );
+    const existingFile = await Deno.readTextFile(`${tempDir}/existing-file.txt`);
     assertEquals(existingFile, 'This is an existing file');
 
     const existingFolderFile = await Deno.readTextFile(

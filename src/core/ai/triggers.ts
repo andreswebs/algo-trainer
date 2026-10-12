@@ -21,9 +21,9 @@
  * @module core/ai/triggers
  */
 
-import type { TriggerContext } from './types.ts';
 import { TriggerError } from '../../utils/errors.ts';
 import { logger } from '../../utils/output.ts';
+import type { TriggerContext } from './types.ts';
 
 /**
  * Evaluate a trigger expression against a context.
@@ -50,10 +50,7 @@ import { logger } from '../../utils/output.ts';
  * evaluateTrigger('passed === false && attempts > 1', context); // true
  * ```
  */
-export function evaluateTrigger(
-  trigger: string,
-  context: TriggerContext,
-): boolean {
+export function evaluateTrigger(trigger: string, context: TriggerContext): boolean {
   try {
     // Validate input
     if (!trigger || typeof trigger !== 'string') {
@@ -160,7 +157,8 @@ function splitByOperator(expr: string, operator: string): string[] {
 
     // Check for operator at depth 0 and outside strings
     if (
-      !inString && depth === 0 &&
+      !inString &&
+      depth === 0 &&
       char === operator[0] &&
       expr.slice(i, i + operator.length) === operator
     ) {
@@ -180,10 +178,7 @@ function splitByOperator(expr: string, operator: string): string[] {
 /**
  * Evaluate a value expression (variable, literal, or method call)
  */
-function evaluateValue(
-  expr: string,
-  context: TriggerContext,
-): string | number | boolean {
+function evaluateValue(expr: string, context: TriggerContext): string | number | boolean {
   // Handle literals
   if (expr === 'true') return true;
   if (expr === 'false') return false;
@@ -220,10 +215,7 @@ function evaluateValue(
 /**
  * Evaluate a method call expression
  */
-function evaluateMethodCall(
-  expr: string,
-  context: TriggerContext,
-): string | number | boolean {
+function evaluateMethodCall(expr: string, context: TriggerContext): string | number | boolean {
   // Parse variable.method(args) or variable.property
   const dotIndex = expr.indexOf('.');
   if (dotIndex === -1) {
@@ -354,9 +346,7 @@ function executeStringMethod(
 
     case 'startsWith':
       if (args.length !== 1 || typeof args[0] !== 'string') {
-        throw new TriggerError(
-          'startsWith() requires exactly one string argument',
-        );
+        throw new TriggerError('startsWith() requires exactly one string argument');
       }
       return value.startsWith(args[0]);
 

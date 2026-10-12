@@ -4,14 +4,13 @@
  * @module tests/ai/engine
  */
 
-import { assertEquals, assertExists } from '@std/assert';
-import { assertRejects } from '@std/assert';
+import { assertEquals, assertExists, assertRejects } from '@std/assert';
+import { ensureDir } from '@std/fs';
+import { join } from '@std/path';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { TeachingEngine } from '../../src/core/ai/engine.ts';
 import { TeachingSession } from '../../src/core/ai/session.ts';
 import type { ExecutionResult } from '../../src/core/ai/types.ts';
-import { join } from '@std/path';
-import { ensureDir } from '@std/fs';
 import { TeachingError } from '../../src/utils/errors.ts';
 
 // Test fixture directory
@@ -102,10 +101,7 @@ steps: []
 `;
       await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), invalidScript);
 
-      await assertRejects(
-        async () => await engine.loadScript(testProblemDir),
-        TeachingError,
-      );
+      await assertRejects(async () => await engine.loadScript(testProblemDir), TeachingError);
     });
   });
 

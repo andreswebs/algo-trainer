@@ -6,7 +6,6 @@
 
 import { assertEquals, assertExists, assertThrows } from '@std/assert';
 import { join, resolve } from '@std/path';
-import type { SupportedLanguage } from '../src/types/global.ts';
 import {
   clearWorkspacePathCache,
   getArchivedProblemPaths,
@@ -19,6 +18,7 @@ import {
   WORKSPACE_RULES,
   type WorkspacePathConfig,
 } from '../src/core/workspace/mod.ts';
+import type { SupportedLanguage } from '../src/types/global.ts';
 import { ValidationError } from '../src/utils/errors.ts';
 
 // =============================================================================
@@ -69,20 +69,12 @@ Deno.test('getWorkspacePaths - caches results for same root', () => {
 
 Deno.test('getWorkspacePaths - throws ValidationError for empty string', () => {
   setupTest();
-  assertThrows(
-    () => getWorkspacePaths(''),
-    ValidationError,
-    'Root directory cannot be empty',
-  );
+  assertThrows(() => getWorkspacePaths(''), ValidationError, 'Root directory cannot be empty');
 });
 
 Deno.test('getWorkspacePaths - throws ValidationError for whitespace-only string', () => {
   setupTest();
-  assertThrows(
-    () => getWorkspacePaths('   '),
-    ValidationError,
-    'Root directory cannot be empty',
-  );
+  assertThrows(() => getWorkspacePaths('   '), ValidationError, 'Root directory cannot be empty');
 });
 
 Deno.test('getWorkspacePaths - throws ValidationError for non-string input', () => {
@@ -97,11 +89,7 @@ Deno.test('getWorkspacePaths - throws ValidationError for non-string input', () 
 
 Deno.test('getWorkspacePaths - throws ValidationError for null bytes', () => {
   setupTest();
-  assertThrows(
-    () => getWorkspacePaths('/home/user\0/workspace'),
-    ValidationError,
-    'null bytes',
-  );
+  assertThrows(() => getWorkspacePaths('/home/user\0/workspace'), ValidationError, 'null bytes');
 });
 
 Deno.test('getWorkspacePaths - throws ValidationError for path traversal', () => {
@@ -267,11 +255,7 @@ Deno.test('getProblemPaths - throws ValidationError for empty slug', () => {
     language: 'typescript',
   };
 
-  assertThrows(
-    () => getProblemPaths(config, ''),
-    ValidationError,
-    'Problem slug cannot be empty',
-  );
+  assertThrows(() => getProblemPaths(config, ''), ValidationError, 'Problem slug cannot be empty');
 });
 
 Deno.test('getProblemPaths - throws ValidationError for slug with path separators', () => {
@@ -301,11 +285,7 @@ Deno.test('getProblemPaths - throws ValidationError for slug with path traversal
     language: 'typescript',
   };
 
-  assertThrows(
-    () => getProblemPaths(config, '../etc'),
-    ValidationError,
-    'invalid path characters',
-  );
+  assertThrows(() => getProblemPaths(config, '../etc'), ValidationError, 'invalid path characters');
 });
 
 Deno.test('getProblemPaths - throws ValidationError for invalid slug format', () => {
@@ -316,18 +296,10 @@ Deno.test('getProblemPaths - throws ValidationError for invalid slug format', ()
   };
 
   // Upper case not allowed
-  assertThrows(
-    () => getProblemPaths(config, 'Two-Sum'),
-    ValidationError,
-    'kebab-case',
-  );
+  assertThrows(() => getProblemPaths(config, 'Two-Sum'), ValidationError, 'kebab-case');
 
   // Underscore not allowed
-  assertThrows(
-    () => getProblemPaths(config, 'two_sum'),
-    ValidationError,
-    'kebab-case',
-  );
+  assertThrows(() => getProblemPaths(config, 'two_sum'), ValidationError, 'kebab-case');
 });
 
 Deno.test('getProblemPaths - throws ValidationError for slug with null bytes', () => {
@@ -337,11 +309,7 @@ Deno.test('getProblemPaths - throws ValidationError for slug with null bytes', (
     language: 'typescript',
   };
 
-  assertThrows(
-    () => getProblemPaths(config, 'two\0sum'),
-    ValidationError,
-    'null bytes',
-  );
+  assertThrows(() => getProblemPaths(config, 'two\0sum'), ValidationError, 'null bytes');
 });
 
 Deno.test('getProblemPaths - throws ValidationError for slug over 100 characters', () => {
@@ -439,10 +407,7 @@ Deno.test('isPathInWorkspace - returns false for paths outside workspace', () =>
 
 Deno.test('isPathInWorkspace - returns false for path traversal attempts', () => {
   const workspace = '/home/user/workspace';
-  const testCases = [
-    '/home/user/workspace/../etc',
-    '/home/user/workspace/problems/../../other',
-  ];
+  const testCases = ['/home/user/workspace/../etc', '/home/user/workspace/problems/../../other'];
 
   for (const testPath of testCases) {
     const result = isPathInWorkspace(workspace, testPath);

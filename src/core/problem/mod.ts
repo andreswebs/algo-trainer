@@ -62,9 +62,9 @@
  * @module core/problem
  */
 
-export * from './types.ts';
-export * from './escaping.ts';
-export * from './parser.ts';
 export * from './database.ts';
+export * from './escaping.ts';
 export * from './manager.ts';
+export * from './parser.ts';
 export { renderAllTemplates, renderTemplate } from './templates.ts';
+export * from './types.ts';

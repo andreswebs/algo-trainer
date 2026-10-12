@@ -461,10 +461,7 @@ export function createWorkspaceWatcher(
   options?: Partial<FileWatcherOptions>,
 ): FileWatcher {
   // Watch both problems and templates directories
-  const paths = [
-    join(workspaceRoot, 'problems'),
-    join(workspaceRoot, 'templates'),
-  ];
+  const paths = [join(workspaceRoot, 'problems'), join(workspaceRoot, 'templates')];
 
   return new FileWatcher(paths, options);
 }

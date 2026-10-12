@@ -14,18 +14,18 @@
  */
 
 import { assertEquals, assertExists, assertStringIncludes } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
-import { initCommand } from '../../src/cli/commands/init.ts';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { challengeCommand } from '../../src/cli/commands/challenge.ts';
 import { completeCommand } from '../../src/cli/commands/complete.ts';
 import { configCommand } from '../../src/cli/commands/config.ts';
+import { initCommand } from '../../src/cli/commands/init.ts';
 import { progressCommand } from '../../src/cli/commands/progress.ts';
-import { configManager } from '../../src/config/manager.ts';
 import { ENV_VARS } from '../../src/cli/env.ts';
 import { ExitCode } from '../../src/cli/exit-codes.ts';
+import { configManager } from '../../src/config/manager.ts';
 import { problemExists } from '../../src/core/mod.ts';
-import type { Args } from '@std/cli/parse-args';
 
 // Store original console methods
 const originalConsoleError = console.error;
@@ -407,11 +407,7 @@ describe('E2E Workflow Tests - CLI-052', () => {
 
       // Should fail with appropriate error
       assertEquals(result.success, false, 'Should fail for non-existent problem');
-      assertEquals(
-        result.exitCode !== ExitCode.SUCCESS,
-        true,
-        'Should have error exit code',
-      );
+      assertEquals(result.exitCode !== ExitCode.SUCCESS, true, 'Should have error exit code');
 
       const output = getCapturedOutput();
       assertStringIncludes(output.toLowerCase(), 'not found');
@@ -463,11 +459,7 @@ describe('E2E Workflow Tests - CLI-052', () => {
 
       // Should fail with appropriate error
       assertEquals(result.success, false, 'Should fail for invalid language');
-      assertEquals(
-        result.exitCode !== ExitCode.SUCCESS,
-        true,
-        'Should have error exit code',
-      );
+      assertEquals(result.exitCode !== ExitCode.SUCCESS, true, 'Should have error exit code');
 
       const output = getCapturedOutput();
       assertStringIncludes(output.toLowerCase(), 'invalid');
@@ -496,11 +488,7 @@ describe('E2E Workflow Tests - CLI-052', () => {
 
       // Result should either succeed if it found a problem or fail appropriately
       if (!result.success) {
-        assertStringIncludes(
-          output.toLowerCase(),
-          'problem',
-          'Error should mention problem',
-        );
+        assertStringIncludes(output.toLowerCase(), 'problem', 'Error should mention problem');
       }
     });
 

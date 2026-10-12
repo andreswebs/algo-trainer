@@ -5,8 +5,8 @@
  */
 
 import { assertEquals, assertRejects } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { join } from '@std/path';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import {
   confirmAction,
   formatProblemSummary,
@@ -14,10 +14,10 @@ import {
   requireWorkspace,
   resolveProblem,
 } from '../src/cli/commands/shared.ts';
-import { initWorkspace } from '../src/core/mod.ts';
 import { configManager } from '../src/config/manager.ts';
-import { WorkspaceError } from '../src/utils/errors.ts';
+import { initWorkspace } from '../src/core/mod.ts';
 import type { Problem } from '../src/types/global.ts';
+import { WorkspaceError } from '../src/utils/errors.ts';
 
 describe('requireWorkspace', () => {
   let tempDir: string;
@@ -63,12 +63,9 @@ describe('requireWorkspace', () => {
   it('should throw WorkspaceError for non-existent directory', async () => {
     const nonExistentPath = join(tempDir, 'does-not-exist');
 
-    await assertRejects(
-      async () => {
-        await requireWorkspace(nonExistentPath);
-      },
-      WorkspaceError,
-    );
+    await assertRejects(async () => {
+      await requireWorkspace(nonExistentPath);
+    }, WorkspaceError);
   });
 
   describe('with no workspace configured', () => {

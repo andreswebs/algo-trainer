@@ -7,14 +7,13 @@
  * @module core/ai/parser
  */
 
+import { dirname, fromFileUrl, join } from '@std/path';
 import { parse as parseYaml } from '@std/yaml';
-import { join } from '@std/path';
-import type { TeachingScript } from './types.ts';
+import { getConfigPaths } from '../../config/paths.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';
+import type { TeachingScript } from './types.ts';
 import { validateTeachingScript } from './validator.ts';
-import { getConfigPaths } from '../../config/paths.ts';
-import { dirname, fromFileUrl } from '@std/path';
 
 /**
  * Parses a YAML string into a TeachingScript object.
@@ -172,9 +171,7 @@ export function parseTeachingScript(yamlContent: string): TeachingScript {
  * }
  * ```
  */
-export async function loadTeachingScript(
-  filePath: string,
-): Promise<TeachingScript | null> {
+export async function loadTeachingScript(filePath: string): Promise<TeachingScript | null> {
   // Check if file exists
   const fileExists = await pathExists(filePath);
 
@@ -239,9 +236,7 @@ export async function loadTeachingScript(
  * }
  * ```
  */
-export async function loadAndValidateScript(
-  filePath: string,
-): Promise<TeachingScript | null> {
+export async function loadAndValidateScript(filePath: string): Promise<TeachingScript | null> {
   // First, try to load the script (returns null if not found)
   const script = await loadTeachingScript(filePath);
 
@@ -282,9 +277,7 @@ export async function loadAndValidateScript(
  * }
  * ```
  */
-export async function findScriptPath(
-  problemPath: string,
-): Promise<string | null> {
+export async function findScriptPath(problemPath: string): Promise<string | null> {
   const trainerYamlPath = join(problemPath, 'trainer.yaml');
 
   const fileExists = await pathExists(trainerYamlPath);
@@ -312,9 +305,7 @@ export async function findScriptPath(
  * }
  * ```
  */
-export async function findTeachingScript(
-  problemSlug: string,
-): Promise<string | null> {
+export async function findTeachingScript(problemSlug: string): Promise<string | null> {
   // 1. Check user custom scripts first (allows overriding built-in scripts)
   const paths = getConfigPaths();
   const userScriptPath = join(paths.data, 'scripts', problemSlug, 'trainer.yaml');

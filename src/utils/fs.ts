@@ -6,10 +6,10 @@
  * @module utils/fs
  */
 
-import { dirname, join } from '@std/path';
 import { ensureDir, exists } from '@std/fs';
-import { createErrorContext, FileSystemError } from './errors.ts';
+import { dirname, join } from '@std/path';
 import type { FileOperationResult } from '../types/global.ts';
+import { createErrorContext, FileSystemError } from './errors.ts';
 
 /**
  * File operation options
@@ -55,9 +55,7 @@ function getXdgPaths(): XdgPaths {
     cacheHome: Deno.env.get('XDG_CACHE_HOME') || join(home, '.cache'),
     stateHome: Deno.env.get('XDG_STATE_HOME') || join(home, '.local', 'state'),
     configDirs: (Deno.env.get('XDG_CONFIG_DIRS') || '/etc/xdg').split(':'),
-    dataDirs: (
-      Deno.env.get('XDG_DATA_DIRS') || '/usr/local/share:/usr/share'
-    ).split(':'),
+    dataDirs: (Deno.env.get('XDG_DATA_DIRS') || '/usr/local/share:/usr/share').split(':'),
   };
 }
 
@@ -183,9 +181,7 @@ export async function writeJsonFile<T>(
 /**
  * Create directory with parents
  */
-export async function createDirectory(
-  path: string,
-): Promise<FileOperationResult> {
+export async function createDirectory(path: string): Promise<FileOperationResult> {
   try {
     await ensureDir(path);
     return {
@@ -208,9 +204,8 @@ export async function remove(
   options: { recursive?: boolean } = {},
 ): Promise<FileOperationResult> {
   try {
-    const removeOptions = options.recursive !== undefined
-      ? { recursive: options.recursive }
-      : undefined;
+    const removeOptions =
+      options.recursive !== undefined ? { recursive: options.recursive } : undefined;
     await Deno.remove(path, removeOptions);
     return {
       success: true,

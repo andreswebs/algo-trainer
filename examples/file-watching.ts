@@ -9,8 +9,8 @@
  */
 
 import { join } from '@std/path';
-import { createWorkspaceWatcher } from '../src/core/workspace/watcher.ts';
 import { initWorkspace } from '../src/core/workspace/manager.ts';
+import { createWorkspaceWatcher } from '../src/core/workspace/watcher.ts';
 
 // Create a temporary workspace for this demo
 const tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-demo-' });

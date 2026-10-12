@@ -150,11 +150,7 @@ export interface WorkspaceStructure {
 /**
  * Problem completion status
  */
-export type ProblemStatus =
-  | 'not-started'
-  | 'in-progress'
-  | 'completed'
-  | 'archived';
+export type ProblemStatus = 'not-started' | 'in-progress' | 'completed' | 'archived';
 
 /**
  * User's progress on a problem

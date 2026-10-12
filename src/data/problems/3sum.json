@@ -19,10 +19,7 @@
       "output": [[0, 0, 0]]
     }
   ],
-  "constraints": [
-    "3 <= nums.length <= 3000",
-    "-10^5 <= nums[i] <= 10^5"
-  ],
+  "constraints": ["3 <= nums.length <= 3000", "-10^5 <= nums[i] <= 10^5"],
   "hints": [
     "Sort the array first. This makes it easier to skip duplicates and use two pointers.",
     "For each element, use two pointers to find pairs that sum to the negative of that element.",

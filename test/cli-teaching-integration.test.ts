@@ -5,11 +5,11 @@
  */
 
 import { assertEquals, assertExists } from '@std/assert';
+import { ensureDir } from '@std/fs';
+import { join } from '@std/path';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { initializeConfig } from '../src/config/manager.ts';
 import { TeachingEngine, TeachingSession } from '../src/core/ai/mod.ts';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
 
 describe('CLI Teaching System Integration', () => {
   const tempDir = '/tmp/cli-teaching-integration-test';

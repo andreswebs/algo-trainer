@@ -7,8 +7,8 @@
  * @module core/problem/templates
  */
 
-import { join } from '@std/path';
 import { exists } from '@std/fs';
+import { join } from '@std/path';
 import type {
   Problem,
   SupportedLanguage,
@@ -74,9 +74,7 @@ const CPP_SCAFFOLDING: LanguageScaffolding = {
  * the leetcode-driver-style harness (no separate test file; per-problem CMake
  * + input.txt + vendored leetcode.hpp).
  */
-export function getLanguageScaffolding(
-  language: SupportedLanguage,
-): LanguageScaffolding {
+export function getLanguageScaffolding(language: SupportedLanguage): LanguageScaffolding {
   switch (language) {
     case 'cpp':
       return CPP_SCAFFOLDING;
@@ -185,10 +183,7 @@ function getTemplatesBaseDir(): string {
  * Used for files that are not style-specific (e.g. CMakeLists.txt, input.txt,
  * leetcode.hpp for cpp). Does NOT validate existence — callers handle that.
  */
-export function resolveSharedTemplatePath(
-  language: SupportedLanguage,
-  fileName: string,
-): string {
+export function resolveSharedTemplatePath(language: SupportedLanguage, fileName: string): string {
   return join(getTemplatesBaseDir(), language, '_shared', fileName);
 }
 
@@ -270,10 +265,13 @@ export function slugToClassName(slug: string): string {
         const remainder = word.slice(digits.length);
 
         // Convert each digit to a word and capitalize all
-        const convertedDigits = digits.split('').map((d) => {
-          const digitWord = digitWords[Number.parseInt(d, 10)];
-          return digitWord.charAt(0).toUpperCase() + digitWord.slice(1);
-        }).join('');
+        const convertedDigits = digits
+          .split('')
+          .map((d) => {
+            const digitWord = digitWords[Number.parseInt(d, 10)];
+            return digitWord.charAt(0).toUpperCase() + digitWord.slice(1);
+          })
+          .join('');
 
         // Capitalize the first letter of the remainder if it exists
         const capitalizedRemainder = remainder
@@ -328,14 +326,17 @@ export function slugToFunctionName(slug: string): string {
         const remainder = word.slice(digits.length);
 
         // Convert each digit to a word
-        const convertedDigits = digits.split('').map((d, digitIndex) => {
-          const digitWord = digitWords[parseInt(d, 10)];
-          // Capitalize each digit word except the very first one
-          const shouldCapitalize = !(wordIndex === 0 && digitIndex === 0);
-          return shouldCapitalize
-            ? digitWord.charAt(0).toUpperCase() + digitWord.slice(1)
-            : digitWord;
-        }).join('');
+        const convertedDigits = digits
+          .split('')
+          .map((d, digitIndex) => {
+            const digitWord = digitWords[parseInt(d, 10)];
+            // Capitalize each digit word except the very first one
+            const shouldCapitalize = !(wordIndex === 0 && digitIndex === 0);
+            return shouldCapitalize
+              ? digitWord.charAt(0).toUpperCase() + digitWord.slice(1)
+              : digitWord;
+          })
+          .join('');
 
         // Capitalize the first letter of the remainder if it exists
         const capitalizedRemainder = remainder
@@ -518,9 +519,7 @@ export function formatExamplesAsLCOutput(problem: Problem): string {
   if (!problem.examples || problem.examples.length === 0) {
     return '';
   }
-  return problem.examples
-    .map((ex) => formatLCValue(ex.output))
-    .join('\n---\n');
+  return problem.examples.map((ex) => formatLCValue(ex.output)).join('\n---\n');
 }
 
 /**
@@ -530,10 +529,7 @@ export function formatExamplesAsLCOutput(problem: Problem): string {
  * present. Falls back to a TODO placeholder so the rendered template at
  * least compiles after the user fills in the declaration.
  */
-export function resolveSignature(
-  problem: Problem,
-  language: SupportedLanguage,
-): string {
+export function resolveSignature(problem: Problem, language: SupportedLanguage): string {
   const sig = problem.signatures?.[language]?.trim();
   if (sig) {
     return sig;
@@ -785,18 +781,14 @@ export async function readSharedAsset(
  *
  * @throws {TemplateError} If any template fails to render
  */
-export async function renderAllTemplates(
-  context: TemplateContext,
-): Promise<{
+export async function renderAllTemplates(context: TemplateContext): Promise<{
   solution: string;
   test?: string;
   readme: string;
 }> {
   const scaffolding = getLanguageScaffolding(context.config.language);
 
-  const renderIfPresent = async (
-    kind: TemplateKind,
-  ): Promise<string | undefined> => {
+  const renderIfPresent = async (kind: TemplateKind): Promise<string | undefined> => {
     if (!scaffolding.templates.includes(kind)) return undefined;
     return await renderTemplate(context, kind);
   };

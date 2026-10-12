@@ -27,10 +27,7 @@ const goldenTestProblem: Problem = {
       explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].',
     },
   ],
-  constraints: [
-    '2 <= nums.length <= 10^4',
-    '-10^9 <= nums[i] <= 10^9',
-  ],
+  constraints: ['2 <= nums.length <= 10^4', '-10^9 <= nums[i] <= 10^9'],
   hints: ['Use a hash map to store values you have seen.'],
   tags: ['array', 'hash-table'],
   companies: ['Amazon', 'Google'],
@@ -38,10 +35,7 @@ const goldenTestProblem: Problem = {
 };
 
 // Fixtures directory path
-const fixturesDir = join(
-  new URL('.', import.meta.url).pathname,
-  '../../fixtures/templates/golden',
-);
+const fixturesDir = join(new URL('.', import.meta.url).pathname, '../../fixtures/templates/golden');
 
 /**
  * Load golden output file
@@ -69,11 +63,7 @@ Deno.test('golden output - TypeScript minimal solution template', async () => {
   const rendered = await renderTemplate(context, 'solution');
   const golden = await loadGoldenFile('solution.golden.txt');
 
-  assertEquals(
-    rendered,
-    golden,
-    'Rendered solution template should match golden output',
-  );
+  assertEquals(rendered, golden, 'Rendered solution template should match golden output');
 });
 
 Deno.test('golden output - TypeScript minimal test template', async () => {
@@ -94,11 +84,7 @@ Deno.test('golden output - TypeScript minimal test template', async () => {
   const rendered = await renderTemplate(context, 'test');
   const golden = await loadGoldenFile('test.golden.txt');
 
-  assertEquals(
-    rendered,
-    golden,
-    'Rendered test template should match golden output',
-  );
+  assertEquals(rendered, golden, 'Rendered test template should match golden output');
 });
 
 Deno.test('golden output - TypeScript minimal readme template', async () => {
@@ -119,9 +105,5 @@ Deno.test('golden output - TypeScript minimal readme template', async () => {
   const rendered = await renderTemplate(context, 'readme');
   const golden = await loadGoldenFile('readme.golden.txt');
 
-  assertEquals(
-    rendered,
-    golden,
-    'Rendered readme template should match golden output',
-  );
+  assertEquals(rendered, golden, 'Rendered readme template should match golden output');
 });

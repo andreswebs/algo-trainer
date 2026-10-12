@@ -7,11 +7,11 @@
 import { assertEquals, assertRejects, assertThrows } from '@std/assert';
 import { join } from '@std/path';
 import { ProblemManager } from '../src/core/problem/manager.ts';
-import { ProblemError } from '../src/utils/errors.ts';
-import type { RawProblemJson } from '../src/core/problem/types.ts';
 import { normalizeProblem } from '../src/core/problem/parser.ts';
-import { pathExists } from '../src/utils/fs.ts';
+import type { RawProblemJson } from '../src/core/problem/types.ts';
 import type { Problem } from '../src/types/global.ts';
+import { ProblemError } from '../src/utils/errors.ts';
+import { pathExists } from '../src/utils/fs.ts';
 
 const PROBLEM_1: RawProblemJson = {
   id: '1',
@@ -64,9 +64,7 @@ const PROBLEM_3: RawProblemJson = {
 };
 
 // Helper to create test directories
-async function createTestProblemsDirectory(
-  problems: RawProblemJson[],
-): Promise<string> {
+async function createTestProblemsDirectory(problems: RawProblemJson[]): Promise<string> {
   const tempDir = await Deno.makeTempDir({ prefix: 'manager-test-builtin-' });
 
   for (const problem of problems) {

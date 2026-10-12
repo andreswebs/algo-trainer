@@ -136,9 +136,7 @@ export async function promptSelect<T extends string>(
   for (let i = 0; i < options.length; i++) {
     const isDefault = options[i] === defaultValue;
     const marker = isDefault ? ' (default)' : '';
-    await Deno.stderr.write(
-      new TextEncoder().encode(`  ${i + 1}. ${options[i]}${marker}\n`),
-    );
+    await Deno.stderr.write(new TextEncoder().encode(`  ${i + 1}. ${options[i]}${marker}\n`));
   }
 
   while (true) {
@@ -171,9 +169,7 @@ export async function promptSelect<T extends string>(
     }
 
     // Try to match as option text (case-insensitive)
-    const matchedOption = options.find(
-      (opt) => opt.toLowerCase() === input.toLowerCase(),
-    );
+    const matchedOption = options.find((opt) => opt.toLowerCase() === input.toLowerCase());
     if (matchedOption) {
       return matchedOption;
     }
@@ -206,10 +202,7 @@ export async function promptSelect<T extends string>(
  * }
  * ```
  */
-export async function promptConfirm(
-  message: string,
-  defaultValue = false,
-): Promise<boolean> {
+export async function promptConfirm(message: string, defaultValue = false): Promise<boolean> {
   // Check if interactive
   if (!isInteractive()) {
     return defaultValue;
@@ -268,9 +261,7 @@ export async function promptConfirm(
  * console.log(`Selected difficulty: ${difficulty}`);
  * ```
  */
-export async function promptDifficulty(
-  defaultValue?: Difficulty,
-): Promise<Difficulty | null> {
+export async function promptDifficulty(defaultValue?: Difficulty): Promise<Difficulty | null> {
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
 
   return await promptSelect<Difficulty>(

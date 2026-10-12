@@ -6,8 +6,8 @@
 
 import { assertEquals, assertExists } from '@std/assert';
 import { describe, it } from '@std/testing/bdd';
-import type { ExecutionResult } from '../../src/core/ai/types.ts';
 import { TeachingSession } from '../../src/core/ai/session.ts';
+import type { ExecutionResult } from '../../src/core/ai/types.ts';
 
 describe('TeachingSession', () => {
   describe('constructor', () => {

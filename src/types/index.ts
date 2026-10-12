@@ -6,8 +6,7 @@
  * @module types
  */
 
-// Re-export all global types
-export * from './global.ts';
-
 // Re-export external API types
 export * from './external.ts';
+// Re-export all global types
+export * from './global.ts';

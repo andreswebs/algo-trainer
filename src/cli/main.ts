@@ -7,14 +7,14 @@
  */
 
 import { parseArgs } from '@std/cli/parse-args';
-import { exitWithError, logger, outputData, setOutputOptions } from '../utils/output.ts';
-import { formatError } from '../utils/errors.ts';
-import { ExitCode, getExitCodeForError } from './exit-codes.ts';
 import { initializeConfig } from '../config/manager.ts';
-import { dispatch, getAvailableCommands } from './commands/mod.ts';
-import { extractGlobalFlags } from './types.ts';
-import { getEnvVarDocumentation, validateEnvironmentVariables } from './env.ts';
+import { formatError } from '../utils/errors.ts';
+import { exitWithError, logger, outputData, setOutputOptions } from '../utils/output.ts';
 import { VERSION } from '../version.ts';
+import { dispatch, getAvailableCommands } from './commands/mod.ts';
+import { getEnvVarDocumentation, validateEnvironmentVariables } from './env.ts';
+import { ExitCode, getExitCodeForError } from './exit-codes.ts';
+import { extractGlobalFlags } from './types.ts';
 
 const PARSE_OPTIONS = {
   alias: {

@@ -35,9 +35,9 @@
 
 import { join, resolve } from '@std/path';
 import type { SupportedLanguage } from '../../types/global.ts';
+import { createErrorContext, ValidationError } from '../../utils/errors.ts';
 import type { ProblemWorkspacePaths, WorkspacePathConfig, WorkspacePaths } from './types.ts';
 import { WORKSPACE_RULES } from './types.ts';
-import { createErrorContext, ValidationError } from '../../utils/errors.ts';
 
 /**
  * Simple cache for resolved workspace paths to improve performance.
@@ -82,7 +82,9 @@ function validateRootDirectory(rootDir: string): void {
   // Check for path traversal patterns (security concern)
   // Check BEFORE normalizing to catch actual traversal attempts
   if (
-    rootDir.includes('/../') || rootDir.includes('\\..\\') || rootDir.endsWith('/..') ||
+    rootDir.includes('/../') ||
+    rootDir.includes('\\..\\') ||
+    rootDir.endsWith('/..') ||
     rootDir.endsWith('\\..')
   ) {
     throw new ValidationError(
@@ -107,10 +109,7 @@ function validateSlug(slug: string): void {
   }
 
   if (slug.trim().length === 0) {
-    throw new ValidationError(
-      'Problem slug cannot be empty',
-      createErrorContext('validateSlug'),
-    );
+    throw new ValidationError('Problem slug cannot be empty', createErrorContext('validateSlug'));
   }
 
   // Check for null bytes (security concern)
@@ -384,10 +383,7 @@ export function getSolutionFileName(language: SupportedLanguage): string {
  * console.log(paths.testFile);     // /workspace/problems/two-sum/solution_test.ts
  * ```
  */
-export function getProblemPaths(
-  config: WorkspacePathConfig,
-  slug: string,
-): ProblemWorkspacePaths {
+export function getProblemPaths(config: WorkspacePathConfig, slug: string): ProblemWorkspacePaths {
   // Validate inputs
   if (!config || typeof config !== 'object') {
     throw new ValidationError(

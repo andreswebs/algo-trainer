@@ -5,8 +5,8 @@
  */
 
 import { assertEquals, assertExists } from '@std/assert';
-import { ConfigManager } from '../src/config/manager.ts';
 import { ENV_VARS } from '../src/cli/env.ts';
+import { ConfigManager } from '../src/config/manager.ts';
 
 interface TestEnv {
   tempDir: string;
@@ -46,22 +46,19 @@ async function setupTestEnv(): Promise<TestEnv> {
   };
 }
 
-Deno.test(
-  'ConfigManager - should create default config when none exists',
-  async () => {
-    const { cleanup } = await setupTestEnv();
-    try {
-      const manager = new ConfigManager();
-      const config = await manager.load();
+Deno.test('ConfigManager - should create default config when none exists', async () => {
+  const { cleanup } = await setupTestEnv();
+  try {
+    const manager = new ConfigManager();
+    const config = await manager.load();
 
-      assertEquals(config.language, 'cpp');
-      assertEquals(config.aiEnabled, true);
-      assertExists(config.version);
-    } finally {
-      await cleanup();
-    }
-  },
-);
+    assertEquals(config.language, 'cpp');
+    assertEquals(config.aiEnabled, true);
+    assertExists(config.version);
+  } finally {
+    await cleanup();
+  }
+});
 
 Deno.test('ConfigManager - should not persist env overrides on update', async () => {
   const { tempDir, cleanup } = await setupTestEnv();
@@ -77,9 +74,7 @@ Deno.test('ConfigManager - should not persist env overrides on update', async ()
     await manager.updateConfig({ aiEnabled: false });
     await manager.updatePreferences({ theme: 'dark' });
 
-    const saved = JSON.parse(
-      await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`),
-    );
+    const saved = JSON.parse(await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`));
     assertEquals(saved.workspace, '');
     assertEquals(saved.language, 'cpp');
     assertEquals(saved.preferences.templateStyle, 'documented');
@@ -105,9 +100,7 @@ Deno.test('ConfigManager - should keep env override effective after setting same
 
     await manager.setLanguage('python');
 
-    const saved = JSON.parse(
-      await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`),
-    );
+    const saved = JSON.parse(await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`));
     assertEquals(saved.language, 'python');
     assertEquals(manager.getConfig().language, 'cpp');
   } finally {
@@ -160,9 +153,7 @@ Deno.test('Output utilities - log functions should not throw', async () => {
     logDebug,
     setOutputOptions,
     resetOutputOptions,
-  } = await import(
-    '../src/utils/output.ts'
-  );
+  } = await import('../src/utils/output.ts');
 
   try {
     setOutputOptions({

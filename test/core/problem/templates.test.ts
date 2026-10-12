@@ -318,12 +318,9 @@ Deno.test('renderTemplate - handles rendering errors gracefully', async () => {
     },
   };
 
-  await assertRejects(
-    async () => {
-      await renderTemplate(context, 'solution');
-    },
-    TemplateError,
-  );
+  await assertRejects(async () => {
+    await renderTemplate(context, 'solution');
+  }, TemplateError);
 });
 
 Deno.test('placeholder values - builds correct placeholder values', () => {
@@ -372,7 +369,13 @@ Deno.test('formatLCValue - encodes primitives in LeetCode wire format', () => {
 Deno.test('formatLCValue - encodes arrays without spaces and recurses', () => {
   assertEquals(formatLCValue([]), '[]');
   assertEquals(formatLCValue([1, 2, 3]), '[1,2,3]');
-  assertEquals(formatLCValue([[1, 2], [3, 4]]), '[[1,2],[3,4]]');
+  assertEquals(
+    formatLCValue([
+      [1, 2],
+      [3, 4],
+    ]),
+    '[[1,2],[3,4]]',
+  );
   assertEquals(formatLCValue(['a', 'b']), '["a","b"]');
   // null entries are used in TreeNode array literals
   assertEquals(formatLCValue([1, null, 2, 3]), '[1,null,2,3]');

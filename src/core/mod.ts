@@ -169,12 +169,6 @@
  * @module core
  */
 
-// Re-export everything from problem management
-export * from './problem/mod.ts';
-
-// Re-export everything from workspace management
-export * from './workspace/mod.ts';
-
 // Re-export commonly needed types from global.ts for convenience
 export type {
   Config,
@@ -186,3 +180,7 @@ export type {
   UserPreferences,
   WorkspaceStructure,
 } from '../types/global.ts';
+// Re-export everything from problem management
+export * from './problem/mod.ts';
+// Re-export everything from workspace management
+export * from './workspace/mod.ts';

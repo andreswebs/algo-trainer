@@ -9,13 +9,13 @@
  */
 
 import { join } from '@std/path';
+import { getConfigPaths } from '../../config/paths.ts';
+import { getAllProblemSlugs, getProblemJson } from '../../data/problems.generated.ts';
 import type { Difficulty, Problem } from '../../types/global.ts';
 import { createErrorContext, ProblemError } from '../../utils/errors.ts';
 import { listDirectory, pathExists } from '../../utils/fs.ts';
-import { getConfigPaths } from '../../config/paths.ts';
 import { logger } from '../../utils/output.ts';
 import { parseProblemFromFile, parseProblemFromJson } from './parser.ts';
-import { getAllProblemSlugs, getProblemJson } from '../../data/problems.generated.ts';
 
 /**
  * Database loading options
@@ -79,10 +79,7 @@ export class ProblemDatabase {
   private readonly problems: Problem[];
   private readonly indices: ProblemIndices;
 
-  private constructor(
-    problems: Problem[],
-    indices: ProblemIndices,
-  ) {
+  private constructor(problems: Problem[], indices: ProblemIndices) {
     this.problems = problems;
     this.indices = indices;
   }
@@ -297,7 +294,7 @@ async function loadBuiltInFromDirectory(
   dirPath: string,
   tracker: DedupTracker,
 ): Promise<Problem[]> {
-  if (!await pathExists(dirPath)) {
+  if (!(await pathExists(dirPath))) {
     return [];
   }
   const filePaths = await discoverProblemFiles(dirPath);
@@ -382,7 +379,7 @@ async function loadCustomUserProblems(
   behavior: 'fail' | 'warn' | 'silent',
   tracker: DedupTracker,
 ): Promise<Problem[]> {
-  if (!await pathExists(dirPath)) {
+  if (!(await pathExists(dirPath))) {
     return [];
   }
   const filePaths = await discoverProblemFiles(dirPath);

@@ -201,15 +201,8 @@ async function moveDirectory(from: string, to: string): Promise<void> {
  * });
  * ```
  */
-export async function archiveProblem(
-  options: ArchiveProblemOptions,
-): Promise<ArchiveResult> {
-  const {
-    workspaceRoot,
-    slug,
-    language,
-    onCollision = 'timestamp',
-  } = options;
+export async function archiveProblem(options: ArchiveProblemOptions): Promise<ArchiveResult> {
+  const { workspaceRoot, slug, language, onCollision = 'timestamp' } = options;
 
   try {
     // Get source and destination paths
@@ -346,15 +339,8 @@ export async function archiveProblem(
  * });
  * ```
  */
-export async function unarchiveProblem(
-  options: UnarchiveProblemOptions,
-): Promise<UnarchiveResult> {
-  const {
-    workspaceRoot,
-    slug,
-    language,
-    onCollision = 'timestamp',
-  } = options;
+export async function unarchiveProblem(options: UnarchiveProblemOptions): Promise<UnarchiveResult> {
+  const { workspaceRoot, slug, language, onCollision = 'timestamp' } = options;
 
   try {
     // Get source and destination paths

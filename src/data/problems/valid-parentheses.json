@@ -26,10 +26,7 @@
       "output": true
     }
   ],
-  "constraints": [
-    "1 <= s.length <= 10^4",
-    "s consists of parentheses only '()[]{}'."
-  ],
+  "constraints": ["1 <= s.length <= 10^4", "s consists of parentheses only '()[]{}'."],
   "hints": [
     "Think about using a stack data structure. What should you do when you encounter an opening bracket vs a closing bracket?",
     "When you see an opening bracket, push it onto the stack. When you see a closing bracket, check if it matches the top of the stack.",

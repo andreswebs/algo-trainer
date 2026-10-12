@@ -31,10 +31,7 @@ const testProblem: Problem = {
       explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].',
     },
   ],
-  constraints: [
-    '2 <= nums.length <= 10^4',
-    '-10^9 <= nums[i] <= 10^9',
-  ],
+  constraints: ['2 <= nums.length <= 10^4', '-10^9 <= nums[i] <= 10^9'],
   hints: ['Use a hash map to store values you have seen.'],
   tags: ['array', 'hash-table'],
   companies: ['Amazon', 'Google'],

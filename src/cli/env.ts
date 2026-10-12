@@ -153,9 +153,9 @@ export function loadEnvConfig(): EnvConfig {
     preferences.templateStyle = templateStyle;
   } else if (Deno.env.get(ENV_VARS.TEMPLATE_STYLE)) {
     logger.warn(
-      `Warning: Invalid ${ENV_VARS.TEMPLATE_STYLE} value. Supported: ${
-        SUPPORTED_TEMPLATE_STYLES.join(', ')
-      }`,
+      `Warning: Invalid ${ENV_VARS.TEMPLATE_STYLE} value. Supported: ${SUPPORTED_TEMPLATE_STYLES.join(
+        ', ',
+      )}`,
     );
   }
 
@@ -244,9 +244,9 @@ export function validateEnvironmentVariables(): void {
     const validated = validateLanguage(language);
     if (!validated) {
       throw new Error(
-        `Invalid ${ENV_VARS.LANGUAGE}: "${language}"\nSupported languages: ${
-          SUPPORTED_LANGUAGES.join(', ')
-        }`,
+        `Invalid ${ENV_VARS.LANGUAGE}: "${language}"\nSupported languages: ${SUPPORTED_LANGUAGES.join(
+          ', ',
+        )}`,
       );
     }
   }
@@ -257,20 +257,15 @@ export function validateEnvironmentVariables(): void {
     const validated = validateTemplateStyle(templateStyle);
     if (!validated) {
       throw new Error(
-        `Invalid ${ENV_VARS.TEMPLATE_STYLE}: "${templateStyle}"\nSupported styles: ${
-          SUPPORTED_TEMPLATE_STYLES.join(', ')
-        }`,
+        `Invalid ${ENV_VARS.TEMPLATE_STYLE}: "${templateStyle}"\nSupported styles: ${SUPPORTED_TEMPLATE_STYLES.join(
+          ', ',
+        )}`,
       );
     }
   }
 
   // Validate boolean env vars (verbose, quiet, no_color, no_emoji)
-  const boolEnvVars = [
-    ENV_VARS.VERBOSE,
-    ENV_VARS.QUIET,
-    ENV_VARS.NO_COLOR,
-    ENV_VARS.NO_EMOJI,
-  ];
+  const boolEnvVars = [ENV_VARS.VERBOSE, ENV_VARS.QUIET, ENV_VARS.NO_COLOR, ENV_VARS.NO_EMOJI];
 
   for (const envVar of boolEnvVars) {
     const value = Deno.env.get(envVar);

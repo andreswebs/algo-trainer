@@ -8,6 +8,7 @@
  */
 
 import { join } from '@std/path';
+import { ProblemManager } from '../src/core/problem/manager.ts';
 import {
   archiveProblem,
   isArchived,
@@ -16,7 +17,6 @@ import {
 } from '../src/core/workspace/archive.ts';
 import { generateProblemFiles } from '../src/core/workspace/generation.ts';
 import { initWorkspace } from '../src/core/workspace/manager.ts';
-import { ProblemManager } from '../src/core/problem/manager.ts';
 
 async function demo() {
   // Create a temporary workspace for demonstration

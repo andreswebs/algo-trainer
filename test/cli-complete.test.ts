@@ -3,9 +3,12 @@
  */
 
 import { assert, assertEquals, assertFalse, assertRejects } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import type { Args } from '@std/cli/parse-args';
 import { exists } from '@std/fs';
 import { join } from '@std/path';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { challengeCommand } from '../src/cli/commands/challenge.ts';
+import type { CompleteOptions } from '../src/cli/commands/complete.ts';
 import {
   completeCommand,
   extractCompleteOptions,
@@ -13,13 +16,10 @@ import {
   resolveTargetProblem,
   validateCompletion,
 } from '../src/cli/commands/complete.ts';
-import type { CompleteOptions } from '../src/cli/commands/complete.ts';
-import { challengeCommand } from '../src/cli/commands/challenge.ts';
+import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
 import { getWorkspaceStructure, initWorkspace } from '../src/core/mod.ts';
-import { ExitCode } from '../src/cli/exit-codes.ts';
 import { ProblemError } from '../src/utils/errors.ts';
-import type { Args } from '@std/cli/parse-args';
 
 describe('extractCompleteOptions', () => {
   it('should extract slug from first positional arg', () => {
@@ -245,10 +245,7 @@ describe('resolveTargetProblem', () => {
   it('should throw ProblemError when no problems in workspace', async () => {
     const structure = getWorkspaceStructure(tempDir);
     const options: CompleteOptions = { problemSlug: undefined, notes: undefined, noArchive: false };
-    await assertRejects(
-      () => resolveTargetProblem(options, structure),
-      ProblemError,
-    );
+    await assertRejects(() => resolveTargetProblem(options, structure), ProblemError);
   });
 });
 

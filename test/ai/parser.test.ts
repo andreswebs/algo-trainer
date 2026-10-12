@@ -111,10 +111,7 @@ Deno.test('parseTeachingScript', async (t) => {
     assertEquals(script.steps[5].type, 'on_request');
 
     // Verify step content
-    assertEquals(
-      script.steps[0].content.trim(),
-      'Welcome to Two Sum! This is a classic problem.',
-    );
+    assertEquals(script.steps[0].content.trim(), 'Welcome to Two Sum! This is a classic problem.');
 
     // Verify optional fields
     assertEquals(script.steps[2].trigger, 'passed === false && attempts > 1');
@@ -591,14 +588,11 @@ Deno.test('Integration: findScriptPath + loadAndValidateScript', async (t) => {
     const scriptPath = await findScriptPath(problemDir);
     assertEquals(scriptPath !== null, true);
 
-    await assertRejects(
-      async () => {
-        if (scriptPath) {
-          await loadAndValidateScript(scriptPath);
-        }
-      },
-      ScriptError,
-    );
+    await assertRejects(async () => {
+      if (scriptPath) {
+        await loadAndValidateScript(scriptPath);
+      }
+    }, ScriptError);
   });
 
   // Cleanup

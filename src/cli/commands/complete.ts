@@ -8,25 +8,25 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
+import { configManager } from '../../config/manager.ts';
+import { archiveProblem, ProblemManager, problemExists } from '../../core/mod.ts';
 import type {
   CommandResult,
   ProblemQuery,
   SupportedLanguage,
   WorkspaceStructure,
 } from '../../types/global.ts';
-import { configManager } from '../../config/manager.ts';
-import { archiveProblem, problemExists, ProblemManager } from '../../core/mod.ts';
-import { ExitCode } from '../exit-codes.ts';
-import { logger } from '../../utils/output.ts';
-import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
 import {
   CommandError,
   createErrorContext,
   ProblemError,
   WorkspaceError,
 } from '../../utils/errors.ts';
+import { logger } from '../../utils/output.ts';
+import { ExitCode } from '../exit-codes.ts';
 import { promptSelect, promptText } from '../prompts.ts';
 import { showCommandHelp } from './help.ts';
+import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -263,10 +263,7 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
       logger.error('Command error:', error.message);
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     } else {
-      logger.error(
-        'Unexpected error:',
-        error instanceof Error ? error.message : String(error),
-      );
+      logger.error('Unexpected error:', error instanceof Error ? error.message : String(error));
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
   }

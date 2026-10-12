@@ -15,11 +15,7 @@
       "output": 1
     }
   ],
-  "constraints": [
-    "n == height.length",
-    "2 <= n <= 10^5",
-    "0 <= height[i] <= 10^4"
-  ],
+  "constraints": ["n == height.length", "2 <= n <= 10^5", "0 <= height[i] <= 10^4"],
   "hints": [
     "Start with the widest container (pointers at both ends) and work inward.",
     "The area is limited by the shorter line. Moving the shorter line inward might find a taller one.",

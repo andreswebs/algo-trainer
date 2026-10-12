@@ -5,17 +5,15 @@
  */
 
 import { assertEquals } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
-import { join } from '@std/path';
 import { ensureDir } from '@std/fs';
-import { ConfigManager } from '../src/config/manager.ts';
+import { join } from '@std/path';
+import { describe, it } from '@std/testing/bdd';
 import { ENV_VARS } from '../src/cli/env.ts';
+import { ConfigManager } from '../src/config/manager.ts';
 import { writeJsonFile } from '../src/utils/fs.ts';
 
 describe('Environment Variable Integration', () => {
-  const withTempConfig = async (
-    fn: (configPath: string) => void | Promise<void>,
-  ) => {
+  const withTempConfig = async (fn: (configPath: string) => void | Promise<void>) => {
     const tempDir = await Deno.makeTempDir();
     const configPath = join(tempDir, 'config.json');
 
@@ -28,10 +26,7 @@ describe('Environment Variable Integration', () => {
 
   // Clears ALL known AT_* vars on entry so pre-existing shell exports don't
   // leak into tests that expect a clean environment.
-  const withEnv = async (
-    vars: Record<string, string>,
-    fn: () => void | Promise<void>,
-  ) => {
+  const withEnv = async (vars: Record<string, string>, fn: () => void | Promise<void>) => {
     const managedKeys = new Set<string>([...Object.values(ENV_VARS), ...Object.keys(vars)]);
     const original: Record<string, string | undefined> = {};
 
@@ -242,18 +237,15 @@ describe('Environment Variable Integration', () => {
           version: '0.0.1',
         });
 
-        await withEnv(
-          { [ENV_VARS.CONFIG_PATH]: customConfigPath },
-          async () => {
-            const manager = new ConfigManager();
-            const config = await manager.load();
+        await withEnv({ [ENV_VARS.CONFIG_PATH]: customConfigPath }, async () => {
+          const manager = new ConfigManager();
+          const config = await manager.load();
 
-            assertEquals(config.language, 'java');
-            assertEquals(config.workspace, '/java/workspace');
-            assertEquals(config.aiEnabled, false);
-            assertEquals(config.companies, ['Google']);
-          },
-        );
+          assertEquals(config.language, 'java');
+          assertEquals(config.workspace, '/java/workspace');
+          assertEquals(config.aiEnabled, false);
+          assertEquals(config.companies, ['Google']);
+        });
       } finally {
         await Deno.remove(tempDir, { recursive: true });
       }

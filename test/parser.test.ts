@@ -90,14 +90,8 @@ Deno.test('parseProblemFromJson - converts date strings to Date objects', () => 
 
   assertEquals(problem.createdAt instanceof Date, true);
   assertEquals(problem.updatedAt instanceof Date, true);
-  assertEquals(
-    problem.createdAt?.toISOString(),
-    '2024-01-15T10:30:00.000Z',
-  );
-  assertEquals(
-    problem.updatedAt?.toISOString(),
-    '2024-06-20T14:45:00.000Z',
-  );
+  assertEquals(problem.createdAt?.toISOString(), '2024-01-15T10:30:00.000Z');
+  assertEquals(problem.updatedAt?.toISOString(), '2024-06-20T14:45:00.000Z');
 });
 
 Deno.test('parseProblemFromJson - throws on invalid JSON', () => {
@@ -123,10 +117,7 @@ Deno.test('parseProblemFromJson - throws on missing required fields', () => {
     throw new Error('Expected ProblemError to be thrown');
   } catch (error) {
     assertEquals(error instanceof ProblemError, true);
-    assertEquals(
-      (error as ProblemError).message.includes('Invalid problem data'),
-      true,
-    );
+    assertEquals((error as ProblemError).message.includes('Invalid problem data'), true);
   }
 });
 
@@ -141,10 +132,7 @@ Deno.test('parseProblemFromJson - throws on invalid difficulty', () => {
     throw new Error('Expected ProblemError to be thrown');
   } catch (error) {
     assertEquals(error instanceof ProblemError, true);
-    assertEquals(
-      (error as ProblemError).message.includes('Invalid problem data'),
-      true,
-    );
+    assertEquals((error as ProblemError).message.includes('Invalid problem data'), true);
   }
 });
 
@@ -209,10 +197,7 @@ Deno.test('parseProblemFromFile - throws on filename-slug mismatch', async () =>
 
   try {
     const wrongFilename = join(tempDir, 'wrong-name.json');
-    await Deno.writeTextFile(
-      wrongFilename,
-      JSON.stringify(MINIMAL_PROBLEM_JSON),
-    );
+    await Deno.writeTextFile(wrongFilename, JSON.stringify(MINIMAL_PROBLEM_JSON));
 
     await assertRejects(
       async () => {
@@ -231,10 +216,7 @@ Deno.test('parseProblemFromFile - accepts matching filename-slug', async () => {
 
   try {
     const correctFilename = join(tempDir, 'minimal-problem.json');
-    await Deno.writeTextFile(
-      correctFilename,
-      JSON.stringify(MINIMAL_PROBLEM_JSON),
-    );
+    await Deno.writeTextFile(correctFilename, JSON.stringify(MINIMAL_PROBLEM_JSON));
 
     const problem = await parseProblemFromFile(correctFilename);
     assertEquals(problem.slug, 'minimal-problem');

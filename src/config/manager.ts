@@ -7,14 +7,14 @@
  * @module config/manager
  */
 
-import { createDirectory, pathExists, readJsonFile, writeJsonFile } from '../utils/fs.ts';
-import { validateConfig, validateOrThrow } from '../utils/validation.ts';
-import { ConfigError, createErrorContext } from '../utils/errors.ts';
-import { logger } from '../utils/output.ts';
-import { getConfigFilePaths, getConfigPaths } from './paths.ts';
-import { DEFAULT_CONFIG } from './types.ts';
 import { type EnvConfig, getEnvConfigPath, loadEnvConfig } from '../cli/env.ts';
 import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
+import { ConfigError, createErrorContext } from '../utils/errors.ts';
+import { createDirectory, pathExists, readJsonFile, writeJsonFile } from '../utils/fs.ts';
+import { logger } from '../utils/output.ts';
+import { validateConfig, validateOrThrow } from '../utils/validation.ts';
+import { getConfigFilePaths, getConfigPaths } from './paths.ts';
+import { DEFAULT_CONFIG } from './types.ts';
 
 /**
  * Configuration manager class
@@ -149,10 +149,7 @@ export class ConfigManager {
    */
   getConfig(): Config {
     if (!this.config) {
-      throw new ConfigError(
-        'Configuration not loaded',
-        createErrorContext('getConfig'),
-      );
+      throw new ConfigError('Configuration not loaded', createErrorContext('getConfig'));
     }
     return { ...this.config };
   }
@@ -162,10 +159,7 @@ export class ConfigManager {
    */
   async updateConfig(updates: Partial<Config>): Promise<void> {
     if (!this.fileConfig) {
-      throw new ConfigError(
-        'Configuration not loaded',
-        createErrorContext('updateConfig'),
-      );
+      throw new ConfigError('Configuration not loaded', createErrorContext('updateConfig'));
     }
 
     const mergedPreferences = updates.preferences
@@ -185,14 +179,9 @@ export class ConfigManager {
   /**
    * Update user preferences
    */
-  async updatePreferences(
-    preferences: Partial<UserPreferences>,
-  ): Promise<void> {
+  async updatePreferences(preferences: Partial<UserPreferences>): Promise<void> {
     if (!this.fileConfig) {
-      throw new ConfigError(
-        'Configuration not loaded',
-        createErrorContext('updatePreferences'),
-      );
+      throw new ConfigError('Configuration not loaded', createErrorContext('updatePreferences'));
     }
 
     this.fileConfig = {
@@ -243,8 +232,6 @@ export function getCurrentConfig(): Config {
 /**
  * Update configuration
  */
-export async function updateConfiguration(
-  updates: Partial<Config>,
-): Promise<void> {
+export async function updateConfiguration(updates: Partial<Config>): Promise<void> {
   return await configManager.updateConfig(updates);
 }

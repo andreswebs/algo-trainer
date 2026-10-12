@@ -7,15 +7,15 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult } from '../../types/global.ts';
-import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
-import { logger } from '../../utils/output.ts';
-import { configManager } from '../../config/manager.ts';
-import { TeachingScriptGenerator, validateTeachingScript } from '../../core/ai/mod.ts';
-import { requireProblemManager, resolveProblem } from './shared.ts';
-import { showCommandHelp } from './help.ts';
 import { join } from '@std/path';
 import { parse as parseYaml } from '@std/yaml';
+import { configManager } from '../../config/manager.ts';
+import { TeachingScriptGenerator, validateTeachingScript } from '../../core/ai/mod.ts';
+import type { CommandResult } from '../../types/global.ts';
+import { logger } from '../../utils/output.ts';
+import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
+import { showCommandHelp } from './help.ts';
+import { requireProblemManager, resolveProblem } from './shared.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -83,9 +83,7 @@ export async function teachCommand(args: Args): Promise<CommandResult> {
     const config = configManager.getConfig();
 
     if (!options.subcommand) {
-      logger.error(
-        'Subcommand required. Usage: algo-trainer teach <generate|validate|info>',
-      );
+      logger.error('Subcommand required. Usage: algo-trainer teach <generate|validate|info>');
       return { success: false, exitCode: ExitCode.USAGE_ERROR };
     }
 
@@ -118,9 +116,7 @@ async function handleGenerate(
   config: ReturnType<typeof configManager.getConfig>,
 ): Promise<CommandResult> {
   if (!options.problemSlug) {
-    logger.error(
-      'Problem slug required. Usage: algo-trainer teach generate <slug>',
-    );
+    logger.error('Problem slug required. Usage: algo-trainer teach generate <slug>');
     return { success: false, exitCode: ExitCode.USAGE_ERROR };
   }
 
@@ -187,17 +183,13 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
   return { success: true, exitCode: ExitCode.SUCCESS };
 }
 
-function handleInfo(
-  config: ReturnType<typeof configManager.getConfig>,
-): CommandResult {
+function handleInfo(config: ReturnType<typeof configManager.getConfig>): CommandResult {
   logger.log('\n📚 Teaching System Information\n');
   logger.log(`AI Enabled: ${config.aiEnabled ? '✅ Yes' : '❌ No'}`);
   logger.log(`Workspace: ${config.workspace || '(not set)'}`);
 
   if (!config.aiEnabled) {
-    logger.log(
-      '\n💡 Enable AI features with: algo-trainer config set aiEnabled true',
-    );
+    logger.log('\n💡 Enable AI features with: algo-trainer config set aiEnabled true');
   }
 
   logger.log('');

@@ -10,16 +10,16 @@
 
 import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
-import type { CommandResult, SupportedLanguage } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getProblemMetadata } from '../../core/mod.ts';
-import { diffStrings, runSolution } from '../../core/runner.ts';
 import type { RunResult } from '../../core/runner.ts';
-import { ExitCode } from '../exit-codes.ts';
-import { logger, outputData } from '../../utils/output.ts';
+import { diffStrings, runSolution } from '../../core/runner.ts';
+import type { CommandResult, SupportedLanguage } from '../../types/global.ts';
 import { pathExists } from '../../utils/fs.ts';
-import { requireWorkspace } from './shared.ts';
+import { logger, outputData } from '../../utils/output.ts';
+import { ExitCode } from '../exit-codes.ts';
 import { showCommandHelp } from './help.ts';
+import { requireWorkspace } from './shared.ts';
 
 function showHelp(): void {
   showCommandHelp({

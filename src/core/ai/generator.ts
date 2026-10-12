@@ -349,8 +349,7 @@ You've got this! 🔍`,
     {
       type: 'on_run',
       trigger: '!passed && attempts > 2',
-      content:
-        `{{attempts}} attempts in - you're making progress! This is a {{difficulty}} problem, so persistence is key.
+      content: `{{attempts}} attempts in - you're making progress! This is a {{difficulty}} problem, so persistence is key.
 
 **Debugging strategies for complex problems**:
 1. **Divide and conquer**: Test each part of your solution separately
@@ -363,8 +362,7 @@ Every attempt teaches you something valuable. Keep going! 💪`,
     {
       type: 'on_run',
       trigger: '!passed && attempts > 4',
-      content:
-        `Still working on this? That shows great persistence! Hard problems require multiple attempts.
+      content: `Still working on this? That shows great persistence! Hard problems require multiple attempts.
 
 **When you're deeply stuck**:
 1. **Take a break**: Sometimes the solution comes when you step away
@@ -657,15 +655,13 @@ export class TeachingScriptGenerator {
     const normalizedTags = problem.tags.map((tag) => tag.toLowerCase());
 
     // Check for each known topic pattern
-    if (
-      normalizedTags.some((tag) => tag.includes('dynamic-programming') || tag.includes('dp'))
-    ) {
+    if (normalizedTags.some((tag) => tag.includes('dynamic-programming') || tag.includes('dp'))) {
       topics.push('dynamic-programming');
     }
 
     if (
-      normalizedTags.some((tag) =>
-        tag.includes('tree') || tag.includes('binary-tree') || tag.includes('bst')
+      normalizedTags.some(
+        (tag) => tag.includes('tree') || tag.includes('binary-tree') || tag.includes('bst'),
       )
     ) {
       topics.push('binary-tree');
@@ -688,9 +684,13 @@ export class TeachingScriptGenerator {
     }
 
     if (
-      normalizedTags.some((tag) =>
-        tag.includes('graph') || tag.includes('bfs') || tag.includes('dfs') ||
-        tag.includes('breadth-first') || tag.includes('depth-first')
+      normalizedTags.some(
+        (tag) =>
+          tag.includes('graph') ||
+          tag.includes('bfs') ||
+          tag.includes('dfs') ||
+          tag.includes('breadth-first') ||
+          tag.includes('depth-first'),
       )
     ) {
       topics.push('graph');
@@ -774,10 +774,10 @@ Think about this problem in terms of subproblems:
 4. **Build up**: Can you solve from bottom-up or use memoization for top-down?
 
 ${
-        problem.difficulty === 'hard'
-          ? '**Hard DP problems** often have multiple dimensions or complex state transitions. Start simple!'
-          : 'Start by identifying what information you need to track at each step.'
-      }`,
+  problem.difficulty === 'hard'
+    ? '**Hard DP problems** often have multiple dimensions or complex state transitions. Start simple!'
+    : 'Start by identifying what information you need to track at each step.'
+}`,
     ];
   }
 
@@ -823,14 +823,14 @@ Hash tables excel at trading space for time:
 
 In ${this.options.language}, use:
 ${
-        this.options.language === 'typescript' || this.options.language === 'javascript'
-          ? '- Map for key-value pairs\n- Set for unique values'
-          : this.options.language === 'python'
-          ? '- dict for key-value pairs\n- set for unique values'
-          : this.options.language === 'java'
-          ? '- HashMap<K,V> for key-value pairs\n- HashSet<T> for unique values'
-          : '- appropriate hash table data structure'
-      }`,
+  this.options.language === 'typescript' || this.options.language === 'javascript'
+    ? '- Map for key-value pairs\n- Set for unique values'
+    : this.options.language === 'python'
+      ? '- dict for key-value pairs\n- set for unique values'
+      : this.options.language === 'java'
+        ? '- HashMap<K,V> for key-value pairs\n- HashSet<T> for unique values'
+        : '- appropriate hash table data structure'
+}`,
     ];
   }
 
@@ -877,10 +877,10 @@ Binary search isn't just for finding elements:
 5. **Final check**: After loop, verify left/right position
 
 ${
-        problem.difficulty === 'hard'
-          ? '**Hard problems** might require binary search on the answer space rather than indices!'
-          : 'Start with: What makes this problem monotonic?'
-      }`,
+  problem.difficulty === 'hard'
+    ? '**Hard problems** might require binary search on the answer space rather than indices!'
+    : 'Start with: What makes this problem monotonic?'
+}`,
     ];
   }
 
@@ -936,10 +936,10 @@ Graph problems often come down to traversal strategy:
    - Self-loops?
 
 ${
-        problem.difficulty === 'hard'
-          ? '**Complex graphs** might need advanced algorithms like Dijkstra, Topological Sort, or Union-Find!'
-          : 'Start by choosing BFS or DFS based on what you need to find.'
-      }`,
+  problem.difficulty === 'hard'
+    ? '**Complex graphs** might need advanced algorithms like Dijkstra, Topological Sort, or Union-Find!'
+    : 'Start by choosing BFS or DFS based on what you need to find.'
+}`,
     ];
   }
 }

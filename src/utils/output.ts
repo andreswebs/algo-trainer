@@ -162,11 +162,7 @@ export class Logger {
     const message = isAlgoTrainerError(error) ? error.getFormattedMessage() : formatError(error);
     this.error(message);
 
-    if (
-      options.verbosity === 'verbose' &&
-      error instanceof Error &&
-      error.stack
-    ) {
+    if (options.verbosity === 'verbose' && error instanceof Error && error.stack) {
       this.writeToStderr(colorize(error.stack, 'dim'));
     }
   }
@@ -239,9 +235,9 @@ export class Logger {
   log(message: string): void;
   log(...args: unknown[]): void;
   log(...args: unknown[]): void {
-    const message = args.map((arg) => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(
-      ' ',
-    );
+    const message = args
+      .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+      .join(' ');
     this.writeToStderr(this.indent(message));
   }
 
@@ -293,10 +289,7 @@ export class Logger {
    */
   box(title: string, content: string): void {
     const lines = content.split('\n');
-    const maxWidth = Math.max(
-      title.length,
-      ...lines.map((line) => line.length),
-    );
+    const maxWidth = Math.max(title.length, ...lines.map((line) => line.length));
     const width = Math.min(maxWidth + 4, 80);
 
     this.separator(width, '─');
@@ -319,10 +312,7 @@ export class Logger {
     const widths: Record<string, number> = {};
     for (const col of config.columns) {
       const valueWidths = data.map((row) => String(row[col.key] ?? '').length);
-      widths[col.key] = col.width ?? Math.max(
-        col.label.length,
-        ...valueWidths,
-      );
+      widths[col.key] = col.width ?? Math.max(col.label.length, ...valueWidths);
     }
 
     // Header

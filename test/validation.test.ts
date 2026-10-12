@@ -91,12 +91,7 @@ Deno.test('validateISODateString - valid ISO-8601 dates', () => {
 });
 
 Deno.test('validateISODateString - rejects invalid dates', () => {
-  const invalidDates = [
-    'not-a-date',
-    '2024-13-01',
-    '',
-    'invalid',
-  ];
+  const invalidDates = ['not-a-date', '2024-13-01', '', 'invalid'];
 
   for (const date of invalidDates) {
     const result = validateISODateString(date, 'testDate');
@@ -200,14 +195,7 @@ Deno.test('validateProblem - rejects missing required fields', () => {
   const result = validateProblem({});
   assertEquals(result.valid, false);
 
-  const requiredFields = [
-    'id',
-    'slug',
-    'title',
-    'difficulty',
-    'description',
-    'examples',
-  ];
+  const requiredFields = ['id', 'slug', 'title', 'difficulty', 'description', 'examples'];
   for (const field of requiredFields) {
     assertEquals(
       result.errors.some((e) => e.includes(`${field} is required`)),
@@ -279,9 +267,7 @@ Deno.test('validateProblem - rejects examples without input object', () => {
     title: 'Test',
     difficulty: 'easy',
     description: 'Desc',
-    examples: [
-      { output: 1 },
-    ],
+    examples: [{ output: 1 }],
   };
 
   const result = validateProblem(problem);
@@ -301,12 +287,7 @@ Deno.test('validateProblem - rejects examples with non-object input', () => {
     description: 'Desc',
   };
 
-  const invalidInputs = [
-    [1, 2, 3],
-    null,
-    'string',
-    42,
-  ];
+  const invalidInputs = [[1, 2, 3], null, 'string', 42];
 
   for (const input of invalidInputs) {
     const problem = {
@@ -329,9 +310,7 @@ Deno.test('validateProblem - rejects examples without output', () => {
     title: 'Test',
     difficulty: 'easy',
     description: 'Desc',
-    examples: [
-      { input: { a: 1 } },
-    ],
+    examples: [{ input: { a: 1 } }],
   };
 
   const result = validateProblem(problem);
@@ -349,9 +328,7 @@ Deno.test('validateProblem - rejects empty explanation string', () => {
     title: 'Test',
     difficulty: 'easy',
     description: 'Desc',
-    examples: [
-      { input: { a: 1 }, output: 1, explanation: '' },
-    ],
+    examples: [{ input: { a: 1 }, output: 1, explanation: '' }],
   };
 
   const result = validateProblem(problem);

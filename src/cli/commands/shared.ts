@@ -8,9 +8,9 @@
  * @module cli/commands/shared
  */
 
-import type { Problem, WorkspaceStructure } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized, ProblemManager } from '../../core/mod.ts';
+import type { Problem, WorkspaceStructure } from '../../types/global.ts';
 import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/errors.ts';
 
 /**
@@ -35,9 +35,7 @@ import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/er
  * }
  * ```
  */
-export async function requireWorkspace(
-  workspaceRoot?: string,
-): Promise<WorkspaceStructure> {
+export async function requireWorkspace(workspaceRoot?: string): Promise<WorkspaceStructure> {
   try {
     // Mirrors `init` with no path: an unconfigured workspace means the current directory
     const root = workspaceRoot || configManager.getConfig().workspace || Deno.cwd();
@@ -223,9 +221,10 @@ export function formatProblemSummary(
     lines.push(problem.description);
   } else {
     // Truncate description to first 100 characters
-    const truncated = problem.description.length > 100
-      ? problem.description.substring(0, 100) + '...'
-      : problem.description;
+    const truncated =
+      problem.description.length > 100
+        ? problem.description.substring(0, 100) + '...'
+        : problem.description;
     lines.push('');
     lines.push(truncated);
   }
@@ -266,10 +265,7 @@ export function formatProblemSummary(
  * }
  * ```
  */
-export async function confirmAction(
-  message: string,
-  defaultValue = false,
-): Promise<boolean> {
+export async function confirmAction(message: string, defaultValue = false): Promise<boolean> {
   // Format prompt with default indicator
   const defaultIndicator = defaultValue ? '[Y/n]' : '[y/N]';
   const prompt = `${message} ${defaultIndicator}: `;
@@ -287,10 +283,7 @@ export async function confirmAction(
   }
 
   // Parse input
-  const input = new TextDecoder()
-    .decode(buf.subarray(0, n))
-    .trim()
-    .toLowerCase();
+  const input = new TextDecoder().decode(buf.subarray(0, n)).trim().toLowerCase();
 
   // Empty input means use default
   if (input === '') {

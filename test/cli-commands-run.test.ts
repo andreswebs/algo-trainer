@@ -5,9 +5,9 @@
  */
 
 import { assertEquals } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { extractRunOptions, resolveFilePath, resolveLanguage } from '../src/cli/commands/run.ts';
 
 describe('extractRunOptions', () => {

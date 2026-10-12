@@ -422,11 +422,9 @@ export async function updateProblemMetadata(
     };
 
     // Write updated metadata
-    await writeTextFile(
-      paths.metadataFile,
-      JSON.stringify(updatedMetadata, null, 2),
-      { overwrite: true },
-    );
+    await writeTextFile(paths.metadataFile, JSON.stringify(updatedMetadata, null, 2), {
+      overwrite: true,
+    });
 
     return true;
   } catch (_error) {

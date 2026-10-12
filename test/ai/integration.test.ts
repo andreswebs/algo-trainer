@@ -8,13 +8,13 @@
  */
 
 import { assertEquals, assertExists, assertStringIncludes } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { ensureDir } from '@std/fs';
 import { join } from '@std/path';
-import { TeachingEngine, TeachingSession } from '../../src/core/ai/mod.ts';
-import { findTeachingScript, loadAndValidateScript } from '../../src/core/ai/parser.ts';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { initializeConfig } from '../../src/config/manager.ts';
 import { getConfigPaths } from '../../src/config/paths.ts';
+import { TeachingEngine, TeachingSession } from '../../src/core/ai/mod.ts';
+import { findTeachingScript, loadAndValidateScript } from '../../src/core/ai/parser.ts';
 import type { ExecutionResult } from '../../src/core/ai/types.ts';
 
 describe('AI Teaching System Integration Tests', () => {
@@ -223,16 +223,8 @@ steps:
         passed: false,
         exitCode: 0,
       };
-      assertEquals(
-        engine.processExecution('code', result),
-        null,
-        'No on_run feedback available',
-      );
-      assertEquals(
-        engine.handleRequest('help'),
-        null,
-        'No on_request handlers available',
-      );
+      assertEquals(engine.processExecution('code', result), null, 'No on_run feedback available');
+      assertEquals(engine.handleRequest('help'), null, 'No on_request handlers available');
     });
   });
 
@@ -330,11 +322,7 @@ function traverse(node) {
       const config = await initializeConfig();
 
       // Verify default is enabled
-      assertEquals(
-        config.aiEnabled,
-        true,
-        'AI teaching should be enabled by default',
-      );
+      assertEquals(config.aiEnabled, true, 'AI teaching should be enabled by default');
 
       // When aiEnabled is false, commands should skip teaching features
       // This would be checked by actual CLI commands before calling engine
@@ -368,18 +356,11 @@ steps:
   describe('Script Discovery Tests', () => {
     it('should find and load built-in teaching scripts', async () => {
       // Test finding built-in scripts (these exist in src/data/scripts/)
-      const builtinScripts = [
-        'two-sum',
-        'valid-parentheses',
-        'climbing-stairs',
-      ];
+      const builtinScripts = ['two-sum', 'valid-parentheses', 'climbing-stairs'];
 
       for (const slug of builtinScripts) {
         const scriptPath = await findTeachingScript(slug);
-        assertExists(
-          scriptPath,
-          `Should find built-in script for ${slug}`,
-        );
+        assertExists(scriptPath, `Should find built-in script for ${slug}`);
         assertStringIncludes(
           scriptPath,
           'src/data/scripts',
@@ -438,11 +419,7 @@ steps:
       const nonExistentSlug = 'non-existent-problem-slug-12345';
 
       const scriptPath = await findTeachingScript(nonExistentSlug);
-      assertEquals(
-        scriptPath,
-        null,
-        'Should return null for non-existent script',
-      );
+      assertEquals(scriptPath, null, 'Should return null for non-existent script');
 
       // Engine should handle missing script gracefully
       const session = new TeachingSession(nonExistentSlug);

@@ -15,11 +15,7 @@
       "output": 9
     }
   ],
-  "constraints": [
-    "n == height.length",
-    "1 <= n <= 2 * 10^4",
-    "0 <= height[i] <= 10^5"
-  ],
+  "constraints": ["n == height.length", "1 <= n <= 2 * 10^4", "0 <= height[i] <= 10^5"],
   "hints": [
     "Water at any position is determined by the minimum of the maximum heights on both sides.",
     "You can precompute the maximum height to the left and right of each position.",

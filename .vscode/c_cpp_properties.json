@@ -2,19 +2,13 @@
   "configurations": [
     {
       "name": "macos-clang-arm64",
-      "includePath": [
-        "${workspaceFolder}/**"
-      ],
-      "defines": [
-        "LC_LOCAL"
-      ],
+      "includePath": ["${workspaceFolder}/**"],
+      "defines": ["LC_LOCAL"],
       "compilerPath": "/usr/bin/clang",
       "cStandard": "${default}",
       "cppStandard": "c++23",
       "intelliSenseMode": "macos-clang-arm64",
-      "compilerArgs": [
-        ""
-      ]
+      "compilerArgs": [""]
     }
   ],
   "version": 4

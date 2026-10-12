@@ -7,8 +7,8 @@
 import { assertEquals, assertRejects } from '@std/assert';
 import { join } from '@std/path';
 import { ProblemDatabase } from '../src/core/problem/database.ts';
-import { ProblemError } from '../src/utils/errors.ts';
 import type { RawProblemJson } from '../src/core/problem/types.ts';
+import { ProblemError } from '../src/utils/errors.ts';
 
 const PROBLEM_1: RawProblemJson = {
   id: '1',
@@ -65,7 +65,12 @@ const PROBLEM_4: RawProblemJson = {
   description: 'Merge overlapping intervals.',
   examples: [
     {
-      input: { intervals: [[1, 3], [2, 6]] },
+      input: {
+        intervals: [
+          [1, 3],
+          [2, 6],
+        ],
+      },
       output: [[1, 6]],
     },
   ],
@@ -73,9 +78,7 @@ const PROBLEM_4: RawProblemJson = {
   companies: ['Google', 'Microsoft'],
 };
 
-async function createTestProblemsDirectory(
-  problems: RawProblemJson[],
-): Promise<string> {
+async function createTestProblemsDirectory(problems: RawProblemJson[]): Promise<string> {
   const tempDir = await Deno.makeTempDir({ prefix: 'db-test-' });
 
   for (const problem of problems) {
@@ -144,12 +147,7 @@ Deno.test('ProblemDatabase.load - builds bySlug index correctly', async () => {
 });
 
 Deno.test('ProblemDatabase.load - builds byDifficulty index correctly', async () => {
-  const tempDir = await createTestProblemsDirectory([
-    PROBLEM_1,
-    PROBLEM_2,
-    PROBLEM_3,
-    PROBLEM_4,
-  ]);
+  const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3, PROBLEM_4]);
 
   try {
     const db = await ProblemDatabase.load({
@@ -174,12 +172,7 @@ Deno.test('ProblemDatabase.load - builds byDifficulty index correctly', async ()
 });
 
 Deno.test('ProblemDatabase.load - builds byTag index correctly', async () => {
-  const tempDir = await createTestProblemsDirectory([
-    PROBLEM_1,
-    PROBLEM_2,
-    PROBLEM_3,
-    PROBLEM_4,
-  ]);
+  const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3, PROBLEM_4]);
 
   try {
     const db = await ProblemDatabase.load({
@@ -202,11 +195,7 @@ Deno.test('ProblemDatabase.load - builds byTag index correctly', async () => {
 });
 
 Deno.test('ProblemDatabase.load - builds byCompany index correctly', async () => {
-  const tempDir = await createTestProblemsDirectory([
-    PROBLEM_1,
-    PROBLEM_2,
-    PROBLEM_4,
-  ]);
+  const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_4]);
 
   try {
     const db = await ProblemDatabase.load({
@@ -361,11 +350,7 @@ Deno.test('ProblemDatabase - getAll returns copy of problems array', async () =>
 });
 
 Deno.test('ProblemDatabase - getAllTags returns sorted unique tags', async () => {
-  const tempDir = await createTestProblemsDirectory([
-    PROBLEM_1,
-    PROBLEM_2,
-    PROBLEM_3,
-  ]);
+  const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3]);
 
   try {
     const db = await ProblemDatabase.load({
@@ -383,11 +368,7 @@ Deno.test('ProblemDatabase - getAllTags returns sorted unique tags', async () =>
 });
 
 Deno.test('ProblemDatabase - getAllCompanies returns sorted unique companies', async () => {
-  const tempDir = await createTestProblemsDirectory([
-    PROBLEM_1,
-    PROBLEM_2,
-    PROBLEM_4,
-  ]);
+  const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_4]);
 
   try {
     const db = await ProblemDatabase.load({
@@ -405,12 +386,7 @@ Deno.test('ProblemDatabase - getAllCompanies returns sorted unique companies', a
 });
 
 Deno.test('ProblemDatabase - getDifficultyDistribution returns correct counts', async () => {
-  const tempDir = await createTestProblemsDirectory([
-    PROBLEM_1,
-    PROBLEM_2,
-    PROBLEM_3,
-    PROBLEM_4,
-  ]);
+  const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3, PROBLEM_4]);
 
   try {
     const db = await ProblemDatabase.load({

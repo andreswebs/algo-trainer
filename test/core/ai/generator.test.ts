@@ -219,11 +219,10 @@ Deno.test('ADVANCED_TEMPLATE - includes persistence encouragement', () => {
 });
 
 Deno.test('ADVANCED_TEMPLATE - includes optimization hints', () => {
-  const hasOptimization = ADVANCED_TEMPLATE.steps.some(
-    (step) =>
-      step.keywords?.some((k) =>
-        k.toLowerCase().includes('optimiz') || k.toLowerCase().includes('complexity')
-      ),
+  const hasOptimization = ADVANCED_TEMPLATE.steps.some((step) =>
+    step.keywords?.some(
+      (k) => k.toLowerCase().includes('optimiz') || k.toLowerCase().includes('complexity'),
+    ),
   );
   assertEquals(hasOptimization, true, 'Should include optimization-related keywords');
 });
@@ -471,7 +470,7 @@ Deno.test('Template progression - all templates have required base steps', () =>
 
     for (const requiredType of requiredTypes) {
       assertEquals(
-        stepTypes.includes(requiredType as typeof stepTypes[0]),
+        stepTypes.includes(requiredType as (typeof stepTypes)[0]),
         true,
         `${template.type} template should include ${requiredType} step`,
       );
@@ -1244,11 +1243,7 @@ Deno.test('TeachingScriptGenerator - language-specific hints', () => {
     assertEquals(hintSteps.length > 0, true, `Should generate hints for ${language}`);
 
     const hashTableHints = hintSteps.filter((s) => s.content.includes('Hash Table'));
-    assertEquals(
-      hashTableHints.length > 0,
-      true,
-      `Should have hash table hints for ${language}`,
-    );
+    assertEquals(hashTableHints.length > 0, true, `Should have hash table hints for ${language}`);
 
     // Check for language-specific mentions
     const content = hashTableHints[0].content.toLowerCase();
@@ -1290,8 +1285,8 @@ Deno.test('TeachingScriptGenerator - topic hints include relevant concepts', () 
     tags: ['dynamic-programming'],
   };
   let script = generator.generate(problem);
-  const dpHints = script.steps.filter((s) =>
-    s.type === 'hint' && s.content.includes('Dynamic Programming')
+  const dpHints = script.steps.filter(
+    (s) => s.type === 'hint' && s.content.includes('Dynamic Programming'),
   );
   assertEquals(dpHints.length > 0, true, 'Should have DP hints');
   const dpContent = dpHints[0].content.toLowerCase();
@@ -1314,8 +1309,8 @@ Deno.test('TeachingScriptGenerator - topic hints include relevant concepts', () 
     tags: ['binary-tree'],
   };
   script = generator.generate(problem);
-  const treeHints = script.steps.filter((s) =>
-    s.type === 'hint' && s.content.includes('Binary Tree')
+  const treeHints = script.steps.filter(
+    (s) => s.type === 'hint' && s.content.includes('Binary Tree'),
   );
   assertEquals(treeHints.length > 0, true, 'Should have tree hints');
   const treeContent = treeHints[0].content.toLowerCase();
@@ -1342,7 +1337,8 @@ Deno.test('TeachingScriptGenerator - topic hints include relevant concepts', () 
   assertEquals(graphHints.length > 0, true, 'Should have graph hints');
   const graphContent = graphHints[0].content.toLowerCase();
   assertEquals(
-    graphContent.includes('bfs') || graphContent.includes('dfs') ||
+    graphContent.includes('bfs') ||
+      graphContent.includes('dfs') ||
       graphContent.includes('visited'),
     true,
     'Graph hints should mention BFS, DFS, or visited tracking',

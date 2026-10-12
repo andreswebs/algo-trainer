@@ -7,19 +7,19 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult, Config, Problem, SupportedLanguage } from '../../types/global.ts';
-import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
-import { logger } from '../../utils/output.ts';
+import { join } from '@std/path';
 import { configManager } from '../../config/manager.ts';
+import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import {
   getProblemMetadata,
   problemExists,
   updateProblemMetadata,
 } from '../../core/workspace/generation.ts';
-import { requireProblemManager, requireWorkspace, resolveProblem } from './shared.ts';
+import type { CommandResult, Config, Problem, SupportedLanguage } from '../../types/global.ts';
+import { logger } from '../../utils/output.ts';
+import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
 import { showCommandHelp } from './help.ts';
-import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
-import { join } from '@std/path';
+import { requireProblemManager, requireWorkspace, resolveProblem } from './shared.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -71,11 +71,7 @@ export function extractHintOptions(args: Args): HintOptions {
  * Format and display a single hint
  */
 function displayHint(level: number, hint: string, isUsed: boolean): void {
-  const levelLabel = [
-    'General Approach',
-    'Algorithm/Data Structure',
-    'Solution Strategy',
-  ][level];
+  const levelLabel = ['General Approach', 'Algorithm/Data Structure', 'Solution Strategy'][level];
   const usedIndicator = isUsed ? '✓' : '•';
 
   logger.newline();
@@ -133,9 +129,7 @@ function displayHints(
   }
 
   // Progressive hint display: show the next hint that hasn't been used
-  const nextHintIndex = hints.findIndex(
-    (_, index) => !hintsUsed.includes(index),
-  );
+  const nextHintIndex = hints.findIndex((_, index) => !hintsUsed.includes(index));
 
   if (nextHintIndex === -1) {
     // All hints have been used, show summary
@@ -156,19 +150,13 @@ function displayHints(
   newHintsUsed.push(nextHintIndex);
 
   // Show progress
-  const progressBar = hints
-    .map((_, i) => (newHintsUsed.includes(i) ? '█' : '░'))
-    .join('');
+  const progressBar = hints.map((_, i) => (newHintsUsed.includes(i) ? '█' : '░')).join('');
   logger.newline();
-  logger.log(
-    `Progress: ${progressBar} (${newHintsUsed.length}/${hints.length})`,
-  );
+  logger.log(`Progress: ${progressBar} (${newHintsUsed.length}/${hints.length})`);
 
   if (newHintsUsed.length < hints.length) {
     logger.newline();
-    logger.log(
-      `💬 Use 'algo-trainer hint --level ${nextHintIndex + 2}' for the next hint`,
-    );
+    logger.log(`💬 Use 'algo-trainer hint --level ${nextHintIndex + 2}' for the next hint`);
   }
 
   return newHintsUsed.sort((a, b) => a - b);
@@ -194,10 +182,7 @@ export async function loadProblemState(
  * Validate the requested hint level against available hints.
  * Returns an error message string if invalid, null if valid (or undefined level).
  */
-export function validateHintLevel(
-  level: number | undefined,
-  hints: string[],
-): string | null {
+export function validateHintLevel(level: number | undefined, hints: string[]): string | null {
   if (level === undefined) {
     return null;
   }

@@ -28,10 +28,7 @@ Deno.test('ExitCode - should have all required exit codes', () => {
 });
 
 Deno.test('getExitCodeDescription - should return correct descriptions', () => {
-  assertEquals(
-    getExitCodeDescription(ExitCode.SUCCESS),
-    'Command completed successfully',
-  );
+  assertEquals(getExitCodeDescription(ExitCode.SUCCESS), 'Command completed successfully');
   assertEquals(
     getExitCodeDescription(ExitCode.GENERAL_ERROR),
     'General or unexpected error occurred',

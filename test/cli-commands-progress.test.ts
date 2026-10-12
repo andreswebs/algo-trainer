@@ -9,9 +9,10 @@
  */
 
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
-import { join } from '@std/path';
 import type { Args } from '@std/cli/parse-args';
+import { join } from '@std/path';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import type { ProblemStatusMetadata } from '../src/cli/commands/progress.ts';
 import {
   buildCategoryStats,
   buildDifficultyStats,
@@ -20,10 +21,9 @@ import {
   extractProgressOptions,
   progressCommand,
 } from '../src/cli/commands/progress.ts';
-import type { ProblemStatusMetadata } from '../src/cli/commands/progress.ts';
+import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
 import { initWorkspace } from '../src/core/mod.ts';
-import { ExitCode } from '../src/cli/exit-codes.ts';
 
 // Helper to capture console output
 class ConsoleCapture {
@@ -240,10 +240,7 @@ describe('progressCommand', () => {
       difficulty: 'easy',
       tags: ['array', 'test'],
     };
-    await Deno.writeTextFile(
-      join(problemDir, '.problem.json'),
-      JSON.stringify(metadata, null, 2),
-    );
+    await Deno.writeTextFile(join(problemDir, '.problem.json'), JSON.stringify(metadata, null, 2));
 
     capture.start();
     const result = await progressCommand({ _: [] });
@@ -270,10 +267,7 @@ describe('progressCommand', () => {
       difficulty: 'medium',
       tags: ['string', 'test'],
     };
-    await Deno.writeTextFile(
-      join(problemDir, '.problem.json'),
-      JSON.stringify(metadata, null, 2),
-    );
+    await Deno.writeTextFile(join(problemDir, '.problem.json'), JSON.stringify(metadata, null, 2));
 
     capture.start();
     const result = await progressCommand({ _: [] });
@@ -492,7 +486,11 @@ describe('buildCategoryStats', () => {
   it('returns an entry for each category in any of the three maps', () => {
     const current = new Map([['array', 1]]);
     const completed = new Map([['dp', 2]]);
-    const total = new Map([['array', 5], ['dp', 8], ['graph', 3]]);
+    const total = new Map([
+      ['array', 5],
+      ['dp', 8],
+      ['graph', 3],
+    ]);
     const stats = buildCategoryStats(current, completed, total);
     assertEquals(stats.length, 3);
   });
@@ -521,8 +519,16 @@ describe('buildCategoryStats', () => {
 
   it('sorts by completed descending then category name ascending', () => {
     const current = new Map<string, number>();
-    const completed = new Map([['dp', 5], ['array', 3], ['graph', 5]]);
-    const total = new Map([['dp', 10], ['array', 10], ['graph', 10]]);
+    const completed = new Map([
+      ['dp', 5],
+      ['array', 3],
+      ['graph', 5],
+    ]);
+    const total = new Map([
+      ['dp', 10],
+      ['array', 10],
+      ['graph', 10],
+    ]);
     const stats = buildCategoryStats(current, completed, total);
     // dp and graph both have 5 completed, sorted alphabetically → graph < dp? No: 'dp' < 'graph'
     assertEquals(stats[0].category, 'dp');

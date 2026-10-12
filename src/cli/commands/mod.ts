@@ -8,12 +8,12 @@
 
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../../types/global.ts';
-import type { CommandHandler } from '../types.ts';
 import { ExitCode } from '../exit-codes.ts';
+import type { CommandHandler } from '../types.ts';
 import { challengeCommand } from './challenge.ts';
 import { completeCommand } from './complete.ts';
-import { hintCommand } from './hint.ts';
 import { configCommand } from './config.ts';
+import { hintCommand } from './hint.ts';
 import { initCommand } from './init.ts';
 import { listCommand } from './list.ts';
 import { progressCommand } from './progress.ts';
@@ -47,7 +47,9 @@ export function getAvailableCommands(): Array<{ name: string; description: strin
 export async function dispatch(command: string, args: Args): Promise<CommandResult> {
   const entry = commands[command];
   if (!entry) {
-    const availableNames = getAvailableCommands().map((cmd) => cmd.name).join(', ');
+    const availableNames = getAvailableCommands()
+      .map((cmd) => cmd.name)
+      .join(', ');
     return {
       success: false,
       error: `Unknown command: ${command}. Available commands: ${availableNames}`,

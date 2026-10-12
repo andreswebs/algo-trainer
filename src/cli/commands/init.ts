@@ -7,12 +7,12 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { CommandResult } from '../../types/global.ts';
+import { resolve } from '@std/path';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, initWorkspace, isWorkspaceInitialized } from '../../core/mod.ts';
-import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
+import type { CommandResult } from '../../types/global.ts';
 import { logger } from '../../utils/output.ts';
-import { resolve } from '@std/path';
+import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
 import { showCommandHelp } from './help.ts';
 
 function showHelp(): void {
@@ -73,9 +73,8 @@ export async function initCommand(args: Args): Promise<CommandResult> {
       try {
         const config = configManager.getConfig();
         // Use config workspace if it's not empty, otherwise use current directory
-        workspaceRoot = config.workspace && config.workspace.trim().length > 0
-          ? config.workspace
-          : Deno.cwd();
+        workspaceRoot =
+          config.workspace && config.workspace.trim().length > 0 ? config.workspace : Deno.cwd();
       } catch {
         // Config not loaded, use current directory
         workspaceRoot = Deno.cwd();

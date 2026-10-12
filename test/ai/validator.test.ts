@@ -10,8 +10,8 @@
 
 import { assertEquals } from '@std/assert';
 import { describe, it } from '@std/testing/bdd';
-import { isValidTeachingScript, validateTeachingScript } from '../../src/core/ai/validator.ts';
 import type { TeachingScript } from '../../src/core/ai/types.ts';
+import { isValidTeachingScript, validateTeachingScript } from '../../src/core/ai/validator.ts';
 
 describe('validateTeachingScript', () => {
   describe('valid scripts', () => {
@@ -177,7 +177,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('id')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('id')),
+        true,
+      );
     });
 
     it('should reject scripts with empty id', () => {
@@ -192,7 +195,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('id')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('id')),
+        true,
+      );
     });
 
     it('should reject scripts without title', () => {
@@ -206,7 +212,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('title')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('title')),
+        true,
+      );
     });
 
     it('should reject scripts with empty title', () => {
@@ -221,7 +230,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('title')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('title')),
+        true,
+      );
     });
 
     it('should reject scripts without difficulty', () => {
@@ -235,7 +247,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('difficulty')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('difficulty')),
+        true,
+      );
     });
 
     it('should reject scripts with invalid difficulty', () => {
@@ -250,7 +265,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('difficulty')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('difficulty')),
+        true,
+      );
     });
 
     it('should reject scripts without tags', () => {
@@ -264,7 +282,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('tags')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('tags')),
+        true,
+      );
     });
 
     it('should reject scripts with non-array tags', () => {
@@ -279,7 +300,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('tags')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('tags')),
+        true,
+      );
     });
 
     it('should reject scripts with empty tag strings', () => {
@@ -294,7 +318,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('tag')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('tag')),
+        true,
+      );
     });
 
     it('should reject scripts without language', () => {
@@ -308,7 +335,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('language')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('language')),
+        true,
+      );
     });
 
     it('should reject scripts with invalid language', () => {
@@ -323,7 +353,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('language')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('language')),
+        true,
+      );
     });
   });
 
@@ -339,7 +372,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('steps')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('steps')),
+        true,
+      );
     });
 
     it('should reject scripts with non-array steps', () => {
@@ -354,7 +390,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('steps')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('steps')),
+        true,
+      );
     });
 
     it('should reject scripts with empty steps array', () => {
@@ -369,7 +408,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('steps')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('steps')),
+        true,
+      );
     });
 
     it('should reject steps without type', () => {
@@ -384,7 +426,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('type')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('type')),
+        true,
+      );
     });
 
     it('should reject steps with invalid type', () => {
@@ -399,7 +444,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('type')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('type')),
+        true,
+      );
     });
 
     it('should reject steps without content', () => {
@@ -414,7 +462,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('content')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('content')),
+        true,
+      );
     });
 
     it('should reject steps with empty content', () => {
@@ -429,7 +480,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('content')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('content')),
+        true,
+      );
     });
   });
 
@@ -570,7 +624,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('keywords')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('keywords')),
+        true,
+      );
     });
 
     it('should reject on_request steps with non-array keywords', () => {
@@ -591,7 +648,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('keywords')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('keywords')),
+        true,
+      );
     });
 
     it('should reject on_request steps with empty keyword strings', () => {
@@ -612,7 +672,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('keyword')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('keyword')),
+        true,
+      );
     });
 
     it('should reject steps with empty trigger strings', () => {
@@ -633,7 +696,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('trigger')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('trigger')),
+        true,
+      );
     });
   });
 
@@ -700,25 +766,37 @@ describe('validateTeachingScript', () => {
     it('should reject null script', () => {
       const result = validateTeachingScript(null);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('object')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('object')),
+        true,
+      );
     });
 
     it('should reject undefined script', () => {
       const result = validateTeachingScript(undefined);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('object')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('object')),
+        true,
+      );
     });
 
     it('should reject non-object script', () => {
       const result = validateTeachingScript('not an object');
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('object')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('object')),
+        true,
+      );
     });
 
     it('should reject array script', () => {
       const result = validateTeachingScript([]);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('object')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('object')),
+        true,
+      );
     });
 
     it('should reject steps with non-object items', () => {
@@ -733,7 +811,10 @@ describe('validateTeachingScript', () => {
 
       const result = validateTeachingScript(script);
       assertEquals(result.valid, false);
-      assertEquals(result.errors.some((e) => e.includes('object')), true);
+      assertEquals(
+        result.errors.some((e) => e.includes('object')),
+        true,
+      );
     });
   });
 

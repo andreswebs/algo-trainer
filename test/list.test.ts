@@ -5,8 +5,8 @@
  */
 
 import { assertEquals } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import type { Args } from '@std/cli/parse-args';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { extractListOptions, listCommand } from '../src/cli/commands/list.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 

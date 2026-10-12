@@ -9,6 +9,11 @@
  * @module core/ai/engine
  */
 
+import { createErrorContext, TeachingError } from '../../utils/errors.ts';
+import { logger } from '../../utils/output.ts';
+import { findScriptPath, loadAndValidateScript } from './parser.ts';
+import { TeachingSession } from './session.ts';
+import { evaluateTrigger } from './triggers.ts';
 import type {
   ExecutionResult,
   TeachingScript,
@@ -16,11 +21,6 @@ import type {
   TeachingStepType,
   TriggerContext,
 } from './types.ts';
-import { TeachingSession } from './session.ts';
-import { evaluateTrigger } from './triggers.ts';
-import { findScriptPath, loadAndValidateScript } from './parser.ts';
-import { createErrorContext, TeachingError } from '../../utils/errors.ts';
-import { logger } from '../../utils/output.ts';
 
 /**
  * Script metadata information returned by getScriptInfo.
@@ -335,7 +335,7 @@ export class TeachingEngine {
     for (const step of steps) {
       if (step.keywords && step.keywords.length > 0) {
         const hasMatch = step.keywords.some((keyword) =>
-          lowerQuery.includes(keyword.toLowerCase())
+          lowerQuery.includes(keyword.toLowerCase()),
         );
         if (hasMatch) {
           return this.formatContent(step.content);
@@ -421,10 +421,7 @@ export class TeachingEngine {
    * @param context - Trigger context for evaluation
    * @returns First matching step, or null if no match
    */
-  private findMatchingStep(
-    steps: TeachingStep[],
-    context: TriggerContext,
-  ): TeachingStep | null {
+  private findMatchingStep(steps: TeachingStep[], context: TriggerContext): TeachingStep | null {
     for (const step of steps) {
       // Steps without triggers always match
       if (!step.trigger) {

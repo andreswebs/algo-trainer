@@ -13,16 +13,16 @@
  * @module core/ai/validator
  */
 
-import type { TeachingScript, TeachingStepType } from './types.ts';
 import {
   combineValidationResults,
   createValidationResult,
+  type ValidationResult,
   validateArray,
   validateDifficulty,
   validateString,
   validateSupportedLanguage,
-  type ValidationResult,
 } from '../../utils/validation.ts';
+import type { TeachingScript, TeachingStepType } from './types.ts';
 
 /**
  * Valid teaching step types
@@ -39,11 +39,7 @@ const VALID_STEP_TYPES: TeachingStepType[] = [
 /**
  * Step types that should not have triggers
  */
-const NO_TRIGGER_TYPES: TeachingStepType[] = [
-  'intro',
-  'pre_prompt',
-  'after_success',
-];
+const NO_TRIGGER_TYPES: TeachingStepType[] = ['intro', 'pre_prompt', 'after_success'];
 
 /**
  * Step types that require triggers
@@ -84,10 +80,8 @@ function validateScriptMetadata(script: Record<string, unknown>): ValidationResu
   if (!('tags' in script)) {
     errors.push('tags is required');
   } else {
-    const tagsResult = validateArray(
-      script.tags,
-      'tags',
-      (item) => validateString(item, 'tag', { allowEmpty: false }),
+    const tagsResult = validateArray(script.tags, 'tags', (item) =>
+      validateString(item, 'tag', { allowEmpty: false }),
     );
     if (!tagsResult.valid) errors.push(...tagsResult.errors);
   }
@@ -123,9 +117,7 @@ function validateStep(step: unknown, index: number): ValidationResult {
   } else if (typeof stepObj.type !== 'string') {
     errors.push(`${prefix}.type must be a string`);
   } else if (!VALID_STEP_TYPES.includes(stepObj.type as TeachingStepType)) {
-    errors.push(
-      `${prefix}.type must be one of: ${VALID_STEP_TYPES.join(', ')}`,
-    );
+    errors.push(`${prefix}.type must be one of: ${VALID_STEP_TYPES.join(', ')}`);
   }
 
   const stepType = stepObj.type as TeachingStepType;
@@ -152,9 +144,7 @@ function validateStep(step: unknown, index: number): ValidationResult {
 
     // Check if step type should not have triggers
     if (NO_TRIGGER_TYPES.includes(stepType)) {
-      errors.push(
-        `${prefix}: '${stepType}' steps must not have triggers (they are always shown)`,
-      );
+      errors.push(`${prefix}: '${stepType}' steps must not have triggers (they are always shown)`);
     }
   }
 
@@ -169,16 +159,12 @@ function validateStep(step: unknown, index: number): ValidationResult {
   if ('keywords' in stepObj && stepObj.keywords !== undefined) {
     // Keywords only valid for on_request type
     if (stepType !== 'on_request') {
-      errors.push(
-        `${prefix}: 'keywords' are only valid for 'on_request' steps`,
-      );
+      errors.push(`${prefix}: 'keywords' are only valid for 'on_request' steps`);
     }
 
     // Validate keywords is array of strings
-    const keywordsResult = validateArray(
-      stepObj.keywords,
-      `${prefix}.keywords`,
-      (item) => validateString(item, 'keyword', { allowEmpty: false }),
+    const keywordsResult = validateArray(stepObj.keywords, `${prefix}.keywords`, (item) =>
+      validateString(item, 'keyword', { allowEmpty: false }),
     );
     if (!keywordsResult.valid) errors.push(...keywordsResult.errors);
   }

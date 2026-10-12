@@ -18,10 +18,7 @@
       "output": true
     }
   ],
-  "constraints": [
-    "1 <= nums.length <= 10^5",
-    "-10^9 <= nums[i] <= 10^9"
-  ],
+  "constraints": ["1 <= nums.length <= 10^5", "-10^9 <= nums[i] <= 10^9"],
   "hints": [
     "A naive approach would be to compare every pair of elements. What's the time complexity of this?",
     "Think about using a hash set to track numbers you've already seen.",

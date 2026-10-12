@@ -5,8 +5,10 @@
  */
 
 import { assertEquals } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import type { Args } from '@std/cli/parse-args';
+import { ensureDir } from '@std/fs';
+import { join } from '@std/path';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import {
   extractHintOptions,
   hintCommand,
@@ -14,11 +16,9 @@ import {
   updateHintTracking,
   validateHintLevel,
 } from '../src/cli/commands/hint.ts';
+import { ENV_VARS } from '../src/cli/env.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
-import { ENV_VARS } from '../src/cli/env.ts';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
 import { getSolutionFileName } from '../src/core/workspace/files.ts';
 
 describe('extractHintOptions', () => {

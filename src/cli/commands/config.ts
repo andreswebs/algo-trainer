@@ -7,14 +7,18 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
-import type { Config, SupportedLanguage, UserPreferences } from '../../types/global.ts';
-import type { CommandResult } from '../../types/global.ts';
-import { ExitCode } from '../exit-codes.ts';
-import { logger, outputData } from '../../utils/output.ts';
 import { configManager } from '../../config/manager.ts';
 import { DEFAULT_CONFIG } from '../../config/types.ts';
-import { showCommandHelp } from './help.ts';
+import type {
+  CommandResult,
+  Config,
+  SupportedLanguage,
+  UserPreferences,
+} from '../../types/global.ts';
 import { ValidationError } from '../../utils/errors.ts';
+import { logger, outputData } from '../../utils/output.ts';
+import { ExitCode } from '../exit-codes.ts';
+import { showCommandHelp } from './help.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -108,9 +112,7 @@ export function extractConfigOptions(args: Args): ConfigOptions {
  */
 function getConfigValue(config: Config, key: string): unknown {
   if (key.startsWith('preferences.')) {
-    const prefKey = key.substring(
-      'preferences.'.length,
-    ) as keyof UserPreferences;
+    const prefKey = key.substring('preferences.'.length) as keyof UserPreferences;
     return config.preferences[prefKey];
   }
   return config[key as keyof Config];
@@ -206,9 +208,7 @@ function parseConfigValue(key: string, value: string): unknown {
  */
 async function setConfigValue(key: string, value: unknown): Promise<void> {
   if (key.startsWith('preferences.')) {
-    const prefKey = key.substring(
-      'preferences.'.length,
-    ) as keyof UserPreferences;
+    const prefKey = key.substring('preferences.'.length) as keyof UserPreferences;
     await configManager.updatePreferences({ [prefKey]: value });
   } else {
     await configManager.updateConfig({ [key]: value } as Partial<Config>);

@@ -8,22 +8,20 @@
  */
 
 import { assertEquals } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { join } from '@std/path';
-
-// Import CLI commands
-import { initCommand } from '../src/cli/commands/init.ts';
+import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { challengeCommand } from '../src/cli/commands/challenge.ts';
 import { completeCommand } from '../src/cli/commands/complete.ts';
 import { configCommand } from '../src/cli/commands/config.ts';
-import { listCommand } from '../src/cli/commands/list.ts';
 import { hintCommand } from '../src/cli/commands/hint.ts';
+// Import CLI commands
+import { initCommand } from '../src/cli/commands/init.ts';
+import { listCommand } from '../src/cli/commands/list.ts';
 import { progressCommand } from '../src/cli/commands/progress.ts';
-
-// Import utilities
-import { configManager } from '../src/config/manager.ts';
 import { ENV_VARS } from '../src/cli/env.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+// Import utilities
+import { configManager } from '../src/config/manager.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized, problemExists } from '../src/core/mod.ts';
 import { getFileExtension } from '../src/core/workspace/files.ts';
 import type { SupportedLanguage } from '../src/types/global.ts';

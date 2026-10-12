@@ -248,11 +248,7 @@ describe('Environment Variable Configuration', () => {
 
       // Check that all env vars are documented
       for (const varName of Object.values(ENV_VARS)) {
-        assertEquals(
-          doc.includes(varName),
-          true,
-          `Documentation should include ${varName}`,
-        );
+        assertEquals(doc.includes(varName), true, `Documentation should include ${varName}`);
       }
     });
 

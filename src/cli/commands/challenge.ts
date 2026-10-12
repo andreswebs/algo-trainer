@@ -7,6 +7,15 @@
  */
 
 import type { Args } from '@std/cli/parse-args';
+import { join } from '@std/path';
+import { configManager } from '../../config/manager.ts';
+import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
+import {
+  generateProblemFiles,
+  initWorkspace,
+  isWorkspaceInitialized,
+  problemExists,
+} from '../../core/mod.ts';
 import type {
   CommandResult,
   Difficulty,
@@ -14,26 +23,17 @@ import type {
   ProblemQuery,
   SupportedLanguage,
 } from '../../types/global.ts';
-import { configManager } from '../../config/manager.ts';
-import {
-  generateProblemFiles,
-  initWorkspace,
-  isWorkspaceInitialized,
-  problemExists,
-} from '../../core/mod.ts';
-import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
-import { join } from '@std/path';
-import { ExitCode } from '../exit-codes.ts';
+import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
 import { logger } from '../../utils/output.ts';
+import { ExitCode } from '../exit-codes.ts';
+import { promptDifficulty, promptLanguage } from '../prompts.ts';
+import { showCommandHelp } from './help.ts';
 import {
   confirmAction,
   formatProblemSummary,
   requireProblemManager,
   requireWorkspace,
 } from './shared.ts';
-import { ProblemError, WorkspaceError } from '../../utils/errors.ts';
-import { promptDifficulty, promptLanguage } from '../prompts.ts';
-import { showCommandHelp } from './help.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -343,7 +343,8 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const problem = await resolveProblemSelection(options, manager);
     if (!problem) {
       if (
-        options.difficulty && !['easy', 'medium', 'hard'].includes(options.difficulty.toLowerCase())
+        options.difficulty &&
+        !['easy', 'medium', 'hard'].includes(options.difficulty.toLowerCase())
       ) {
         return { success: false, exitCode: ExitCode.USAGE_ERROR };
       }
@@ -381,10 +382,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
       logger.error('Problem error:', error.message);
       return { success: false, exitCode: ExitCode.PROBLEM_ERROR };
     } else {
-      logger.error(
-        'Unexpected error:',
-        error instanceof Error ? error.message : String(error),
-      );
+      logger.error('Unexpected error:', error instanceof Error ? error.message : String(error));
       return { success: false, exitCode: ExitCode.GENERAL_ERROR };
     }
   }

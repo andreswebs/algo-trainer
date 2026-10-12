@@ -270,9 +270,7 @@ describe('Logger class', () => {
 
     it('should output empty tables gracefully', () => {
       logger.table([], {
-        columns: [
-          { key: 'name', label: 'Name' },
-        ],
+        columns: [{ key: 'name', label: 'Name' }],
       });
       assertEquals(capture.getOutput(), '');
     });
@@ -280,9 +278,7 @@ describe('Logger class', () => {
     it('should align table columns to the right', () => {
       const data = [{ num: '1' }];
       logger.table(data, {
-        columns: [
-          { key: 'num', label: 'Number', width: 10, align: 'right' },
-        ],
+        columns: [{ key: 'num', label: 'Number', width: 10, align: 'right' }],
       });
       const lines = capture.getLines();
       const dataLine = lines.find((line) => line.includes('1'));

@@ -159,11 +159,7 @@ Deno.test('initWorkspace - works with relative paths', async () => {
 });
 
 Deno.test('initWorkspace - throws ValidationError for empty root', async () => {
-  await assertRejects(
-    async () => await initWorkspace(''),
-    ValidationError,
-    'cannot be empty',
-  );
+  await assertRejects(async () => await initWorkspace(''), ValidationError, 'cannot be empty');
 });
 
 Deno.test('initWorkspace - throws ValidationError for invalid path', async () => {
@@ -311,11 +307,7 @@ Deno.test('validateWorkspace - throws WorkspaceError if path exists but is not a
 });
 
 Deno.test('validateWorkspace - throws ValidationError for invalid root', async () => {
-  await assertRejects(
-    async () => await validateWorkspace(''),
-    ValidationError,
-    'cannot be empty',
-  );
+  await assertRejects(async () => await validateWorkspace(''), ValidationError, 'cannot be empty');
 });
 
 Deno.test('validateWorkspace - throws ValidationError for path traversal', async () => {

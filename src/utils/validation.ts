@@ -7,8 +7,8 @@
  * @module utils/validation
  */
 
-import { ValidationError } from './errors.ts';
 import type { Difficulty, SupportedLanguage } from '../types/global.ts';
+import { ValidationError } from './errors.ts';
 
 /**
  * Validation result
@@ -21,17 +21,11 @@ export interface ValidationResult {
 /**
  * Create a validation result
  */
-export function createValidationResult(
-  valid: boolean,
-  errors: string[] = [],
-): ValidationResult {
+export function createValidationResult(valid: boolean, errors: string[] = []): ValidationResult {
   return { valid, errors };
 }
 
-function validateRequired<T>(
-  value: T | null | undefined,
-  fieldName: string,
-): ValidationResult {
+function validateRequired<T>(value: T | null | undefined, fieldName: string): ValidationResult {
   if (value === null || value === undefined) {
     return createValidationResult(false, [`${fieldName} is required`]);
   }
@@ -73,9 +67,7 @@ export function validateString(
   }
 
   if (value.length > maxLength) {
-    errors.push(
-      `${fieldName} must be no more than ${maxLength} characters long`,
-    );
+    errors.push(`${fieldName} must be no more than ${maxLength} characters long`);
   }
 
   if (pattern && !pattern.test(value)) {
@@ -85,10 +77,7 @@ export function validateString(
   return createValidationResult(errors.length === 0, errors);
 }
 
-function validateBoolean(
-  value: unknown,
-  fieldName: string,
-): ValidationResult {
+function validateBoolean(value: unknown, fieldName: string): ValidationResult {
   if (typeof value !== 'boolean') {
     return createValidationResult(false, [`${fieldName} must be a boolean`]);
   }
@@ -127,9 +116,7 @@ export function validateArray<T>(
     value.forEach((item, index) => {
       const result = itemValidator(item, index);
       if (!result.valid) {
-        errors.push(
-          ...result.errors.map((err) => `${fieldName}[${index}]: ${err}`),
-        );
+        errors.push(...result.errors.map((err) => `${fieldName}[${index}]: ${err}`));
       }
     });
   }
@@ -174,10 +161,7 @@ export function validateDifficulty(value: unknown): ValidationResult {
   return validateEnum(value, 'difficulty', validDifficulties);
 }
 
-function validateUrl(
-  value: unknown,
-  fieldName = 'URL',
-): ValidationResult {
+function validateUrl(value: unknown, fieldName = 'URL'): ValidationResult {
   const stringResult = validateString(value, fieldName, { allowEmpty: false });
   if (!stringResult.valid) {
     return stringResult;
@@ -200,10 +184,7 @@ const KEBAB_CASE_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 /**
  * Validate slug is kebab-case format
  */
-export function validateSlug(
-  value: unknown,
-  fieldName = 'slug',
-): ValidationResult {
+export function validateSlug(value: unknown, fieldName = 'slug'): ValidationResult {
   const errors: string[] = [];
 
   if (typeof value !== 'string') {
@@ -228,28 +209,20 @@ export function validateSlug(
 /**
  * Validate ISO-8601 date string
  */
-export function validateISODateString(
-  value: unknown,
-  fieldName: string,
-): ValidationResult {
+export function validateISODateString(value: unknown, fieldName: string): ValidationResult {
   if (typeof value !== 'string') {
     return createValidationResult(false, [`${fieldName} must be a string`]);
   }
 
   const date = new Date(value);
   if (isNaN(date.getTime())) {
-    return createValidationResult(false, [
-      `${fieldName} must be a valid ISO-8601 date string`,
-    ]);
+    return createValidationResult(false, [`${fieldName} must be a valid ISO-8601 date string`]);
   }
 
   return createValidationResult(true);
 }
 
-function validateFilePath(
-  value: unknown,
-  fieldName = 'file path',
-): ValidationResult {
+function validateFilePath(value: unknown, fieldName = 'file path'): ValidationResult {
   const stringResult = validateString(value, fieldName, {
     allowEmpty: false,
     minLength: 1,
@@ -280,11 +253,7 @@ function validateUserPreferences(value: unknown): ValidationResult {
   const prefs = value as Record<string, unknown>;
 
   if ('theme' in prefs) {
-    const themeResult = validateEnum(prefs.theme, 'theme', [
-      'light',
-      'dark',
-      'auto',
-    ]);
+    const themeResult = validateEnum(prefs.theme, 'theme', ['light', 'dark', 'auto']);
     if (!themeResult.valid) errors.push(...themeResult.errors);
   }
 
@@ -352,10 +321,8 @@ export function validateConfig(value: unknown): ValidationResult {
   }
 
   if ('companies' in config) {
-    const companiesResult = validateArray(
-      config.companies,
-      'companies',
-      (item, index) => validateString(item, `companies[${index}]`, { allowEmpty: false }),
+    const companiesResult = validateArray(config.companies, 'companies', (item, index) =>
+      validateString(item, `companies[${index}]`, { allowEmpty: false }),
     );
     if (!companiesResult.valid) errors.push(...companiesResult.errors);
   }
@@ -378,10 +345,7 @@ export function validateConfig(value: unknown): ValidationResult {
 /**
  * Validate a single Example object
  */
-function validateExample(
-  value: unknown,
-  index: number,
-): ValidationResult {
+function validateExample(value: unknown, index: number): ValidationResult {
   const errors: string[] = [];
   const prefix = `examples[${index}]`;
 
@@ -406,11 +370,9 @@ function validateExample(
   }
 
   if ('explanation' in example && example.explanation !== undefined) {
-    const explanationResult = validateString(
-      example.explanation,
-      `${prefix}.explanation`,
-      { allowEmpty: false },
-    );
+    const explanationResult = validateString(example.explanation, `${prefix}.explanation`, {
+      allowEmpty: false,
+    });
     if (!explanationResult.valid) errors.push(...explanationResult.errors);
   }
 
@@ -420,9 +382,7 @@ function validateExample(
 /**
  * Validate problem metadata object
  */
-function validateProblemMetadata(
-  value: unknown,
-): ValidationResult {
+function validateProblemMetadata(value: unknown): ValidationResult {
   const errors: string[] = [];
 
   if (!value || typeof value !== 'object') {
@@ -548,10 +508,8 @@ function validateProblemArrayFields(problem: Record<string, unknown>): string[] 
 
   for (const field of stringArrayFields) {
     if (field in problem && problem[field] !== undefined) {
-      const result = validateArray(
-        problem[field],
-        field,
-        (item) => validateString(item, field, { allowEmpty: false }),
+      const result = validateArray(problem[field], field, (item) =>
+        validateString(item, field, { allowEmpty: false }),
       );
       if (!result.valid) errors.push(...result.errors);
     }
@@ -624,9 +582,7 @@ export function validateOrThrow<T>(
 /**
  * Combine multiple validation results
  */
-export function combineValidationResults(
-  ...results: ValidationResult[]
-): ValidationResult {
+export function combineValidationResults(...results: ValidationResult[]): ValidationResult {
   const errors = results.flatMap((result) => result.errors);
   return createValidationResult(errors.length === 0, errors);
 }

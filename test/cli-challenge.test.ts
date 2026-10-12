@@ -3,18 +3,18 @@
  */
 
 import { assertEquals, assertNotEquals } from '@std/assert';
+import type { Args } from '@std/cli/parse-args';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import type { ChallengeOptions } from '../src/cli/commands/challenge.ts';
 import {
   challengeCommand,
   extractChallengeOptions,
   resolveLanguage,
   resolveProblemSelection,
 } from '../src/cli/commands/challenge.ts';
+import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
 import { initWorkspace, ProblemManager } from '../src/core/mod.ts';
-import { ExitCode } from '../src/cli/exit-codes.ts';
-import type { Args } from '@std/cli/parse-args';
-import type { ChallengeOptions } from '../src/cli/commands/challenge.ts';
 
 describe('extractChallengeOptions', () => {
   it('should extract slug from first positional arg', () => {

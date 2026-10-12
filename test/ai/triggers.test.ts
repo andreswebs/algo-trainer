@@ -76,33 +76,15 @@ Deno.test('evaluateTrigger - numeric equality', () => {
 // -----------------------------------------------------------------------------
 
 Deno.test('evaluateTrigger - logical AND (&&)', () => {
-  assertEquals(
-    evaluateTrigger('passed === false && attempts > 2', baseContext),
-    true,
-  );
-  assertEquals(
-    evaluateTrigger('passed === true && attempts > 2', baseContext),
-    false,
-  );
-  assertEquals(
-    evaluateTrigger('passed === false && attempts > 5', baseContext),
-    false,
-  );
+  assertEquals(evaluateTrigger('passed === false && attempts > 2', baseContext), true);
+  assertEquals(evaluateTrigger('passed === true && attempts > 2', baseContext), false);
+  assertEquals(evaluateTrigger('passed === false && attempts > 5', baseContext), false);
 });
 
 Deno.test('evaluateTrigger - logical OR (||)', () => {
-  assertEquals(
-    evaluateTrigger('passed === true || attempts > 2', baseContext),
-    true,
-  );
-  assertEquals(
-    evaluateTrigger('passed === false || attempts > 5', baseContext),
-    true,
-  );
-  assertEquals(
-    evaluateTrigger('passed === true || attempts > 5', baseContext),
-    false,
-  );
+  assertEquals(evaluateTrigger('passed === true || attempts > 2', baseContext), true);
+  assertEquals(evaluateTrigger('passed === false || attempts > 5', baseContext), true);
+  assertEquals(evaluateTrigger('passed === true || attempts > 5', baseContext), false);
 });
 
 Deno.test('evaluateTrigger - logical NOT (!)', () => {
@@ -133,10 +115,7 @@ Deno.test('evaluateTrigger - string includes() method', () => {
   assertEquals(evaluateTrigger('code.includes("for")', baseContext), true);
   assertEquals(evaluateTrigger('code.includes("while")', baseContext), false);
   assertEquals(evaluateTrigger('code.includes("function")', baseContext), true);
-  assertEquals(
-    evaluateTrigger('stdout.includes("passed")', baseContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('stdout.includes("passed")', baseContext), true);
 });
 
 Deno.test('evaluateTrigger - string includes() with quotes', () => {
@@ -149,10 +128,7 @@ Deno.test('evaluateTrigger - string includes() with quotes', () => {
 // -----------------------------------------------------------------------------
 
 Deno.test('evaluateTrigger - string startsWith() method', () => {
-  assertEquals(
-    evaluateTrigger('code.startsWith("function")', baseContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('code.startsWith("function")', baseContext), true);
   assertEquals(evaluateTrigger('code.startsWith("for")', baseContext), false);
 });
 
@@ -171,14 +147,8 @@ Deno.test('evaluateTrigger - string match() with regex', () => {
     stderr: 'TypeError: undefined is not a function',
   };
 
-  assertEquals(
-    evaluateTrigger('stderr.match(/TypeError|ReferenceError/)', errorContext),
-    true,
-  );
-  assertEquals(
-    evaluateTrigger('stderr.match(/SyntaxError/)', errorContext),
-    false,
-  );
+  assertEquals(evaluateTrigger('stderr.match(/TypeError|ReferenceError/)', errorContext), true);
+  assertEquals(evaluateTrigger('stderr.match(/SyntaxError/)', errorContext), false);
 });
 
 Deno.test('evaluateTrigger - string match() with string pattern', () => {
@@ -187,14 +157,8 @@ Deno.test('evaluateTrigger - string match() with string pattern', () => {
     stderr: 'TypeError: undefined is not a function',
   };
 
-  assertEquals(
-    evaluateTrigger('stderr.match("TypeError")', errorContext),
-    true,
-  );
-  assertEquals(
-    evaluateTrigger('stderr.match("SyntaxError")', errorContext),
-    false,
-  );
+  assertEquals(evaluateTrigger('stderr.match("TypeError")', errorContext), true);
+  assertEquals(evaluateTrigger('stderr.match("SyntaxError")', errorContext), false);
 });
 
 // -----------------------------------------------------------------------------
@@ -222,36 +186,24 @@ Deno.test('evaluateTrigger - complex expressions from spec', () => {
   );
 
   // Example: code.includes('for') && !code.includes('Map')
-  assertEquals(
-    evaluateTrigger('code.includes("for") && !code.includes("Map")', baseContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('code.includes("for") && !code.includes("Map")', baseContext), true);
 
   // Example with Map included
   const mapContext = {
     ...baseContext,
     code: 'function twoSum() { const map = new Map(); for (let i = 0; i < n; i++) {} }',
   };
-  assertEquals(
-    evaluateTrigger('code.includes("Map") && !code.includes("has")', mapContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('code.includes("Map") && !code.includes("has")', mapContext), true);
 });
 
 Deno.test('evaluateTrigger - multiple conditions', () => {
   assertEquals(
-    evaluateTrigger(
-      'passed === false && attempts > 1 && code.includes("for")',
-      baseContext,
-    ),
+    evaluateTrigger('passed === false && attempts > 1 && code.includes("for")', baseContext),
     true,
   );
 
   assertEquals(
-    evaluateTrigger(
-      'attempts > 5 || code.includes("for") && passed === false',
-      baseContext,
-    ),
+    evaluateTrigger('attempts > 5 || code.includes("for") && passed === false', baseContext),
     true,
   );
 });
@@ -273,21 +225,12 @@ Deno.test('evaluateTrigger - invalid trigger returns false', () => {
 
 Deno.test('evaluateTrigger - null/undefined trigger returns false', () => {
   assertEquals(evaluateTrigger(null as unknown as string, baseContext), false);
-  assertEquals(
-    evaluateTrigger(undefined as unknown as string, baseContext),
-    false,
-  );
+  assertEquals(evaluateTrigger(undefined as unknown as string, baseContext), false);
 });
 
 Deno.test('evaluateTrigger - handles whitespace correctly', () => {
-  assertEquals(
-    evaluateTrigger('  attempts   >   2  ', baseContext),
-    true,
-  );
-  assertEquals(
-    evaluateTrigger('code.includes(  "for"  )', baseContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('  attempts   >   2  ', baseContext), true);
+  assertEquals(evaluateTrigger('code.includes(  "for"  )', baseContext), true);
 });
 
 // -----------------------------------------------------------------------------
@@ -306,11 +249,7 @@ Deno.test('evaluateTrigger - prevents code injection attempts', () => {
   ];
 
   for (const input of maliciousInputs) {
-    assertEquals(
-      evaluateTrigger(input, baseContext),
-      false,
-      `Should safely reject: ${input}`,
-    );
+    assertEquals(evaluateTrigger(input, baseContext), false, `Should safely reject: ${input}`);
   }
 });
 
@@ -359,10 +298,7 @@ Deno.test('evaluateTrigger - specification examples', () => {
   assertEquals(evaluateTrigger('attempts > 2', baseContext), true);
 
   // Example: passed === false && attempts > 1
-  assertEquals(
-    evaluateTrigger('passed === false && attempts > 1', baseContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('passed === false && attempts > 1', baseContext), true);
 
   // Example: code.includes('for')
   assertEquals(evaluateTrigger('code.includes("for")', baseContext), true);
@@ -372,20 +308,14 @@ Deno.test('evaluateTrigger - specification examples', () => {
     ...baseContext,
     stderr: 'TypeError: Cannot read property of undefined',
   };
-  assertEquals(
-    evaluateTrigger('stderr.match(/TypeError|undefined/)', errorContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('stderr.match(/TypeError|undefined/)', errorContext), true);
 
   // Example: code.includes('Map') && !code.includes('has')
   const mapContext = {
     ...baseContext,
     code: 'const map = new Map();',
   };
-  assertEquals(
-    evaluateTrigger('code.includes("Map") && !code.includes("has")', mapContext),
-    true,
-  );
+  assertEquals(evaluateTrigger('code.includes("Map") && !code.includes("has")', mapContext), true);
 
   // Example: code.length < 50
   const shortContext = { ...baseContext, code: 'function test() {}' };
@@ -433,10 +363,6 @@ Deno.test('evaluateTrigger - malformed expressions fail safely', () => {
   ];
 
   for (const expr of malformed) {
-    assertEquals(
-      evaluateTrigger(expr, baseContext),
-      false,
-      `Should safely handle: ${expr}`,
-    );
+    assertEquals(evaluateTrigger(expr, baseContext), false, `Should safely handle: ${expr}`);
   }
 });

@@ -43,20 +43,11 @@
   },
   "lint": {
     "rules": {
-      "tags": [
-        "recommended"
-      ],
-      "include": [
-        "ban-untagged-todo"
-      ]
+      "tags": ["recommended"],
+      "include": ["ban-untagged-todo"]
     },
-    "exclude": [
-      "_.local-leetcode-trainer.legacy/**/*"
-    ]
+    "exclude": ["_.local-leetcode-trainer.legacy/**/*"]
   },
-  "exclude": [
-    "_.local-leetcode-trainer.legacy/",
-    ".local/"
-  ],
+  "exclude": ["_.local-leetcode-trainer.legacy/", ".local/"],
   "lock": true
 }

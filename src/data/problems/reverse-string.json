@@ -14,10 +14,7 @@
       "output": ["h", "a", "n", "n", "a", "H"]
     }
   ],
-  "constraints": [
-    "1 <= s.length <= 10^5",
-    "s[i] is a printable ASCII character."
-  ],
+  "constraints": ["1 <= s.length <= 10^5", "s[i] is a printable ASCII character."],
   "hints": [
     "Think about using two pointers - one at the start and one at the end.",
     "Swap the characters at the two pointers, then move them towards each other.",

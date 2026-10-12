@@ -9,10 +9,10 @@
 
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult, Difficulty, ProblemQuery } from '../../types/global.ts';
-import { ExitCode } from '../exit-codes.ts';
-import { requireProblemManager } from './shared.ts';
-import { showCommandHelp } from './help.ts';
 import { logger, outputData } from '../../utils/output.ts';
+import { ExitCode } from '../exit-codes.ts';
+import { showCommandHelp } from './help.ts';
+import { requireProblemManager } from './shared.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -85,19 +85,18 @@ export interface ListOptions {
  * Extract list options from command arguments
  */
 export function extractListOptions(args: Args): ListOptions {
-  const difficulty = (args.difficulty as Difficulty | undefined) ||
-    (args.d as Difficulty | undefined);
+  const difficulty =
+    (args.difficulty as Difficulty | undefined) || (args.d as Difficulty | undefined);
   // Support both -t/--tag and -c/--category (aliases for the same thing)
-  const tag = (args.tag as string | undefined) ||
+  const tag =
+    (args.tag as string | undefined) ||
     (args.t as string | undefined) ||
     (args.category as string | undefined) ||
     (args.c as string | undefined);
   const search = (args.search as string | undefined) || (args.s as string | undefined);
 
   const result: ListOptions = {
-    limit: (args.limit as number | undefined) ||
-      (args.l as number | undefined) ||
-      20,
+    limit: (args.limit as number | undefined) || (args.l as number | undefined) || 20,
     json: !!args.json,
     verbose: !!args.verbose,
   };
@@ -154,9 +153,10 @@ function displayProblemsTable(
       logger.group();
 
       // Show description (truncated)
-      const desc = problem.description.length > 100
-        ? problem.description.substring(0, 100) + '...'
-        : problem.description;
+      const desc =
+        problem.description.length > 100
+          ? problem.description.substring(0, 100) + '...'
+          : problem.description;
       logger.log(`Description: ${desc}`);
 
       // Show tags
@@ -170,9 +170,7 @@ function displayProblemsTable(
   }
 
   logger.newline();
-  logger.log(
-    `Total: ${problems.length} problem${problems.length === 1 ? '' : 's'}`,
-  );
+  logger.log(`Total: ${problems.length} problem${problems.length === 1 ? '' : 's'}`);
 }
 
 /**

@@ -7,12 +7,12 @@
 import { assertEquals, assertExists, assertRejects } from '@std/assert';
 import { join } from '@std/path';
 import {
-  archiveProblem,
   type ArchiveProblemOptions,
+  archiveProblem,
   isArchived,
   listArchivedProblems,
-  unarchiveProblem,
   type UnarchiveProblemOptions,
+  unarchiveProblem,
 } from '../../../src/core/workspace/archive.ts';
 import { WorkspaceError } from '../../../src/utils/errors.ts';
 import { createDirectory, pathExists } from '../../../src/utils/fs.ts';
@@ -109,9 +109,7 @@ Deno.test('archiveProblem - moves problem from problems to completed', async () 
     assertEquals(destExists, true);
 
     // Verify files were moved
-    const solutionExists = await pathExists(
-      join(workspace, 'completed', 'two-sum', 'solution.ts'),
-    );
+    const solutionExists = await pathExists(join(workspace, 'completed', 'two-sum', 'solution.ts'));
     assertEquals(solutionExists, true);
   } finally {
     await cleanupWorkspace(workspace);
@@ -269,9 +267,7 @@ Deno.test('unarchiveProblem - moves problem from completed to problems', async (
     assertEquals(destExists, true);
 
     // Verify files were moved
-    const solutionExists = await pathExists(
-      join(workspace, 'problems', 'two-sum', 'solution.ts'),
-    );
+    const solutionExists = await pathExists(join(workspace, 'problems', 'two-sum', 'solution.ts'));
     assertEquals(solutionExists, true);
   } finally {
     await cleanupWorkspace(workspace);
@@ -549,9 +545,7 @@ Deno.test('archive and unarchive - round trip preserves data', async () => {
     assertEquals(backInProblems, true);
 
     // Verify files still exist
-    const solutionExists = await pathExists(
-      join(workspace, 'problems', 'two-sum', 'solution.ts'),
-    );
+    const solutionExists = await pathExists(join(workspace, 'problems', 'two-sum', 'solution.ts'));
     assertEquals(solutionExists, true);
   } finally {
     await cleanupWorkspace(workspace);

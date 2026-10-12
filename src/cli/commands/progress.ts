@@ -12,14 +12,14 @@
 
 import type { Args } from '@std/cli/parse-args';
 import { join } from '@std/path';
-import type { CommandResult, Difficulty } from '../../types/global.ts';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, isWorkspaceInitialized } from '../../core/mod.ts';
+import type { CommandResult, Difficulty } from '../../types/global.ts';
 import { pathExists } from '../../utils/fs.ts';
 import { logger, outputData } from '../../utils/output.ts';
 import { ExitCode } from '../exit-codes.ts';
-import { requireProblemManager } from './shared.ts';
 import { showCommandHelp } from './help.ts';
+import { requireProblemManager } from './shared.ts';
 
 function showHelp(): void {
   showCommandHelp({
@@ -238,9 +238,7 @@ function collectWorkspaceMetadata(
 /**
  * Calculate progress statistics by scanning workspace
  */
-async function calculateProgressStats(
-  workspaceRoot: string,
-): Promise<ProgressStats> {
+async function calculateProgressStats(workspaceRoot: string): Promise<ProgressStats> {
   const structure = getWorkspaceStructure(workspaceRoot);
   const manager = await requireProblemManager();
 
@@ -275,18 +273,16 @@ async function calculateProgressStats(
 /**
  * Display progress statistics as formatted tables
  */
-function displayProgressTable(
-  stats: ProgressStats,
-  options: ProgressOptions,
-): void {
+function displayProgressTable(stats: ProgressStats, options: ProgressOptions): void {
   logger.newline();
   logger.log('=== Progress Summary ===');
   logger.newline();
 
   // Overall stats
-  const completionRate = stats.totalProblems > 0
-    ? ((stats.completedProblems / stats.totalProblems) * 100).toFixed(1)
-    : '0.0';
+  const completionRate =
+    stats.totalProblems > 0
+      ? ((stats.completedProblems / stats.totalProblems) * 100).toFixed(1)
+      : '0.0';
 
   logger.log(`Total Problems Available: ${stats.totalProblems}`);
   logger.log(`Problems Completed: ${stats.completedProblems}`);
@@ -315,9 +311,7 @@ function displayProgressTable(
     logger.newline();
 
     // Filter to only show categories with activity
-    const activeCategories = stats.byCategory.filter(
-      (cat) => cat.current > 0 || cat.completed > 0,
-    );
+    const activeCategories = stats.byCategory.filter((cat) => cat.current > 0 || cat.completed > 0);
 
     if (activeCategories.length > 0) {
       // Limit to top 10 if not detailed
