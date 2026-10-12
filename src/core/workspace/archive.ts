@@ -44,7 +44,7 @@
  */
 
 import { readdir, rename, rm } from 'node:fs/promises';
-import { join } from '@std/path';
+import { join } from 'node:path';
 import type { SupportedLanguage } from '../../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';

@@ -40,7 +40,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { join } from '@std/path';
+import { join } from 'node:path';
 import type {
   Problem,
   SupportedLanguage,

@@ -7,8 +7,8 @@
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { join } from '@std/path';
 import { parse as parseYaml } from '@std/yaml';
 import { configManager } from '../../config/manager.ts';
 import { TeachingScriptGenerator, validateTeachingScript } from '../../core/ai/mod.ts';

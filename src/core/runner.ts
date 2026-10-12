@@ -11,7 +11,7 @@
 import { Buffer } from 'node:buffer';
 import { spawn } from 'node:child_process';
 import { constants } from 'node:os';
-import { basename, join } from '@std/path';
+import { basename, join } from 'node:path';
 import type { SupportedLanguage } from '../types/global.ts';
 import { createErrorContext, WorkspaceError } from '../utils/errors.ts';
 import { pathExists } from '../utils/fs.ts';

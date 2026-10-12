@@ -6,8 +6,8 @@
  * @module cli/commands/challenge
  */
 
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { join } from '@std/path';
 import { configManager } from '../../config/manager.ts';
 import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import {

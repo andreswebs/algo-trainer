@@ -8,7 +8,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { join } from '@std/path';
+import { join } from 'node:path';
 import { getDataRoot } from '../../config/paths.ts';
 import type {
   Problem,

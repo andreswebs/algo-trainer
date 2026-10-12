@@ -10,7 +10,7 @@
  *   deno run --allow-read --allow-write scripts/generate-problems.ts
  */
 
-import { join } from '@std/path';
+import { join } from 'node:path';
 import { logger } from '../src/utils/output.ts';
 
 const PROBLEMS_DIR = 'src/data/problems';

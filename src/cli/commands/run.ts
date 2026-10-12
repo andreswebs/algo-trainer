@@ -9,8 +9,8 @@
  */
 
 import { readFile, realpath } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { join } from '@std/path';
 import { configManager } from '../../config/manager.ts';
 import { getProblemMetadata } from '../../core/mod.ts';
 import type { RunResult } from '../../core/runner.ts';

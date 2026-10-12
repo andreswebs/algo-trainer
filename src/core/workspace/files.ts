@@ -33,7 +33,7 @@
  * ```
  */
 
-import { join, resolve } from '@std/path';
+import { join, resolve } from 'node:path';
 import type { SupportedLanguage } from '../../types/global.ts';
 import { createErrorContext, ValidationError } from '../../utils/errors.ts';
 import type { ProblemWorkspacePaths, WorkspacePathConfig, WorkspacePaths } from './types.ts';

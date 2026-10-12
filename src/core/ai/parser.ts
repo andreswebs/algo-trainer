@@ -8,7 +8,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { join } from '@std/path';
+import { join } from 'node:path';
 import { parse as parseYaml } from '@std/yaml';
 import { getConfigPaths, getDataRoot } from '../../config/paths.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';

@@ -8,7 +8,7 @@
  * @module core/problem/database
  */
 
-import { join } from '@std/path';
+import { join } from 'node:path';
 import { getConfigPaths } from '../../config/paths.ts';
 import { getAllProblemSlugs, getProblemJson } from '../../data/problems.generated.ts';
 import type { Difficulty, Problem } from '../../types/global.ts';

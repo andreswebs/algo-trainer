@@ -8,7 +8,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { basename } from '@std/path';
+import { basename } from 'node:path';
 import type { Problem, ProblemMetadata } from '../../types/global.ts';
 import { createErrorContext, ProblemError } from '../../utils/errors.ts';
 import { validateProblem } from '../../utils/validation.ts';

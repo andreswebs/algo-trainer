@@ -6,8 +6,8 @@
  * @module cli/commands/init
  */
 
+import { resolve } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { resolve } from '@std/path';
 import { configManager } from '../../config/manager.ts';
 import { getWorkspaceStructure, initWorkspace, isWorkspaceInitialized } from '../../core/mod.ts';
 import type { CommandResult } from '../../types/global.ts';
