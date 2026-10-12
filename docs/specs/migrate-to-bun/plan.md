@@ -13,7 +13,7 @@ When the plan is done:
 - Biome formats and lints the repository. deno fmt and deno lint are gone.
 - Tests run on `bun:test` with `node:assert/strict`, isolated by a preload.
 - `bun run build` produces a single binary at `bin/algo-trainer` with the templates and teaching scripts embedded.
-- Generated TypeScript and JavaScript workspaces produce test files that run under Bun, Node and Deno.
+- Generated workspaces produce valid code in every language, and TypeScript and JavaScript tests run under Bun, Node and Deno.
 - CI type-checks, lints, tests, checks generated data freshness, builds and smoke-tests the binary.
 
 ## Ground rules
@@ -47,7 +47,7 @@ Before starting, record per-file test counts with `deno test --allow-write --all
 | 2 | Add the Bun toolchain alongside Deno | Deno, plus Bun type check and Biome lint |
 | 3 | Port the tests file by file | Deno and Bun, shrinking and growing |
 | 4 | Cut over: Bun edges, build, CI, docs, remove Deno | Bun |
-| 5 | Fix and modernize the generated TS/JS templates | Bun |
+| 5 | Fix the generated templates in every language; move TS/JS tests to node:test | Bun |
 
 ## Phase 0: adopt Biome and reformat
 
@@ -390,25 +390,33 @@ git grep -niE '\bdeno\b' -- ':!docs/specs/done' ':!.tickets' ':!docs/specs/migra
 - The final `grep` returns only deliberate historical mentions, such as `docs/story.md`.
 - CI passes on the pull request.
 
-## Phase 5: generated TypeScript and JavaScript workspaces
+## Phase 5: generated workspace templates
 
-Goal: generated test files are valid code and run under Bun, Node and Deno. This phase changes product output on purpose.
+Goal: generated test and solution files are valid code in every language, and generated TypeScript and JavaScript tests run under Bun, Node and Deno. This phase changes product output on purpose. Its scope was widened to every language by the project owner on 2026-10-12, after decomposition found that the same rendering bugs affect Go, Java, Python and Rust.
 
-### 5.1 Fix the template bugs
+### 5.1 Render examples validly in every test template
 
-- **Examples.** `formatExamples` in `src/core/problem/templates.ts` renders README prose into `{{EXAMPLES}}` in test templates, which makes every generated test file a syntax error. Render the examples as line comments in test templates, keeping the README rendering unchanged. Turning examples into executable assertions is possible follow-up work.
-- **Description.** In the documented `solution.tpl` for TypeScript and JavaScript, `{{PROBLEM_DESCRIPTION}}` follows a single `//`, so lines after the first are bare text. Comment every line, through the renderer or a per-line placeholder.
-- **Minimal template.** The minimal `test.tpl` registers no test. Make it register one test that checks the exported function exists, for example `assert.equal(typeof {{FUNCTION_NAME}}, 'function')`.
+`formatExamples` in `src/core/problem/templates.ts` renders README prose (`Example 1:`, `Input: ...`) into `{{EXAMPLES}}`. The test templates for TypeScript, JavaScript, Go, Java, Python and Rust all paste it into code, which makes every generated test file a syntax error. Python places it inside a class body.
 
-### 5.2 Switch the templates to node:test
+- Keep `{{EXAMPLES}}` prose for `readme.tpl` and for doc comments in the comprehensive `solution.tpl` files, where it is already inside a comment block.
+- In test templates, render the examples as line comments in the language's syntax (`//` for TypeScript, JavaScript, Go, Java and Rust; `#` for Python), through a new language-aware placeholder.
+- Python test classes must still have a body: emit `pass` when the class would otherwise contain only comments.
+- Turning examples into executable assertions is possible follow-up work.
+
+### 5.2 Comment every description line
+
+`{{PROBLEM_DESCRIPTION}}` follows a single line comment in the documented `solution.tpl` for TypeScript and JavaScript (`//`) and in the documented and comprehensive `solution.tpl` for Rust (`//!`), so lines after the first are bare text. Comment every line, through the renderer or a per-line placeholder.
+
+### 5.3 Switch the TypeScript and JavaScript tests to node:test
 
 - Apply the template diff from the reference to the six `test.tpl` files under `src/data/templates/{typescript,javascript}/{minimal,documented,comprehensive}/`.
+- The minimal `test.tpl` registers no test today. Make it register one test that checks the exported function exists, for example `assert.equal(typeof {{FUNCTION_NAME}}, 'function')`.
 - No package manifest is added to generated workspaces.
 
-### 5.3 Update fixtures and tests
+### 5.4 Update fixtures and tests
 
 - Regenerate `test/fixtures/templates/golden/test.golden.txt`, which currently contains the `@std` imports.
-- Update the template tests that assert on rendered content. Review the golden diff by hand: it must show only the import, example and description changes.
+- Update the template tests that assert on rendered content. Review the golden diff by hand: it must show only the intended changes.
 
 ### Phase 5 gate
 
@@ -416,13 +424,12 @@ Goal: generated test files are valid code and run under Bun, Node and Deno. This
 bun run verify && bun run build
 ```
 
-With the built binary, generate a workspace for `two-sum` in each of the six combinations (TypeScript and JavaScript, three styles). In each generated problem directory:
+With the built binary, generate a `two-sum` workspace for every language and style:
 
-- `bun test` exits 0.
-- `node --test` exits 0, where Node 22 or later is available.
-- `deno test` exits 0, where Deno is available.
+- TypeScript and JavaScript, each style: `bun test` exits 0, and `node --test` and `deno test` exit 0 where Node 22 or later and Deno are available. The generated test may fail on the unimplemented solution only through an assertion failure, never a syntax or import error.
+- Go, Java, Python and Rust, each style: the generated files parse or compile with the language's own tool where it is installed (`gofmt -e`, `javac`, `python3 -m py_compile`, `rustc --edition 2021 --crate-type lib` or `cargo check`).
 
-The generated test may fail on the unimplemented solution only through an assertion failure, never through a syntax or import error. Record which runtimes were checked.
+Record which runtimes and tools were checked.
 
 ## Definition of done
 

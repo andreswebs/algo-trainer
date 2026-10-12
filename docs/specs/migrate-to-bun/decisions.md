@@ -80,16 +80,16 @@ This record lists every decision the [implementation plan](plan.md) depends on, 
 - **Decision:** delete `examples/`.
 - **Why:** the examples use Deno APIs, nothing runs or type-checks them, and the user guide and tests already document usage.
 
-### D11. Generated TS/JS workspaces target node:test, and template bugs are fixed now
+### D11. Generated workspaces: node:test for TS/JS, template bugs fixed in every language
 
 - **Decision:**
   - The six TypeScript and JavaScript `test.tpl` files import `node:test` and `node:assert/strict`, with no manifest.
-  - The three template bugs are fixed in this migration:
-    - `{{EXAMPLES}}` renders README prose into code.
-    - The documented `solution.tpl` comments only the first line of a multi-line description.
-    - The minimal `test.tpl` registers no test.
-- **Why:** today every generated TS/JS test file is a syntax error under every runtime. With the bugs fixed, `node:test` templates pass unchanged under Bun, Node and Deno.
-- **Rejected:** `bun:test` templates (break Node and Deno users); keeping `@std` imports with a manifest (`@std/testing/bdd` calls `Deno.test` and fails under Bun and Node).
+  - The template bugs are fixed in this migration, for every language:
+    - `{{EXAMPLES}}` renders README prose into code in the TypeScript, JavaScript, Go, Java, Python and Rust test templates.
+    - The documented TypeScript and JavaScript `solution.tpl` and the documented and comprehensive Rust `solution.tpl` comment only the first line of a multi-line description.
+    - The minimal TypeScript and JavaScript `test.tpl` registers no test.
+- **Why:** today every generated TS/JS test file is a syntax error under every runtime. With the bugs fixed, `node:test` templates pass unchanged under Bun, Node and Deno. Decomposing the plan found that the same rendering bugs break the other languages, and the owner widened the scope to all of them on 2026-10-12.
+- **Rejected:** `bun:test` templates (break Node and Deno users); keeping `@std` imports with a manifest (`@std/testing/bdd` calls `Deno.test` and fails under Bun and Node); fixing TS/JS only.
 
 ### D12. Distribution: local build now, releases later
 
