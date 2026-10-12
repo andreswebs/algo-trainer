@@ -5,9 +5,9 @@ export { main };
 
 if (import.meta.main) {
   try {
-    await main(Deno.args);
+    await main(process.argv.slice(2));
   } catch (error) {
     logger.errorObject(error);
-    Deno.exit(1);
+    process.exit(1);
   }
 }

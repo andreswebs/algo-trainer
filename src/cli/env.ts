@@ -132,26 +132,26 @@ export function loadEnvConfig(): EnvConfig {
   const preferences: Partial<UserPreferences> = {};
 
   // Workspace directory
-  const workspace = Deno.env.get(ENV_VARS.WORKSPACE);
+  const workspace = process.env[ENV_VARS.WORKSPACE];
   if (workspace?.trim()) {
     envConfig.workspace = workspace.trim();
   }
 
   // Default language
-  const language = validateLanguage(Deno.env.get(ENV_VARS.LANGUAGE));
+  const language = validateLanguage(process.env[ENV_VARS.LANGUAGE]);
   if (language) {
     envConfig.language = language;
-  } else if (Deno.env.get(ENV_VARS.LANGUAGE)) {
+  } else if (process.env[ENV_VARS.LANGUAGE]) {
     logger.warn(
       `Warning: Invalid ${ENV_VARS.LANGUAGE} value. Supported: ${SUPPORTED_LANGUAGES.join(', ')}`,
     );
   }
 
   // Template style
-  const templateStyle = validateTemplateStyle(Deno.env.get(ENV_VARS.TEMPLATE_STYLE));
+  const templateStyle = validateTemplateStyle(process.env[ENV_VARS.TEMPLATE_STYLE]);
   if (templateStyle) {
     preferences.templateStyle = templateStyle;
-  } else if (Deno.env.get(ENV_VARS.TEMPLATE_STYLE)) {
+  } else if (process.env[ENV_VARS.TEMPLATE_STYLE]) {
     logger.warn(
       `Warning: Invalid ${ENV_VARS.TEMPLATE_STYLE} value. Supported: ${SUPPORTED_TEMPLATE_STYLES.join(
         ', ',
@@ -160,8 +160,8 @@ export function loadEnvConfig(): EnvConfig {
   }
 
   // Verbosity (mutually exclusive with quiet)
-  const verbose = parseBooleanEnv(Deno.env.get(ENV_VARS.VERBOSE));
-  const quiet = parseBooleanEnv(Deno.env.get(ENV_VARS.QUIET));
+  const verbose = parseBooleanEnv(process.env[ENV_VARS.VERBOSE]);
+  const quiet = parseBooleanEnv(process.env[ENV_VARS.QUIET]);
 
   if (verbose !== undefined && quiet !== undefined && verbose && quiet) {
     logger.warn(
@@ -176,13 +176,13 @@ export function loadEnvConfig(): EnvConfig {
   }
 
   // Color output
-  const noColor = parseBooleanEnv(Deno.env.get(ENV_VARS.NO_COLOR));
+  const noColor = parseBooleanEnv(process.env[ENV_VARS.NO_COLOR]);
   if (noColor !== undefined) {
     preferences.useColors = !noColor;
   }
 
   // Emoji output
-  const noEmoji = parseBooleanEnv(Deno.env.get(ENV_VARS.NO_EMOJI));
+  const noEmoji = parseBooleanEnv(process.env[ENV_VARS.NO_EMOJI]);
   if (noEmoji !== undefined) {
     preferences.useEmoji = !noEmoji;
   }
@@ -201,7 +201,7 @@ export function loadEnvConfig(): EnvConfig {
  * @returns Custom config file path if set, undefined otherwise
  */
 export function getEnvConfigPath(): string | undefined {
-  const configPath = Deno.env.get(ENV_VARS.CONFIG_PATH);
+  const configPath = process.env[ENV_VARS.CONFIG_PATH];
   return configPath?.trim() || undefined;
 }
 
@@ -239,7 +239,7 @@ Note: Environment variables take precedence over configuration file settings.
  */
 export function validateEnvironmentVariables(): void {
   // Validate language
-  const language = Deno.env.get(ENV_VARS.LANGUAGE);
+  const language = process.env[ENV_VARS.LANGUAGE];
   if (language?.trim()) {
     const validated = validateLanguage(language);
     if (!validated) {
@@ -252,7 +252,7 @@ export function validateEnvironmentVariables(): void {
   }
 
   // Validate template style
-  const templateStyle = Deno.env.get(ENV_VARS.TEMPLATE_STYLE);
+  const templateStyle = process.env[ENV_VARS.TEMPLATE_STYLE];
   if (templateStyle?.trim()) {
     const validated = validateTemplateStyle(templateStyle);
     if (!validated) {
@@ -268,7 +268,7 @@ export function validateEnvironmentVariables(): void {
   const boolEnvVars = [ENV_VARS.VERBOSE, ENV_VARS.QUIET, ENV_VARS.NO_COLOR, ENV_VARS.NO_EMOJI];
 
   for (const envVar of boolEnvVars) {
-    const value = Deno.env.get(envVar);
+    const value = process.env[envVar];
     if (value?.trim()) {
       const parsed = parseBooleanEnv(value);
       if (parsed === undefined) {

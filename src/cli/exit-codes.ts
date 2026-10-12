@@ -75,7 +75,7 @@ export function exitWithCode(code: ExitCodeValue, message?: string): never {
     // Use stderr for error messages
     logger.error(message);
   }
-  Deno.exit(code);
+  process.exit(code);
 }
 
 /**

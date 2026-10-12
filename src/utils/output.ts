@@ -8,6 +8,7 @@
  * @module utils/output
  */
 
+import { writeSync } from 'node:fs';
 import { formatError, isAlgoTrainerError } from './errors.ts';
 
 /**
@@ -26,14 +27,14 @@ export interface OutputOptions {
  * Check if colors are supported
  */
 function checkColorsSupport(): boolean {
-  return !Deno.env.get('NO_COLOR') && Deno.stdout.isTerminal();
+  return !process.env.NO_COLOR && process.stdout.isTTY === true;
 }
 
 /**
  * Check if emoji is supported
  */
 function checkEmojiSupport(): boolean {
-  return !Deno.env.get('AT_NO_EMOJI');
+  return !process.env.AT_NO_EMOJI;
 }
 
 /**
@@ -440,7 +441,7 @@ export function logProgress(message: string): void {
  */
 export function exitWithError(message: string, code = 1): never {
   logger.error(message);
-  Deno.exit(code);
+  process.exit(code);
 }
 
 /**
@@ -448,7 +449,7 @@ export function exitWithError(message: string, code = 1): never {
  */
 export function exitWithErrorObject(error: unknown, code = 1): never {
   logger.errorObject(error);
-  Deno.exit(code);
+  process.exit(code);
 }
 
 /**
@@ -508,10 +509,10 @@ export class ProgressIndicator {
   }
 
   private isTerminal(): boolean {
-    return Deno.stderr.isTerminal();
+    return process.stderr.isTTY === true;
   }
 
   private writeToStderr(text: string): void {
-    Deno.stderr.writeSync(new TextEncoder().encode(text));
+    writeSync(2, text);
   }
 }

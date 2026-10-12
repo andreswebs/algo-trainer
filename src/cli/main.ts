@@ -86,14 +86,14 @@ For more information about a specific command, run:
   logger.log(help.trim());
 }
 
-export async function main(inputArgs: string[] = Deno.args): Promise<void> {
+export async function main(inputArgs: string[] = process.argv.slice(2)): Promise<void> {
   try {
     // Validate environment variables early
     try {
       validateEnvironmentVariables();
     } catch (error) {
       logger.error(error instanceof Error ? error.message : String(error));
-      Deno.exit(ExitCode.USAGE_ERROR);
+      process.exit(ExitCode.USAGE_ERROR);
     }
 
     const args = parseArgs(inputArgs, PARSE_OPTIONS);
@@ -134,6 +134,6 @@ export async function main(inputArgs: string[] = Deno.args): Promise<void> {
     const errorMessage = formatError(error);
     logger.error('Unexpected error occurred', errorMessage);
     const exitCode = getExitCodeForError(error);
-    Deno.exit(exitCode);
+    process.exit(exitCode);
   }
 }

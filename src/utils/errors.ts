@@ -162,7 +162,7 @@ export function createErrorContext(
   return {
     operation,
     timestamp: new Date(),
-    platform: Deno.build.os,
+    platform: process.platform,
     version: VERSION,
     ...additional,
   };
