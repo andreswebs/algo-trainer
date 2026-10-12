@@ -85,6 +85,7 @@ Native `exists` differs from std only on cases the repo does not hit. Std throws
       "**",
       "!!**/.local",
       "!!.tickets",
+      "!!.logs",
       "!!**/node_modules",
       "!!**/bin",
       "!!docs/specs/done",
@@ -159,6 +160,7 @@ Native `exists` differs from std only on cases the repo does not hit. Std throws
 Notes:
 
 - `rules.recommended: true` is deprecated in 2.5.15; `preset` replaces it.
+- `!!.logs` keeps an untracked, globally ignored directory of agent run logs out of Biome. `vcs.useIgnoreFile` reads only the repo `.gitignore`, so globally ignored directories that hold JSON need an explicit force-ignore.
 - `!!.tickets` keeps the untracked ticket ledger out of Biome. Its `deps:` lines must stay single-line flow lists, so no formatter may ever touch it.
 - Without `!!**/.local`, Biome crashes with "path is expected to be under the root" on a symlink inside `.local/`, a per-developer directory that is ignored globally but not by the repo `.gitignore`.
 - `vcs.useIgnoreFile` reads the repo `.gitignore`. Directories a developer ignores only globally are not excluded automatically. After the first reformat, `git status` must show changes to tracked files only.
