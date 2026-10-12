@@ -76,14 +76,14 @@ Enter number or name [medium]: 1
 Selected difficulty: easy
 
 Select programming language:
-  1. typescript (default)
+  1. typescript
   2. javascript
   3. python
   4. java
-  5. cpp
+  5. cpp (default)
   6. rust
   7. go
-Enter number or name [typescript]: 3
+Enter number or name [cpp]: 3
 Selected language: python
 
 ✅ Started challenge: Two Sum

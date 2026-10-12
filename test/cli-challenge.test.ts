@@ -342,9 +342,9 @@ describe('resolveLanguage', () => {
     assertEquals(lang, 'go');
   });
 
-  it('should default to typescript in non-interactive mode', async () => {
+  it('should default to cpp in non-interactive mode', async () => {
     const lang = await resolveLanguage(baseOptions, undefined);
-    assertEquals(lang, 'typescript');
+    assertEquals(lang, 'cpp');
   });
 
   it('should return null for invalid language in options', async () => {

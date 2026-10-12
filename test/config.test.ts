@@ -54,7 +54,7 @@ Deno.test(
       const manager = new ConfigManager();
       const config = await manager.load();
 
-      assertEquals(config.language, 'typescript');
+      assertEquals(config.language, 'cpp');
       assertEquals(config.aiEnabled, true);
       assertExists(config.version);
     } finally {
@@ -62,6 +62,58 @@ Deno.test(
     }
   },
 );
+
+Deno.test('ConfigManager - should not persist env overrides on update', async () => {
+  const { tempDir, cleanup } = await setupTestEnv();
+  try {
+    const manager = new ConfigManager();
+    await manager.load();
+
+    Deno.env.set(ENV_VARS.WORKSPACE, '/env/workspace');
+    Deno.env.set(ENV_VARS.LANGUAGE, 'rust');
+    Deno.env.set(ENV_VARS.TEMPLATE_STYLE, 'minimal');
+    await manager.load();
+
+    await manager.updateConfig({ aiEnabled: false });
+    await manager.updatePreferences({ theme: 'dark' });
+
+    const saved = JSON.parse(
+      await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`),
+    );
+    assertEquals(saved.workspace, '');
+    assertEquals(saved.language, 'cpp');
+    assertEquals(saved.preferences.templateStyle, 'documented');
+    assertEquals(saved.aiEnabled, false);
+    assertEquals(saved.preferences.theme, 'dark');
+
+    const effective = manager.getConfig();
+    assertEquals(effective.workspace, '/env/workspace');
+    assertEquals(effective.language, 'rust');
+    assertEquals(effective.preferences.templateStyle, 'minimal');
+    assertEquals(effective.aiEnabled, false);
+  } finally {
+    await cleanup();
+  }
+});
+
+Deno.test('ConfigManager - should keep env override effective after setting same key', async () => {
+  const { tempDir, cleanup } = await setupTestEnv();
+  try {
+    Deno.env.set(ENV_VARS.LANGUAGE, 'cpp');
+    const manager = new ConfigManager();
+    await manager.load();
+
+    await manager.setLanguage('python');
+
+    const saved = JSON.parse(
+      await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`),
+    );
+    assertEquals(saved.language, 'python');
+    assertEquals(manager.getConfig().language, 'cpp');
+  } finally {
+    await cleanup();
+  }
+});
 
 Deno.test('ConfigManager - should update configuration', async () => {
   const { cleanup } = await setupTestEnv();

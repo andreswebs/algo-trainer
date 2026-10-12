@@ -36,24 +36,24 @@ This creates the `bin/algo-trainer` executable.
 
 1. **Verify installation**:
 
-```sh
-algo-trainer --version
-algo-trainer --help
-```
+   ```sh
+   algo-trainer --version
+   algo-trainer --help
+   ```
 
 2. **Initialize a workspace** in your desired practice directory:
 
-```sh
-# Initialize in current directory
-algo-trainer init
+   ```sh
+   # Initialize in current directory
+   algo-trainer init
 
-# Or specify a path
-algo-trainer init ~/algo-practice
-```
+   # Or specify a path
+   algo-trainer init ~/algo-practice
+   ```
 
 This creates the following structure:
 
-```
+```txt
 your-workspace/
 ├── problems/      # Active challenges
 ├── completed/     # Solved problems archive
@@ -219,7 +219,7 @@ algo-trainer challenge valid-parentheses
 
 Each problem generates:
 
-```
+```txt
 problems/two-sum/
 ├── solution.ts          # Your solution (or .py, .java, etc.)
 ├── problem.md           # Problem description
@@ -328,11 +328,11 @@ algo-trainer config set language <language>
 
 Available languages:
 
-- `typescript` (default)
+- `cpp` (default)
+- `typescript`
 - `javascript`
 - `python`
 - `java`
-- `cpp`
 - `rust`
 - `go`
 
@@ -747,7 +747,7 @@ algo-trainer --version
 
 **Report issues:**
 
-- GitHub: https://github.com/andreswebs/algo-trainer/issues
+- GitHub: <https://github.com/andreswebs/algo-trainer/issues>
 - Check existing documentation in `docs/`
 
 ---
@@ -789,8 +789,6 @@ algo-trainer --version
 | `~/.config/algo-trainer/` | Global config (XDG) |
 
 ---
-
-**Happy coding! 🚀**
 
 For more advanced features, see:
 

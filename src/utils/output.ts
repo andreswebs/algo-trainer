@@ -478,7 +478,7 @@ export function outputData(data: string | object): void {
  */
 export class ProgressIndicator {
   private message: string;
-  private interval: number | undefined;
+  private interval: ReturnType<typeof setInterval> | undefined;
   private frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   private currentFrame = 0;
 

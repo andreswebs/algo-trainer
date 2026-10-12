@@ -258,7 +258,7 @@ describe('validateCompletion', () => {
   beforeEach(async () => {
     tempDir = await Deno.makeTempDir();
     await configManager.load();
-    await configManager.updateConfig({ workspace: tempDir });
+    await configManager.updateConfig({ workspace: tempDir, language: 'typescript' });
     await initWorkspace(tempDir);
   });
 

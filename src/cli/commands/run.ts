@@ -231,7 +231,7 @@ export async function runCommand(args: Args): Promise<CommandResult> {
     }
 
     const config = configManager.getConfig();
-    const defaultLang = (config.language ?? 'typescript') as SupportedLanguage;
+    const defaultLang = (config.language ?? 'cpp') as SupportedLanguage;
     const language = await resolveLanguage(problemDir, opts.language, structure.root, defaultLang);
     const cwd = Deno.cwd();
     const inputFile = resolveFilePath(opts.inputPath, join(problemDir, 'input.txt'), cwd);

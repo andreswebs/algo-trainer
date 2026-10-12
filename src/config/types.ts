@@ -13,7 +13,7 @@ import { VERSION } from '../version.ts';
  * Default configuration values
  */
 export const DEFAULT_CONFIG: Config = {
-  language: 'typescript',
+  language: 'cpp',
   workspace: '',
   aiEnabled: true,
   companies: [],

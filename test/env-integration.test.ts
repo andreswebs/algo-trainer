@@ -64,7 +64,7 @@ describe('Environment Variable Integration', () => {
           const manager = new ConfigManager();
           const config = await manager.load();
 
-          assertEquals(config.language, 'typescript'); // Default
+          assertEquals(config.language, 'cpp'); // Default
           assertEquals(config.workspace, ''); // Default
           assertEquals(config.preferences.verbosity, 'normal'); // Default
         });

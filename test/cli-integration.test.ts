@@ -320,7 +320,7 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       // Verify it was reset
       const config = configManager.getConfig();
-      assertEquals(config.language, 'typescript'); // Default
+      assertEquals(config.language, 'cpp'); // Default
     });
   });
 

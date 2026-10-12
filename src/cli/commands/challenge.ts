@@ -187,12 +187,12 @@ export async function resolveLanguage(
 
   let language: SupportedLanguage;
   if (!effectiveLanguage) {
-    const prompted = await promptLanguage('typescript');
+    const prompted = await promptLanguage('cpp');
     if (prompted) {
       language = prompted;
       logger.info(`Selected language: ${language}`);
     } else {
-      language = 'typescript';
+      language = 'cpp';
     }
   } else {
     language = effectiveLanguage as SupportedLanguage;
@@ -337,7 +337,7 @@ export async function challengeCommand(args: Args): Promise<CommandResult> {
     const workspaceRoot = config.workspace || Deno.cwd();
 
     await ensureWorkspaceInitialized(workspaceRoot);
-    const _workspace = await requireWorkspace();
+    await requireWorkspace(workspaceRoot);
     const manager = await requireProblemManager();
 
     const problem = await resolveProblemSelection(options, manager);

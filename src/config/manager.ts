@@ -13,7 +13,7 @@ import { ConfigError, createErrorContext } from '../utils/errors.ts';
 import { logger } from '../utils/output.ts';
 import { getConfigFilePaths, getConfigPaths } from './paths.ts';
 import { DEFAULT_CONFIG } from './types.ts';
-import { getEnvConfigPath, loadEnvConfig } from '../cli/env.ts';
+import { type EnvConfig, getEnvConfigPath, loadEnvConfig } from '../cli/env.ts';
 import type { Config, SupportedLanguage, UserPreferences } from '../types/global.ts';
 
 /**
@@ -21,6 +21,9 @@ import type { Config, SupportedLanguage, UserPreferences } from '../types/global
  */
 export class ConfigManager {
   private config: Config | null = null;
+  // Only the file layer is persisted; env overrides apply in memory on top of it.
+  private fileConfig: Config | null = null;
+  private envConfig: EnvConfig = {};
   private configPath: string;
 
   constructor() {
@@ -63,29 +66,16 @@ export class ConfigManager {
             ...configData.preferences,
           },
         };
+        this.fileConfig = mergedConfig;
       } else {
-        // Create default config file
         logger.info('No configuration found, creating default configuration');
-        // Set config before saving
-        this.config = mergedConfig;
+        this.fileConfig = mergedConfig;
         await this.save();
       }
 
-      // Load environment variables and merge (env takes highest precedence)
-      const envConfig = loadEnvConfig();
-      if (Object.keys(envConfig).length > 0) {
-        mergedConfig = {
-          ...mergedConfig,
-          ...envConfig,
-          preferences: {
-            ...mergedConfig.preferences,
-            ...(envConfig.preferences || {}),
-          },
-        };
-      }
-
-      this.config = mergedConfig;
-      return this.config;
+      this.envConfig = loadEnvConfig();
+      this.applyEnv();
+      return this.getConfig();
     } catch (error) {
       if (error instanceof ConfigError) {
         throw error;
@@ -101,10 +91,25 @@ export class ConfigManager {
   }
 
   /**
-   * Save configuration to file
+   * Recompute the effective configuration: file layer overlaid with env overrides
+   */
+  private applyEnv(): void {
+    if (!this.fileConfig) return;
+    this.config = {
+      ...this.fileConfig,
+      ...this.envConfig,
+      preferences: {
+        ...this.fileConfig.preferences,
+        ...(this.envConfig.preferences || {}),
+      },
+    };
+  }
+
+  /**
+   * Save the file layer of the configuration (without env overrides) to file
    */
   async save(): Promise<void> {
-    if (!this.config) {
+    if (!this.fileConfig) {
       throw new ConfigError(
         'No configuration to save',
         createErrorContext('saveConfig', { path: this.configPath }),
@@ -116,11 +121,9 @@ export class ConfigManager {
       const configPaths = getConfigPaths();
       await createDirectory(configPaths.config);
 
-      // Validate before saving
-      validateOrThrow(this.config, validateConfig, 'configuration');
+      validateOrThrow(this.fileConfig, validateConfig, 'configuration');
 
-      // Save to file
-      await writeJsonFile(this.configPath, this.config, {
+      await writeJsonFile(this.configPath, this.fileConfig, {
         ensureParents: true,
         overwrite: true,
         indent: 2,
@@ -158,26 +161,24 @@ export class ConfigManager {
    * Update configuration
    */
   async updateConfig(updates: Partial<Config>): Promise<void> {
-    if (!this.config) {
+    if (!this.fileConfig) {
       throw new ConfigError(
         'Configuration not loaded',
         createErrorContext('updateConfig'),
       );
     }
 
-    // Deep merge for nested objects (preferences)
     const mergedPreferences = updates.preferences
-      ? { ...this.config.preferences, ...updates.preferences }
-      : this.config.preferences;
+      ? { ...this.fileConfig.preferences, ...updates.preferences }
+      : this.fileConfig.preferences;
 
-    // Merge updates with deep-merged preferences
-    this.config = {
-      ...this.config,
+    this.fileConfig = {
+      ...this.fileConfig,
       ...updates,
       preferences: mergedPreferences,
     };
+    this.applyEnv();
 
-    // Save updated config
     await this.save();
   }
 
@@ -187,14 +188,18 @@ export class ConfigManager {
   async updatePreferences(
     preferences: Partial<UserPreferences>,
   ): Promise<void> {
-    if (!this.config) {
+    if (!this.fileConfig) {
       throw new ConfigError(
         'Configuration not loaded',
         createErrorContext('updatePreferences'),
       );
     }
 
-    this.config.preferences = { ...this.config.preferences, ...preferences };
+    this.fileConfig = {
+      ...this.fileConfig,
+      preferences: { ...this.fileConfig.preferences, ...preferences },
+    };
+    this.applyEnv();
     await this.save();
   }
 
@@ -209,7 +214,8 @@ export class ConfigManager {
    * Reset configuration to defaults
    */
   async reset(): Promise<void> {
-    this.config = { ...DEFAULT_CONFIG };
+    this.fileConfig = { ...DEFAULT_CONFIG };
+    this.applyEnv();
     await this.save();
     logger.info('Configuration reset to defaults');
   }

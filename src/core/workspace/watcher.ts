@@ -114,7 +114,7 @@ export interface FileWatcherOptions {
 export class FileWatcher {
   private watcher: Deno.FsWatcher | null = null;
   private handlers: Map<WatchEventCategory | 'all', Set<WatchEventHandler>> = new Map();
-  private debounceTimers: Map<string, number> = new Map();
+  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
   private running = false;
   private options: Required<FileWatcherOptions>;
 

@@ -15,6 +15,7 @@ import {
   resolveProblem,
 } from '../src/cli/commands/shared.ts';
 import { initWorkspace } from '../src/core/mod.ts';
+import { configManager } from '../src/config/manager.ts';
 import { WorkspaceError } from '../src/utils/errors.ts';
 import type { Problem } from '../src/types/global.ts';
 
@@ -68,6 +69,39 @@ describe('requireWorkspace', () => {
       },
       WorkspaceError,
     );
+  });
+
+  describe('with no workspace configured', () => {
+    let originalCwd: string;
+
+    beforeEach(async () => {
+      originalCwd = Deno.cwd();
+      await configManager.load();
+      await configManager.updateConfig({ workspace: '' });
+      Deno.chdir(tempDir);
+    });
+
+    afterEach(() => {
+      Deno.chdir(originalCwd);
+    });
+
+    it('should fall back to an initialized current directory', async () => {
+      await initWorkspace(tempDir);
+
+      const structure = await requireWorkspace();
+
+      assertEquals(structure.root, await Deno.realPath(tempDir));
+    });
+
+    it('should throw WorkspaceError when current directory is not initialized', async () => {
+      await assertRejects(
+        async () => {
+          await requireWorkspace();
+        },
+        WorkspaceError,
+        'Workspace not initialized',
+      );
+    });
   });
 });
 

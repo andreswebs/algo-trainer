@@ -213,6 +213,13 @@ async function setConfigValue(key: string, value: unknown): Promise<void> {
   } else {
     await configManager.updateConfig({ [key]: value } as Partial<Config>);
   }
+
+  const effective = getConfigValue(configManager.getConfig(), key);
+  if (effective !== value) {
+    logger.warn(
+      `${key} is overridden by an environment variable; effective value is ${String(effective)}`,
+    );
+  }
 }
 
 /**

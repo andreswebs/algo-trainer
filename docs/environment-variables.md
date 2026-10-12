@@ -48,7 +48,7 @@ algo-trainer config list
 
 **Type:** String\
 **Valid values:** `typescript`, `javascript`, `python`, `java`, `cpp`, `rust`, `go`\
-**Default:** `typescript`\
+**Default:** `cpp`\
 **Description:** Sets the default programming language for problem solutions.
 
 ```sh

@@ -20,7 +20,8 @@ import { createErrorContext, ProblemError, WorkspaceError } from '../../utils/er
  * initialized with all required subdirectories. If not initialized,
  * it throws a WorkspaceError with helpful instructions.
  *
- * @param workspaceRoot - Optional workspace root path. If not provided, uses config.
+ * @param workspaceRoot - Optional workspace root path. If not provided, uses config, then the
+ *   current directory.
  * @returns Promise resolving to WorkspaceStructure with absolute paths
  * @throws {WorkspaceError} If workspace is not initialized
  *
@@ -38,8 +39,8 @@ export async function requireWorkspace(
   workspaceRoot?: string,
 ): Promise<WorkspaceStructure> {
   try {
-    // Get workspace root from config if not provided
-    const root = workspaceRoot || configManager.getConfig().workspace;
+    // Mirrors `init` with no path: an unconfigured workspace means the current directory
+    const root = workspaceRoot || configManager.getConfig().workspace || Deno.cwd();
 
     // Check if root is empty or not provided
     if (!root || root.trim().length === 0) {
