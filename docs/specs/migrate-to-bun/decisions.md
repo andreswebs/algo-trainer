@@ -43,7 +43,7 @@ This record lists every decision the [implementation plan](plan.md) depends on, 
 
 - **Decision:**
   - Pin `@biomejs/biome` exactly at 2.5.15.
-  - Scope the whole repository with force-ignores for `.local`, `node_modules`, `bin`, `docs/specs/done` and `src/data/templates`, and honor `.gitignore`.
+  - Scope the whole repository with force-ignores for `.local`, `.tickets`, `node_modules`, `bin`, `docs/specs/done` and `src/data/templates`, and honor `.gitignore`.
   - Keep import sorting on.
   - Use the `recommended` preset, with `noExplicitAny` and the nursery rule `useExplicitReturnType` at error.
   - Fix every diagnostic. Add one override that turns off `noTemplateCurlyInString` for `test/escaping.test.ts`, whose template-like strings are intentional.

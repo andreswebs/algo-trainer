@@ -84,6 +84,7 @@ Native `exists` differs from std only on cases the repo does not hit. Std throws
     "includes": [
       "**",
       "!!**/.local",
+      "!!.tickets",
       "!!**/node_modules",
       "!!**/bin",
       "!!docs/specs/done",
@@ -158,6 +159,7 @@ Native `exists` differs from std only on cases the repo does not hit. Std throws
 Notes:
 
 - `rules.recommended: true` is deprecated in 2.5.15; `preset` replaces it.
+- `!!.tickets` keeps the untracked ticket ledger out of Biome. Its `deps:` lines must stay single-line flow lists, so no formatter may ever touch it.
 - Without `!!**/.local`, Biome crashes with "path is expected to be under the root" on a symlink inside `.local/`, a per-developer directory that is ignored globally but not by the repo `.gitignore`.
 - `vcs.useIgnoreFile` reads the repo `.gitignore`. Directories a developer ignores only globally are not excluded automatically. After the first reformat, `git status` must show changes to tracked files only.
 - Biome 2.5.15 does not format Markdown or YAML. markdownlint-cli2 keeps covering Markdown. JSONC files keep their comments but lose trailing commas.
@@ -226,7 +228,7 @@ Notes:
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "license": "GPL-3.0-only",
+  "license": "GPL-3.0-or-later",
   "author": "Andre Silva <andreswebs@pm.me>",
   "homepage": "https://github.com/andreswebs/algo-trainer",
   "repository": {
@@ -262,7 +264,7 @@ Notes:
 
 Notes:
 
-- `deno.jsonc` declares the license as `GPL3`. Confirm `GPL-3.0-only` versus `GPL-3.0-or-later` with the owner before committing.
+- `deno.jsonc` declares the license as `GPL3`. The owner chose `GPL-3.0-or-later` on 2026-10-12.
 - `src/version.ts` stays the single source of truth for the CLI version. `package.json` `version` is informational.
 - `private: true` prevents an accidental `bun publish`.
 

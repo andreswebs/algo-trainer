@@ -69,7 +69,7 @@ Goal: one pure formatting change, verified by the unchanged Deno suite, so later
 - Run `deno task fmt`, then `deno task generate-problems`.
 - Confirm the formatter is stable: a second `deno task fmt` changes nothing.
 - Confirm `git status` lists only tracked files. If Biome touched files in a directory that a developer ignores globally, add a `!!` force-ignore for it to `biome.json` and revert those files.
-- Expect about 89 changed files: about 70 reflowed by the formatter, plus 19 with sorted imports.
+- Expect about 93 changed files, measured on 2026-10-12. They include TypeScript reflowed by the formatter, files with sorted imports, and 9 problem JSON files under `src/data/problems/`. Regenerating `src/data/problems.generated.ts` afterwards keeps it consistent with them.
 
 ### 0.3 Record the reformat in blame history
 
