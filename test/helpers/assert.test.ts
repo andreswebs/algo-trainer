@@ -8,9 +8,8 @@ const throwProblem = (): never => {
   throw new ProblemError('Problem not found: two-sum');
 };
 
-const rejectProblem = async (): Promise<never> => {
-  throw new ProblemError('Problem not found: two-sum');
-};
+const rejectProblem = (): Promise<never> =>
+  Promise.reject(new ProblemError('Problem not found: two-sum'));
 
 describe('assertThrowsWith', () => {
   test('passes on the right class with the right substring', () => {
