@@ -20,8 +20,8 @@
     "bench": "deno bench --allow-all",
     "lint": "deno lint",
     "lint:fix": "deno lint --fix",
-    "fmt": "bunx @biomejs/biome@2.5.15 check --write --linter-enabled=false",
-    "fmt:check": "bunx @biomejs/biome@2.5.15 check --linter-enabled=false",
+    "fmt": "bun run format",
+    "fmt:check": "bun run format:check",
     "check": "deno check src/**/*.ts"
   },
   "imports": {
