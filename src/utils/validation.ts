@@ -87,7 +87,7 @@ function validateBoolean(value: unknown, fieldName: string): ValidationResult {
 /**
  * Validate array input
  */
-export function validateArray<T>(
+export function validateArray(
   value: unknown,
   fieldName: string,
   itemValidator?: (item: unknown, index: number) => ValidationResult,
@@ -215,7 +215,7 @@ export function validateISODateString(value: unknown, fieldName: string): Valida
   }
 
   const date = new Date(value);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return createValidationResult(false, [`${fieldName} must be a valid ISO-8601 date string`]);
   }
 

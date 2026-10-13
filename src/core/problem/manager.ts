@@ -46,36 +46,38 @@ export class ProblemManager {
    * Ensure the database is initialized
    */
   private ensureInitialized(): void {
+    this.requireDb();
+  }
+
+  private requireDb(): ProblemDatabase {
     if (!this.db) {
       throw new ProblemError(
         'ProblemManager not initialized',
         createErrorContext('ProblemManager', { reason: 'not_initialized' }),
       );
     }
+    return this.db;
   }
 
   /**
    * Get a problem by ID
    */
   getById(id: string): Problem | null {
-    this.ensureInitialized();
-    return this.db!.getById(id);
+    return this.requireDb().getById(id);
   }
 
   /**
    * Get a problem by slug
    */
   getBySlug(slug: string): Problem | null {
-    this.ensureInitialized();
-    return this.db!.getBySlug(slug);
+    return this.requireDb().getBySlug(slug);
   }
 
   /**
    * List problems matching a query
    */
   list(query: ProblemQuery = {}): ProblemQueryResult {
-    this.ensureInitialized();
-    let problems = this.db!.getAll();
+    let problems = this.requireDb().getAll();
 
     // 1. Filter by difficulty
     if (query.difficulty) {
@@ -184,13 +186,13 @@ export class ProblemManager {
     }
 
     // 2. Check for uniqueness
-    if (this.db!.hasId(problem.id)) {
+    if (this.requireDb().hasId(problem.id)) {
       throw new ProblemError(
         `Problem with ID '${problem.id}' already exists`,
         createErrorContext('addProblem', { id: problem.id, reason: 'duplicate_id' }),
       );
     }
-    if (this.db!.hasSlug(problem.slug)) {
+    if (this.requireDb().hasSlug(problem.slug)) {
       throw new ProblemError(
         `Problem with slug '${problem.slug}' already exists`,
         createErrorContext('addProblem', { slug: problem.slug, reason: 'duplicate_slug' }),
@@ -257,13 +259,13 @@ export class ProblemManager {
       }
 
       // Check uniqueness against existing DB
-      if (this.db!.hasId(problem.id)) {
+      if (this.requireDb().hasId(problem.id)) {
         throw new ProblemError(
           `Problem with ID '${problem.id}' already exists`,
           createErrorContext('addProblemBatch', { id: problem.id, reason: 'duplicate_id' }),
         );
       }
-      if (this.db!.hasSlug(problem.slug)) {
+      if (this.requireDb().hasSlug(problem.slug)) {
         throw new ProblemError(
           `Problem with slug '${problem.slug}' already exists`,
           createErrorContext('addProblemBatch', { slug: problem.slug, reason: 'duplicate_slug' }),
@@ -327,7 +329,7 @@ export class ProblemManager {
     this.ensureInitialized();
 
     // 1. Find existing
-    const existing = this.db!.getById(idOrSlug) || this.db!.getBySlug(idOrSlug);
+    const existing = this.requireDb().getById(idOrSlug) || this.requireDb().getBySlug(idOrSlug);
     if (!existing) {
       throw new ProblemError(
         `Problem not found: ${idOrSlug}`,
@@ -366,7 +368,7 @@ export class ProblemManager {
     }
 
     // 5. Check ID uniqueness if changed
-    if (updatedProblem.id !== existing.id && this.db!.hasId(updatedProblem.id)) {
+    if (updatedProblem.id !== existing.id && this.requireDb().hasId(updatedProblem.id)) {
       throw new ProblemError(
         `New ID '${updatedProblem.id}' is already in use`,
         createErrorContext('updateProblem', { id: updatedProblem.id, reason: 'duplicate_id' }),
@@ -375,7 +377,7 @@ export class ProblemManager {
 
     // 6. Check Slug uniqueness if changed
     const slugChanged = updatedProblem.slug !== existing.slug;
-    if (slugChanged && this.db!.hasSlug(updatedProblem.slug)) {
+    if (slugChanged && this.requireDb().hasSlug(updatedProblem.slug)) {
       throw new ProblemError(
         `New slug '${updatedProblem.slug}' is already in use`,
         createErrorContext('updateProblem', {
@@ -414,7 +416,7 @@ export class ProblemManager {
   async remove(idOrSlug: string): Promise<void> {
     this.ensureInitialized();
 
-    const problem = this.db!.getById(idOrSlug) || this.db!.getBySlug(idOrSlug);
+    const problem = this.requireDb().getById(idOrSlug) || this.requireDb().getBySlug(idOrSlug);
     if (!problem) {
       throw new ProblemError(
         `Problem not found: ${idOrSlug}`,
@@ -461,7 +463,7 @@ export class ProblemManager {
         // Log cleanup failure for debugging, but do not mask the original error
         try {
           logger.warn(
-            'Failed to clean up temporary problem file: ' + tempPath + ' - ' + String(cleanupError),
+            `Failed to clean up temporary problem file: ${tempPath} - ${String(cleanupError)}`,
           );
         } catch {
           // If logging fails, swallow to avoid interfering with the original error

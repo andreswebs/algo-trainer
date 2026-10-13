@@ -261,7 +261,7 @@ export class Logger {
    */
   keyValue(key: string, value: unknown, keyWidth = 20): void {
     const valueStr = typeof value === 'string' ? value : JSON.stringify(value);
-    const paddedKey = (key + ':').padEnd(keyWidth);
+    const paddedKey = `${key}:`.padEnd(keyWidth);
     this.writeToStderr(this.indent(`  ${paddedKey} ${valueStr}`));
   }
 
@@ -296,7 +296,9 @@ export class Logger {
     this.separator(width, '─');
     this.log(colorize(title.toUpperCase(), 'bold'));
     this.separator(width, '─');
-    lines.forEach((line) => this.log(line));
+    for (const line of lines) {
+      this.log(line);
+    }
     this.separator(width, '─');
   }
 

@@ -174,7 +174,7 @@ export function normalizeMetadata(raw: RawProblemMetadata): ProblemMetadata {
  */
 function parseIsoDate(dateStr: string): Date | undefined {
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return undefined;
   }
   return date;

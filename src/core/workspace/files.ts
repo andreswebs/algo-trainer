@@ -227,7 +227,9 @@ export function getWorkspacePaths(rootDir: string): WorkspacePaths {
   if (workspacePathCache.size >= MAX_CACHE_SIZE) {
     // Simple eviction: clear oldest half by insertion order when cache is full
     const keysToDelete = Array.from(workspacePathCache.keys()).slice(0, MAX_CACHE_SIZE / 2);
-    keysToDelete.forEach((key) => workspacePathCache.delete(key));
+    for (const key of keysToDelete) {
+      workspacePathCache.delete(key);
+    }
   }
   workspacePathCache.set(absRoot, paths);
 
@@ -484,13 +486,8 @@ function resolveProblemPaths(
  * ```
  */
 export function isPathInWorkspace(workspaceRoot: string, path: string): boolean {
-  // Validate inputs
-  try {
-    validateRootDirectory(workspaceRoot);
-  } catch (error) {
-    // If workspace root is invalid, we can't determine if path is in workspace
-    throw error;
-  }
+  // If workspace root is invalid, we can't determine if path is in workspace
+  validateRootDirectory(workspaceRoot);
 
   if (typeof path !== 'string' || path.trim().length === 0) {
     return false;
@@ -508,7 +505,7 @@ export function isPathInWorkspace(workspaceRoot: string, path: string): boolean 
   // Check if absPath starts with absRoot
   // Add trailing separator to prevent false positives
   // (e.g., /workspace should not match /workspace-other)
-  const rootWithSep = absRoot.endsWith('/') ? absRoot : absRoot + '/';
+  const rootWithSep = absRoot.endsWith('/') ? absRoot : `${absRoot}/`;
 
   return absPath === absRoot || absPath.startsWith(rootWithSep);
 }

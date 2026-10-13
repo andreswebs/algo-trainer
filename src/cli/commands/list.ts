@@ -155,7 +155,7 @@ function displayProblemsTable(
       // Show description (truncated)
       const desc =
         problem.description.length > 100
-          ? problem.description.substring(0, 100) + '...'
+          ? `${problem.description.substring(0, 100)}...`
           : problem.description;
       logger.log(`Description: ${desc}`);
 

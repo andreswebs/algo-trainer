@@ -404,6 +404,15 @@ async function discoverProblemFiles(dirPath: string): Promise<string[]> {
     .sort();
 }
 
+function appendTo<K>(index: Map<K, Problem[]>, key: K, problem: Problem): void {
+  const bucket = index.get(key);
+  if (bucket) {
+    bucket.push(problem);
+  } else {
+    index.set(key, [problem]);
+  }
+}
+
 /**
  * Build all indices from a list of problems
  */
@@ -418,26 +427,15 @@ function buildIndices(problems: Problem[]): ProblemIndices {
     byId.set(problem.id, problem);
     bySlug.set(problem.slug, problem);
 
-    if (!byDifficulty.has(problem.difficulty)) {
-      byDifficulty.set(problem.difficulty, []);
-    }
-    byDifficulty.get(problem.difficulty)!.push(problem);
+    appendTo(byDifficulty, problem.difficulty, problem);
 
     for (const tag of problem.tags) {
-      const normalizedTag = tag.toLowerCase();
-      if (!byTag.has(normalizedTag)) {
-        byTag.set(normalizedTag, []);
-      }
-      byTag.get(normalizedTag)!.push(problem);
+      appendTo(byTag, tag.toLowerCase(), problem);
     }
 
     if (problem.companies) {
       for (const company of problem.companies) {
-        const normalizedCompany = company.toLowerCase();
-        if (!byCompany.has(normalizedCompany)) {
-          byCompany.set(normalizedCompany, []);
-        }
-        byCompany.get(normalizedCompany)!.push(problem);
+        appendTo(byCompany, company.toLowerCase(), problem);
       }
     }
   }

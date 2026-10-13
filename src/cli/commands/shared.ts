@@ -224,7 +224,7 @@ export function formatProblemSummary(
     // Truncate description to first 100 characters
     const truncated =
       problem.description.length > 100
-        ? problem.description.substring(0, 100) + '...'
+        ? `${problem.description.substring(0, 100)}...`
         : problem.description;
     lines.push('');
     lines.push(truncated);

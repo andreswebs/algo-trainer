@@ -12,7 +12,7 @@
 import { createErrorContext, TeachingError } from '../../utils/errors.ts';
 import { logger } from '../../utils/output.ts';
 import { findScriptPath, loadAndValidateScript } from './parser.ts';
-import { TeachingSession } from './session.ts';
+import type { TeachingSession } from './session.ts';
 import { evaluateTrigger } from './triggers.ts';
 import type {
   ExecutionResult,

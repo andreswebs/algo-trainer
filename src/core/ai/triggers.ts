@@ -186,7 +186,7 @@ function evaluateValue(expr: string, context: TriggerContext): string | number |
 
   // Handle numeric literals
   const num = Number(expr);
-  if (!isNaN(num) && expr.match(/^-?\d+(\.\d+)?$/)) {
+  if (!Number.isNaN(num) && expr.match(/^-?\d+(\.\d+)?$/)) {
     return num;
   }
 

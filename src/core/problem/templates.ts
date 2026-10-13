@@ -476,7 +476,7 @@ export function formatLCValue(value: unknown): string {
   if (typeof value === 'number') return String(value);
   if (typeof value === 'string') return JSON.stringify(value);
   if (Array.isArray(value)) {
-    return '[' + value.map(formatLCValue).join(',') + ']';
+    return `[${value.map(formatLCValue).join(',')}]`;
   }
   throw new Error(
     `Cannot format value for LC input (unsupported type ${typeof value}): ${JSON.stringify(value)}`,
@@ -590,9 +590,8 @@ export function replacePlaceholders(
   // Find all placeholders in the content
   const placeholderRegex = /\{\{([A-Z_]+)\}\}/g;
   const foundPlaceholders = new Set<string>();
-  let match;
 
-  while ((match = placeholderRegex.exec(content)) !== null) {
+  for (const match of content.matchAll(placeholderRegex)) {
     foundPlaceholders.add(match[1]);
   }
 

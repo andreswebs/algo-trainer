@@ -193,7 +193,7 @@ export async function promptSelect<T extends string>(
 
     // Try to parse as number (1-based)
     const numChoice = parseInt(input, 10);
-    if (!isNaN(numChoice) && numChoice >= 1 && numChoice <= options.length) {
+    if (!Number.isNaN(numChoice) && numChoice >= 1 && numChoice <= options.length) {
       return options[numChoice - 1];
     }
 
