@@ -339,7 +339,7 @@ Goal: Deno is no longer required anywhere.
 - Rewrite `scripts/validate.sh`, `scripts/fix.sh` and `scripts/init.sh`:
   - `validate.sh` runs `bun run verify` and `bun run build`.
   - `fix.sh` runs `bun run format`, `bun run lint:fix` and `bun run build`.
-  - `init.sh` runs `bun install` and then `validate.sh`.
+  - `init.sh` runs `bun install --frozen-lockfile` and then `validate.sh`. Corrected 2026-10-13: the frozen install, kept by the owner, never rewrites `bun.lock`, which matches `bun ci` in CI.
 - Add `scripts/smoke.sh`. It takes the binary path as its first argument. From `/`, with `XDG_*_HOME` pointed at a temporary directory and `AT_*` unset, it:
   - checks that `--version` prints the version from `src/version.ts`;
   - runs `init` into a temporary workspace;
