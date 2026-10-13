@@ -12,7 +12,7 @@ class Test{{CLASS_NAME}}(unittest.TestCase):
     """Test cases for {{FUNCTION_NAME}}."""
 
     # Examples from the problem description
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
 
     # Edge cases
     @unittest.skip("TODO: Add edge case tests")

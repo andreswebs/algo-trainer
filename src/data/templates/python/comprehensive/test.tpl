@@ -12,7 +12,7 @@ from solution import {{FUNCTION_NAME}}, {{FUNCTION_NAME}}_alternative
 class Test{{CLASS_NAME}}Examples(unittest.TestCase):
     """Test cases from problem examples."""
 
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
 
 
 class Test{{CLASS_NAME}}EdgeCases(unittest.TestCase):

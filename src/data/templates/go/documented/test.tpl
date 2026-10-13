@@ -9,7 +9,7 @@ package solution
 import "testing"
 
 // Examples from the problem description
-{{EXAMPLES}}
+{{EXAMPLES_AS_COMMENTS}}
 
 // Edge cases
 func TestEdgeCase(t *testing.T) {

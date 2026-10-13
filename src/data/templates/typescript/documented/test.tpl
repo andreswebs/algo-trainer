@@ -13,7 +13,7 @@ describe('{{PROBLEM_TITLE}}', () => {
    * Examples from the problem description
    */
   describe('examples', () => {
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
   });
 
   /**

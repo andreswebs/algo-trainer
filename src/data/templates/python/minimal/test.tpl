@@ -4,7 +4,8 @@ from solution import {{FUNCTION_NAME}}
 
 # {{PROBLEM_TITLE}} tests
 class Test{{CLASS_NAME}}(unittest.TestCase):
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
+    pass
 
 
 if __name__ == "__main__":

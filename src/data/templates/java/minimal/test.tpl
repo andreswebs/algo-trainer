@@ -5,5 +5,5 @@ import static org.junit.jupiter.api.Assertions.*;
 class SolutionTest {
     private final Solution solution = new Solution();
 
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
 }

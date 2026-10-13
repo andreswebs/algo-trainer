@@ -14,7 +14,7 @@ describe('{{PROBLEM_TITLE}}', () => {
    * Test cases from problem examples
    */
   describe('Problem Examples', () => {
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
   });
 
   /**

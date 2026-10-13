@@ -3,4 +3,4 @@ package solution
 import "testing"
 
 // {{PROBLEM_TITLE}} tests
-{{EXAMPLES}}
+{{EXAMPLES_AS_COMMENTS}}

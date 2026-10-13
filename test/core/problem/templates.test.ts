@@ -10,6 +10,7 @@ import {
   formatCompanies,
   formatConstraints,
   formatExamples,
+  formatExamplesAsComments,
   formatExamplesAsLCInput,
   formatExamplesAsLCOutput,
   formatHints,
@@ -168,6 +169,22 @@ test('formatExamples - handles empty examples array', () => {
   deepStrictEqual(formatted, 'No examples provided.');
 });
 
+test('formatExamplesAsComments - prefixes every example line with the comment marker', () => {
+  deepStrictEqual(
+    formatExamplesAsComments(mockProblem, '//'),
+    [
+      '// Example 1:',
+      '// Input: nums = [2,7,11,15], target = 9',
+      '// Output: [0,1]',
+      '// Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].',
+      '//',
+      '// Example 2:',
+      '// Input: nums = [3,2,4], target = 6',
+      '// Output: [1,2]',
+    ].join('\n'),
+  );
+});
+
 test('formatConstraints - formats constraints as bulleted list', () => {
   const formatted = formatConstraints(mockProblem.constraints);
   ok(formatted.includes('- 2 <= nums.length <= 10^4'));
@@ -233,6 +250,22 @@ test('replacePlaceholders - handles multiple occurrences', () => {
 
   const result = replacePlaceholders(content, values);
   deepStrictEqual(result, 'Test is Test');
+});
+
+test('replacePlaceholders - indents every line of a value placed alone on an indented line', () => {
+  const content = 'class A:\n    {{BODY}}\n    pass\n';
+  const values = { BODY: '# one\n\n# two' };
+
+  const result = replacePlaceholders(content, values);
+  deepStrictEqual(result, 'class A:\n    # one\n\n    # two\n    pass\n');
+});
+
+test('replacePlaceholders - leaves continuation lines alone when the placeholder follows text', () => {
+  const content = 'Examples: {{BODY}}';
+  const values = { BODY: 'one\ntwo' };
+
+  const result = replacePlaceholders(content, values);
+  deepStrictEqual(result, 'Examples: one\ntwo');
 });
 
 test('replacePlaceholders - throws on unknown placeholder by default', () => {
@@ -475,4 +508,34 @@ test('getLanguageScaffolding - other languages keep the default test scaffolding
     deepStrictEqual(spec.extras, []);
     deepStrictEqual(spec.sharedAssets, []);
   }
+});
+
+for (const language of ['typescript', 'javascript', 'go', 'java', 'python', 'rust'] as const) {
+  for (const style of ['minimal', 'documented', 'comprehensive'] as const) {
+    test(`renderTemplate - ${language} ${style} test template comments every example line`, async () => {
+      const rendered = await renderTemplate(
+        { problem: mockProblem, config: { ...mockTemplateConfig, language, style } },
+        'test',
+      );
+      const marker = language === 'python' ? '#' : '//';
+
+      const exampleLines = rendered
+        .split('\n')
+        .filter((line) => /(Example \d+:|Input:|Output:|Explanation:)/.test(line));
+      deepStrictEqual(exampleLines.length, 7);
+      for (const line of exampleLines) {
+        ok(line.trimStart().startsWith(`${marker} `), `uncommented example line: ${line}`);
+      }
+    });
+  }
+}
+
+test('renderTemplate - python minimal test class keeps a body', async () => {
+  const rendered = await renderTemplate(
+    { problem: mockProblem, config: { ...mockTemplateConfig, language: 'python' } },
+    'test',
+  );
+
+  ok(rendered.includes('(unittest.TestCase):\n    # Example 1:'));
+  ok(rendered.includes('    # Output: [1,2]\n    pass\n'));
 });

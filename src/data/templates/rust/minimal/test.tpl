@@ -7,5 +7,5 @@ use solution::{{FUNCTION_NAME}};
 mod tests {
     use super::*;
 
-{{EXAMPLES}}
+    {{EXAMPLES_AS_COMMENTS}}
 }

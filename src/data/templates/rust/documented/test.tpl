@@ -11,7 +11,7 @@ mod tests {
 
     /// Examples from the problem description
     mod examples {
-{{EXAMPLES}}
+        {{EXAMPLES_AS_COMMENTS}}
     }
 
     /// Edge cases

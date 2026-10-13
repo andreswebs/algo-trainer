@@ -9,7 +9,7 @@ package solution
 import "testing"
 
 // Test cases from problem examples
-{{EXAMPLES}}
+{{EXAMPLES_AS_COMMENTS}}
 
 // Edge cases and boundary conditions
 func TestEmptyInput(t *testing.T) {

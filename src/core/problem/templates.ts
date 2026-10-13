@@ -137,6 +137,7 @@ interface PlaceholderValues {
   PROBLEM_DIFFICULTY: string;
   PROBLEM_DESCRIPTION: string;
   EXAMPLES: string;
+  EXAMPLES_AS_COMMENTS: string;
   EXAMPLES_LC_INPUT: string;
   EXAMPLES_LC_OUTPUT: string;
   CONSTRAINTS: string;
@@ -151,6 +152,13 @@ interface PlaceholderValues {
   CLASS_NAME: string;
   SIGNATURE: string;
   FILE_EXTENSION: string;
+}
+
+/**
+ * Get the line comment marker for a given language
+ */
+function lineCommentMarker(language: SupportedLanguage): string {
+  return language === 'python' ? '#' : '//';
 }
 
 /**
@@ -404,6 +412,20 @@ export function formatExamples(problem: Problem): string {
 }
 
 /**
+ * Format examples as line comments, for templates that place them in code
+ *
+ * @param problem - The problem containing examples
+ * @param commentMarker - The language's line comment marker, such as `//` or `#`
+ * @returns The `formatExamples` output with every line commented
+ */
+export function formatExamplesAsComments(problem: Problem, commentMarker: string): string {
+  return formatExamples(problem)
+    .split('\n')
+    .map((line) => (line ? `${commentMarker} ${line}` : commentMarker))
+    .join('\n');
+}
+
+/**
  * Format constraints as a bulleted list
  *
  * @param constraints - Array of constraint strings
@@ -552,6 +574,7 @@ function buildPlaceholderValues(context: TemplateContext): PlaceholderValues {
     PROBLEM_DIFFICULTY: problem.difficulty,
     PROBLEM_DESCRIPTION: problem.description,
     EXAMPLES: formatExamples(problem),
+    EXAMPLES_AS_COMMENTS: formatExamplesAsComments(problem, lineCommentMarker(config.language)),
     EXAMPLES_LC_INPUT: formatExamplesAsLCInput(problem),
     EXAMPLES_LC_OUTPUT: formatExamplesAsLCOutput(problem),
     CONSTRAINTS: formatConstraints(problem.constraints),
@@ -573,6 +596,8 @@ function buildPlaceholderValues(context: TemplateContext): PlaceholderValues {
  * Replace placeholders in template content
  *
  * Replaces all occurrences of {{PLACEHOLDER_NAME}} with corresponding values.
+ * A placeholder alone on an indented line has that indentation applied to every
+ * line of its value.
  * Unknown placeholders will throw an error by default.
  *
  * @param content - The template content with placeholders
@@ -612,8 +637,18 @@ export function replacePlaceholders(
     }
   }
 
-  // Replace all placeholders
-  let result = content;
+  // A placeholder alone on an indented line indents every line of its value, so multi-line
+  // values keep the block structure of code templates.
+  let result = content.replace(
+    /^([ \t]+)\{\{([A-Z_]+)\}\}[ \t]*$/gm,
+    (line, indent: string, key: string) =>
+      key in values
+        ? values[key]
+            .split('\n')
+            .map((valueLine) => (valueLine ? indent + valueLine : ''))
+            .join('\n')
+        : line,
+  );
   for (const [key, value] of Object.entries(values)) {
     const placeholder = `{{${key}}}`;
     result = result.replaceAll(placeholder, value);

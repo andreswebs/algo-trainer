@@ -20,7 +20,7 @@ class SolutionTest {
     @Nested
     @DisplayName("Examples")
     class Examples {
-{{EXAMPLES}}
+        {{EXAMPLES_AS_COMMENTS}}
     }
 
     /**
