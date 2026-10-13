@@ -49,7 +49,7 @@ Dropped packages and their replacements:
 | `Deno.readDir(p)` | `readdir(p, { withFileTypes: true })` | `Dirent.isFile()`, `isDirectory()` and `isSymbolicLink()` are methods, not properties |
 | `Deno.stat(p)` | `stat(p)` | `isDirectory()` is a method |
 | `Deno.mkdir(p, { recursive: true })` | `mkdir(p, { recursive: true })` | |
-| `Deno.remove(p)` | `rm(p)` | Fails on a non-empty directory, as Deno does |
+| `Deno.remove(p)` | `rm(p)` for a file; `rmdir(p)` for a directory | `rm(p)` without `recursive` rejects every directory, empty ones included, whereas `Deno.remove(p)` deletes an empty one. `remove()` in `src/utils/fs.ts` checks `lstat` first (corrected 2026-10-12, phase 1) |
 | `Deno.remove(p, { recursive: true })` | `rm(p, { recursive: true })` | Add `force: true` only where a missing path must not throw |
 | `Deno.rename(a, b)` | `rename(a, b)` | |
 | `Deno.realPath(p)` | `realpath(p)` | |
@@ -60,13 +60,13 @@ Dropped packages and their replacements:
 | `Deno.stderr.write(bytes)` | `process.stderr.write(text)` | |
 | `Deno.stderr.writeSync(bytes)` | `writeSync(2, text)` from `node:fs` | Keeps the synchronous guarantee |
 | `Deno.Command(...).output()` | Spawn helper on `node:child_process` (below) | |
-| `@std/fs` `exists(p)` | `access(p).then(() => true, () => false)`, or `existsSync(p)` | Never `Bun.file(p).exists()`, which is false for directories |
+| `@std/fs` `exists(p)` | `stat(p).then(() => true, () => false)`, or `pathExists(p)` from `src/utils/fs.ts` | Not `access`: under Deno it calls `os.uid()` and needs `--allow-sys`, which the test task does not grant (corrected 2026-10-12, phase 1). Never `Bun.file(p).exists()`, which is false for directories |
 | `@std/fs` `ensureDir(p)` | `mkdir(p, { recursive: true })` | Returns a string instead of void; callers ignore the value |
 | `@std/path` `fromFileUrl(u)` | `fileURLToPath(u)` from `node:url` | |
 | `dirname(fromFileUrl(import.meta.url))` | `import.meta.dirname` | |
 | `new URL('.', import.meta.url).pathname` | `import.meta.dirname` | `URL.pathname` keeps `%20`, so paths with spaces break today |
 
-Native `exists` differs from std only on cases the repo does not hit. Std throws ENOTDIR for a path under a file, and returns true for an EACCES child; `access` returns false for both.
+Native `exists` differs from std only on cases the repo does not hit. Std throws ENOTDIR for a path under a file, and returns true for an EACCES child; the `stat` form returns false for both.
 
 ## biome.json
 
@@ -320,12 +320,14 @@ The Deno test task unsets exactly eight variables: `AT_WORKSPACE`, `AT_LANGUAGE`
 Phase 1 form, runnable under Deno and Bun, in `src/config/paths.ts`:
 
 ```ts
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export function getDataRoot(): string {
-  return join(import.meta.dirname, '..', 'data');
+  return fileURLToPath(new URL('../data', import.meta.url));
 }
 ```
+
+Corrected 2026-10-12, phase 1: the earlier form, `join(import.meta.dirname, '..', 'data')`, fails `deno check` with TS2345, because Deno types `import.meta.dirname` as `string | undefined`. The `fileURLToPath` form returns the same decoded path.
 
 Phase 4 form, after Deno is removed:
 
@@ -400,11 +402,12 @@ Rules:
 
 ## Spawn helper
 
-**Sketch** replacing `Deno.Command(...).output()` in `src/core/runner.ts`. It must keep the current contract: piped stdout and stderr decoded as UTF-8, an exit code, and a rejected promise when the executable is missing.
+**Shipped** in phase 1 as `execCaptureSeparate` in `src/core/runner.ts`, replacing `Deno.Command(...).output()` in `src/core/runner.ts`. It must keep the current contract: piped stdout and stderr decoded as UTF-8, an exit code, and a rejected promise when the executable is missing.
 
 ```ts
 import { Buffer } from 'node:buffer';
 import { spawn } from 'node:child_process';
+import { constants } from 'node:os';
 
 interface ExecResult {
   code: number;
@@ -420,9 +423,9 @@ function exec(cmd: string, args: string[], cwd: string): Promise<ExecResult> {
     child.stdout.on('data', (chunk: Buffer) => out.push(chunk));
     child.stderr.on('data', (chunk: Buffer) => err.push(chunk));
     child.on('error', reject);
-    child.on('close', (code) => {
+    child.on('close', (code, signal) => {
       resolve({
-        code: code ?? 1,
+        code: code ?? (signal ? 128 + constants.signals[signal] : 1),
         stdout: Buffer.concat(out).toString('utf8'),
         stderr: Buffer.concat(err).toString('utf8'),
       });
@@ -431,7 +434,7 @@ function exec(cmd: string, args: string[], cwd: string): Promise<ExecResult> {
 }
 ```
 
-`code` is `null` when the child is killed by a signal; the sketch maps that to 1. The runner's subprocess path is not covered by automated tests (`test/core/runner.test.ts` says it is exercised by a manual smoke test), so phase 1 includes a manual run of `run` on a C++ problem, which needs `cmake`.
+`code` is `null` when the child is killed by a signal. The helper reports 128 plus the signal number, as `Deno.Command` did: a C++ solution that aborts reports 134 (corrected 2026-10-12, phase 1; the first sketch mapped it to 1). `Deno.Command(...).output()` gave the child no stdin, which `'ignore'` matches. The runner's subprocess path is not covered by automated tests (`test/core/runner.test.ts` says it is exercised by a manual smoke test), so phase 1 includes a manual run of `run` on a C++ problem, which needs `cmake`.
 
 ## Assertion mapping
 

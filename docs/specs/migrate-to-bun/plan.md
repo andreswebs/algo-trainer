@@ -20,7 +20,7 @@ When the plan is done:
 
 - **Every phase ends green.** Each phase lists a gate. Do not start the next phase until the gate passes.
 - **Steps are commit boundaries.** Each numbered step is sized to be reviewed and committed on its own. The project owner manages git.
-- **No behavior change outside phase 5.** Phases 0 to 4 change tooling and implementation only. CLI output, files written and exit codes must stay the same. Phase 5 changes the generated templates on purpose.
+- **No behavior change outside phase 5.** Phases 0 to 4 change tooling and implementation only. CLI output, files written and exit codes must stay the same. Phase 5 changes the generated templates on purpose. One exception was approved by the owner on 2026-10-12: since step 1.4, each prompt consumes exactly one line of piped input, where the raw stdin read used to take a whole buffer as one answer.
 - **Quality gate commands change by phase.** `AGENTS.md` keeps its Deno commands until phase 4 rewrites it. Until then, use the gate commands listed in each phase.
 - **Biome is pinned exactly at 2.5.15.** Until phase 2 adds it as a dev dependency, run it as `bunx @biomejs/biome@2.5.15`.
 
@@ -99,7 +99,7 @@ Goal: remove every `Deno.*`, `@std/fs` and `@std/path` use from `src/` and `scri
 `src/utils/fs.ts` is the foundation most modules import. Port it first:
 
 - `Deno.env.get` in `getXdgPaths` becomes `process.env[...]`.
-- `exists` becomes `access` in a try/catch or `existsSync`. `ensureDir` becomes `mkdir(p, { recursive: true })`.
+- `exists` becomes `stat(p).then(() => true, () => false)` (not `access`, which needs `--allow-sys` under Deno). `ensureDir` becomes `mkdir(p, { recursive: true })`.
 - `Deno.readTextFile`, `Deno.writeTextFile` (including the optional `mode`) and `Deno.remove` (with `recursive` only when the caller passes it) become `node:fs/promises` calls.
 - `listDirectory` keeps its `{ name, path, isDirectory }` return shape, so `src/core/problem/database.ts` is unaffected. Internally, `Deno.readDir` becomes `readdir(..., { withFileTypes: true })` with `isDirectory()` as a method.
 - `@std/path` `join` becomes `node:path`.
@@ -145,7 +145,7 @@ Verify by hand, in addition to `test/prompts.test.ts`:
 | `src/core/problem/parser.ts:27`, `src/core/workspace/generation.ts:368`, `src/core/problem/templates.ts:672,729,775`, `src/core/ai/parser.ts:188`, `src/cli/commands/run.ts:125,202`, `src/cli/commands/teach.ts:154,171` | `readFile` and `writeFile` |
 | `src/cli/commands/run.ts:168` | `realpath(parent).catch(() => parent)` |
 | `src/cli/commands/run.ts:100,161,236`, `init.ts:78,81`, `shared.ts:43`, `challenge.ts:337` | `process.cwd()` |
-| `src/core/problem/templates.ts` (three `exists` calls) | `access` or `existsSync`; never `Bun.file().exists()` |
+| `src/core/problem/templates.ts` (three `exists` calls) | `pathExists` from `src/utils/fs.ts`; never `Bun.file().exists()` |
 
 `src/cli/exit-codes.ts` maps filesystem errors to exit code 7 by matching `permission`, `access denied` and `eacces` in messages. Node's EACCES messages still match, so leave it unchanged.
 
@@ -156,7 +156,7 @@ Verify by hand, in addition to `test/prompts.test.ts`:
 
 ### 1.7 Introduce the data-root resolver
 
-- Add `getDataRoot()` to `src/config/paths.ts`, in the phase 1 form from the reference, which uses `import.meta.dirname`.
+- Add `getDataRoot()` to `src/config/paths.ts`, in the phase 1 form from the reference, which resolves `../data` against `import.meta.url`.
 - In `src/core/problem/templates.ts`, replace the `new URL('.', import.meta.url).pathname` path math with `join(getDataRoot(), 'templates')`. This also fixes template lookup when the install path contains a space.
 - In `src/core/ai/parser.ts`, replace the `dirname(fromFileUrl(import.meta.url))` path math with `join(getDataRoot(), 'scripts')`.
 - In the Deno `build` task, add `--include=src/data/scripts`. The current binary never embedded the built-in teaching scripts.
