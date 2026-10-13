@@ -6,6 +6,8 @@
 
 import { describe, it } from 'bun:test';
 import { deepStrictEqual } from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 import {
   isInteractive,
   promptConfirm,
@@ -154,5 +156,34 @@ describe('promptLanguage', () => {
       deepStrictEqual(pyResult, 'python');
       deepStrictEqual(javaResult, 'java');
     }
+  });
+});
+
+describe('readLine', () => {
+  const script = join(import.meta.dir, 'fixtures', 'read-lines.ts');
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('AT_')),
+  );
+
+  function readFiveLines(input: string): unknown {
+    const { status, stdout } = spawnSync(process.execPath, [script], {
+      input,
+      env,
+      encoding: 'utf8',
+    });
+    deepStrictEqual(status, 0);
+    return JSON.parse(stdout);
+  }
+
+  it('returns each piped line, then null after end of input', () => {
+    deepStrictEqual(readFiveLines('a\nb\nc\n'), ['a', 'b', 'c', null, null]);
+  });
+
+  it('returns null for every read on empty input', () => {
+    deepStrictEqual(readFiveLines(''), [null, null, null, null, null]);
+  });
+
+  it('strips CRLF and returns an unterminated last line', () => {
+    deepStrictEqual(readFiveLines('x\r\ny'), ['x', 'y', null, null, null]);
   });
 });
