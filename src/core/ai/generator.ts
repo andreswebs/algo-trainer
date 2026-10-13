@@ -25,9 +25,10 @@ export type ScriptTemplateType = 'basic' | 'comprehensive' | 'advanced';
  */
 export interface ScriptGeneratorOptions {
   /**
-   * Template type to use for script generation.
+   * Template type to use for script generation. When omitted, the template is
+   * selected from the problem's difficulty (see `selectTemplateForProblem`).
    */
-  templateType: ScriptTemplateType;
+  templateType?: ScriptTemplateType;
 }
 
 /**
@@ -217,12 +218,10 @@ export class TeachingScriptGenerator {
   /**
    * Creates a new teaching script generator.
    *
-   * @param options - Generator options; `templateType` defaults to `comprehensive`
+   * @param options - Generator options
    */
-  constructor(options?: Partial<ScriptGeneratorOptions>) {
-    this.options = {
-      templateType: options?.templateType ?? 'comprehensive',
-    };
+  constructor(options: ScriptGeneratorOptions = {}) {
+    this.options = options;
   }
 
   /**

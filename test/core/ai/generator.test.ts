@@ -73,10 +73,20 @@ test('selectTemplateForProblem - selects a template by difficulty', () => {
   }
 });
 
-test('TeachingScriptGenerator - uses the comprehensive template by default', () => {
-  const script = new TeachingScriptGenerator().generate(makeProblem());
+test('TeachingScriptGenerator - selects the template by difficulty by default', () => {
+  for (const [difficulty, templateType] of [
+    ['easy', 'basic'],
+    ['medium', 'comprehensive'],
+    ['hard', 'advanced'],
+  ] as const) {
+    const problem = makeProblem({ difficulty });
 
-  deepStrictEqual(script.steps.length, COMPREHENSIVE_TEMPLATE.steps.length);
+    deepStrictEqual(
+      new TeachingScriptGenerator().generate(problem),
+      new TeachingScriptGenerator({ templateType }).generate(problem),
+      difficulty,
+    );
+  }
 });
 
 test('TeachingScriptGenerator - copies problem metadata into the script', () => {
