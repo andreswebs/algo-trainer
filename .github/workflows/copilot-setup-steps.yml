@@ -24,11 +24,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Install Deno
-        uses: denoland/setup-deno@v2
-        with:
-          cache: true
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install project dependencies
-        run: |
-          deno install
+        run: bun ci
