@@ -6,18 +6,13 @@ A CLI tool for practicing algorithmic problems offline. Work through coding chal
 
 ## Installation
 
-Requires [Deno](https://deno.land/) 2.x or later.
-
-```sh
-deno install --allow-read --allow-write --allow-env --allow-net --name algo-trainer jsr:@andreswebs/algo-trainer
-```
-
-Or build from source:
+Requires [Bun](https://bun.sh/) 1.4.3 or later. There is no published package; build the binary from source:
 
 ```sh
 git clone https://github.com/andreswebs/algo-trainer.git
 cd algo-trainer
-deno task build
+bun install
+bun run build
 cp ./bin/algo-trainer ~/.local/bin # or somewhere else in your PATH
 ```
 
@@ -77,17 +72,29 @@ Available languages: python, typescript, javascript, go, rust, java, cpp.
 
 ## Development
 
-Type check and lint:
+Install dependencies:
 
 ```sh
-deno task check
-deno task lint
+bun install
 ```
 
-Run tests:
+Type check, check formatting and lint, and run the tests (run this before and after every change):
 
 ```sh
-deno task test
+bun run verify
+```
+
+Other commands:
+
+```sh
+bun run dev                # run the CLI in watch mode
+bun test                   # run the tests
+bun run test:watch         # run the tests in watch mode
+bun run format             # format with Biome
+bun run lint:fix           # apply Biome lint fixes
+bun run generate-problems  # regenerate src/data/problems.generated.ts
+bun run build              # build bin/algo-trainer
+./scripts/smoke.sh "${PWD}/bin/algo-trainer"  # smoke test the built binary
 ```
 
 ## Authors

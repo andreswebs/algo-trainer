@@ -24,13 +24,14 @@ A comprehensive guide to using Algo-Trainer for practicing algorithmic problem s
 
 ### Installation
 
-Ensure you have Deno installed on your system. Build the binary:
+Ensure you have [Bun](https://bun.sh/) 1.4.3 or later installed. From a clone of the repository, install the dependencies and build the binary:
 
 ```sh
-deno task build
+bun install
+bun run build
 ```
 
-This creates the `bin/algo-trainer` executable.
+This creates the `bin/algo-trainer` executable. Copy it to a directory on your `PATH`.
 
 ### First Time Setup
 

@@ -105,10 +105,10 @@ To test environment variable configuration:
 
 ```sh
 # Run tests
-deno test test/env.test.ts --allow-env --allow-read --allow-write
+bun test ./test/env.test.ts
 
 # Run integration tests
-deno test test/env-integration.test.ts --allow-env --allow-read --allow-write
+bun test ./test/env-integration.test.ts
 ```
 
 ## Implementation Details

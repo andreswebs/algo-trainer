@@ -5,10 +5,10 @@
 **MANDATORY:** Before any task, run ALL quality checks:
 
 ```sh
-deno task check
-deno task lint
-bun test
+bun run verify
 ```
+
+`verify` runs the type check, the Biome format and lint check, and the tests.
 
 If any fail, fix errors BEFORE starting the task.
 
@@ -17,10 +17,10 @@ If any fail, fix errors BEFORE starting the task.
 After completing ANY modification:
 
 ```sh
-deno task check
-deno task lint
-bun test
+bun run verify
 ```
+
+`verify` runs the type check, the Biome format and lint check, and the tests.
 
 If any fail, fix errors BEFORE considering task complete.
 
@@ -28,7 +28,7 @@ If any fail, fix errors BEFORE considering task complete.
 
 - **Project**: algo-trainer - CLI for algorithmic problem-solving practice
 - **Language**: TypeScript (strict mode)
-- **Runtime**: Deno 2.x
+- **Runtime**: Bun 1.4.3 or later
 - **Architecture**: CLI application with XDG-compliant configuration
 - **Entry Point**: src/main.ts → src/cli/main.ts
 
@@ -38,7 +38,7 @@ If any fail, fix errors BEFORE considering task complete.
 
 - Use absolute paths only
 - Check file existence before operations
-- Main config: deno.jsonc
+- Main config: package.json (scripts and dependencies), tsconfig.json, biome.json
 
 ### Writing/Editing
 
@@ -96,28 +96,36 @@ Available error classes:
 ## Development Commands
 
 ```sh
+# Install dependencies
+bun install
+
+# Type check, format and lint check, tests (MANDATORY before/after tasks)
+bun run verify
+
 # Development mode with watch
-deno task dev
+bun run dev
 
-# Type checking (MANDATORY before/after tasks)
-deno task check
+# Type checking
+bun run typecheck
 
-# Linting (MANDATORY before/after tasks)
-deno task lint
-deno task lint:fix
+# Formatting and linting (Biome)
+bun run format
+bun run format:check
+bun run lint
+bun run lint:fix
 
-# Testing (MANDATORY before/after tasks)
+# Testing
 bun test
 bun run test:watch
 
-# Format code
-deno task fmt
+# Generate problem data
+bun run generate-problems
 
 # Build binary
-deno task build
+bun run build
 
-# Generate problem data
-deno task generate-problems
+# Smoke test the built binary
+./scripts/smoke.sh "${PWD}/bin/algo-trainer"
 ```
 
 ## Project Structure
@@ -190,20 +198,17 @@ await configManager.updateConfig({ language: 'python' });
 
 - Location: `test/` directory
 - Naming: `*.test.ts`
-- Framework: Deno built-in with `@std/testing`
+- Framework: `bun:test` (`test`, `describe`, `it`, hooks) with assertions from `node:assert/strict`
+- Error message checks: `assertThrowsWith` and `assertRejectsWith` from `test/helpers/assert.ts`; never pass a message substring as the third argument of `throws` or `rejects`
+- Isolation: `test/setup.ts` (preloaded by `bunfig.toml`) unsets `AT_*` variables and points `XDG_*_HOME` at a temporary directory
 - ALL new functionality MUST have tests
 
 ## Dependencies
 
-All from Deno standard library:
-
-- `@std/assert`
-- `@std/testing`
-- `@std/cli`
-- `@std/path`
-- `@std/fs`
-- `@std/yaml`
-- `@std/json`
+- Node built-ins first (`node:fs/promises`, `node:path`, `node:os`, `node:child_process`, ...)
+- Bun APIs only at the edges: `Bun.isStandaloneExecutable` in `src/config/paths.ts` and `Bun.YAML.parse`
+- Runtime packages: `@std/cli` and `@std/yaml` (only `stringify`; parsing uses `Bun.YAML.parse`)
+- Dev packages: `@biomejs/biome`, `@types/bun`
 
 ## Available CLI Commands
 
@@ -222,7 +227,8 @@ All from Deno standard library:
 - Quotes: Single
 - Semicolons: Yes
 - Line width: 100 chars max
-- Run `deno task fmt` before commits
+- Formatter and linter: Biome (`biome.json`)
+- Run `bun run format` before commits
 
 ## Common Issues
 
@@ -240,7 +246,6 @@ All from Deno standard library:
 ### Test Failures
 
 - Check test environment variables
-- Ensure proper permissions in test command
 - Mock file system operations when needed
 
 ## Critical Files
@@ -251,14 +256,14 @@ All from Deno standard library:
 - Config: `src/config/manager.ts`
 - Types: `src/types/global.ts`
 - Errors: `src/utils/errors.ts`
-- Deno Config: `deno.jsonc`
+- Package manifest: `package.json`
 
 ## Workflow Summary
 
-1. Run checks: `deno task check && deno task lint && bun test`
+1. Run checks: `bun run verify`
 2. Make changes
 3. Run checks again
 4. Fix any issues
-5. Format: `deno task fmt`
+5. Format: `bun run format`
 6. Final test run
 7. Task complete only when all checks pass
