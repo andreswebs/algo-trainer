@@ -181,7 +181,7 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
   for (const warning of result.warnings) {
     logger.warn(warning);
   }
-  logger.success('✅ Teaching script is valid');
+  logger.success('Teaching script is valid');
 
   return { success: true, exitCode: ExitCode.SUCCESS };
 }

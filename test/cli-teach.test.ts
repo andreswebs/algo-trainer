@@ -154,6 +154,8 @@ steps:
       output.join('\n').includes("steps[1]: 'hint' steps are no longer supported and are ignored"),
       output.join('\n'),
     );
+    const validLine = output.find((line) => line.includes('Teaching script is valid'));
+    deepStrictEqual(validLine?.match(/✅/g)?.length, 1, String(validLine));
   });
 
   it('should reject an invalid teaching script', async () => {
