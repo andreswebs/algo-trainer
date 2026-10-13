@@ -6,7 +6,8 @@
 
 import { afterEach, beforeEach, describe, it } from 'bun:test';
 import { deepStrictEqual, ok, rejects } from 'node:assert/strict';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { TeachingEngine } from '../../src/core/ai/engine.ts';
 import { TeachingSession } from '../../src/core/ai/session.ts';
@@ -14,27 +15,22 @@ import type { ExecutionResult } from '../../src/core/ai/types.ts';
 import { TeachingError } from '../../src/utils/errors.ts';
 import { assertRejectsWith } from '../helpers/assert.ts';
 
-// Test fixture directory
-const TEST_DIR = join(import.meta.dir, '..', 'fixtures', 'ai-engine-tests');
-
 describe('TeachingEngine', () => {
   let session: TeachingSession;
   let engine: TeachingEngine;
+  let testDir: string;
   let testProblemDir: string;
 
   beforeEach(async () => {
+    testDir = await mkdtemp(join(tmpdir(), 'algo-trainer-engine-'));
     session = new TeachingSession('test-problem');
     engine = new TeachingEngine(session);
-    testProblemDir = join(TEST_DIR, 'test-problem');
+    testProblemDir = join(testDir, 'test-problem');
     await mkdir(testProblemDir, { recursive: true });
   });
 
   afterEach(async () => {
-    try {
-      await rm(TEST_DIR, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+    await rm(testDir, { recursive: true, force: true });
   });
 
   describe('constructor', () => {
