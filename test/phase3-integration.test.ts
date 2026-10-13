@@ -5,9 +5,12 @@
  * the PMS APIs without needing to know internal module structure.
  */
 
-import { assertEquals, assertExists } from '@std/assert';
-
 // Test that all key APIs are available from the single import point
+import { test } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdtemp, rm, stat } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   type Difficulty as _Difficulty,
   type GenerateProblemFilesOptions as _GenerateProblemFilesOptions,
@@ -43,52 +46,52 @@ type _ExportedTypes = [
   _WorkspaceStructure,
 ];
 
-Deno.test('PMS-020: Core module exports all required APIs', () => {
+test('PMS-020: Core module exports all required APIs', () => {
   // Verify problem management exports
-  assertExists(ProblemManager);
-  assertExists(ProblemDatabase);
+  ok(ProblemManager != null);
+  ok(ProblemDatabase != null);
 
   // Verify workspace management exports
-  assertExists(initWorkspace);
-  assertExists(getWorkspaceStructure);
-  assertExists(isWorkspaceInitialized);
-  assertExists(validateWorkspace);
+  ok(initWorkspace != null);
+  ok(getWorkspaceStructure != null);
+  ok(isWorkspaceInitialized != null);
+  ok(validateWorkspace != null);
 
   // Verify file generation exports
-  assertExists(generateProblemFiles);
-  assertExists(problemExists);
-  assertExists(getProblemMetadata);
+  ok(generateProblemFiles != null);
+  ok(problemExists != null);
+  ok(getProblemMetadata != null);
 
   // Verify archive exports
-  assertExists(archiveProblem);
+  ok(archiveProblem != null);
 
   // Verify template exports
-  assertExists(renderTemplate);
-  assertExists(renderAllTemplates);
+  ok(renderTemplate != null);
+  ok(renderAllTemplates != null);
 });
 
-Deno.test('PMS-020: ProblemManager can be initialized and used', async () => {
+test('PMS-020: ProblemManager can be initialized and used', async () => {
   const manager = new ProblemManager();
   await manager.init();
 
   // Verify basic operations work
   const allProblems = manager.list({});
-  assertExists(allProblems);
-  assertEquals(typeof allProblems.total, 'number');
+  ok(allProblems != null);
+  deepStrictEqual(typeof allProblems.total, 'number');
 
   // Verify we have some problems
-  assertEquals(allProblems.problems.length > 0, true, 'Should have problems');
+  deepStrictEqual(allProblems.problems.length > 0, true, 'Should have problems');
 
   // Verify problem has expected structure
   const problem = allProblems.problems[0];
-  assertExists(problem.id);
-  assertExists(problem.slug);
-  assertExists(problem.title);
-  assertExists(problem.difficulty);
+  ok(problem.id != null);
+  ok(problem.slug != null);
+  ok(problem.title != null);
+  ok(problem.difficulty != null);
 });
 
-Deno.test('PMS-020: Workspace operations work through single import', async () => {
-  const tempDir = await Deno.makeTempDir();
+test('PMS-020: Workspace operations work through single import', async () => {
+  const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
 
   try {
     // Test workspace initialization
@@ -96,24 +99,24 @@ Deno.test('PMS-020: Workspace operations work through single import', async () =
 
     // Verify workspace structure
     const structure = getWorkspaceStructure(tempDir);
-    assertExists(structure.root);
-    assertExists(structure.problems);
-    assertExists(structure.completed);
+    ok(structure.root != null);
+    ok(structure.problems != null);
+    ok(structure.completed != null);
 
     // Verify initialization check
     const initialized = await isWorkspaceInitialized(tempDir);
-    assertEquals(initialized, true);
+    deepStrictEqual(initialized, true);
 
     // Verify directories exist
-    const problemsDir = await Deno.stat(structure.problems);
-    assertEquals(problemsDir.isDirectory, true);
+    const problemsDir = await stat(structure.problems);
+    deepStrictEqual(problemsDir.isDirectory(), true);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('PMS-020: File generation works through single import', async () => {
-  const tempDir = await Deno.makeTempDir();
+test('PMS-020: File generation works through single import', async () => {
+  const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
 
   try {
     // Initialize workspace
@@ -123,7 +126,7 @@ Deno.test('PMS-020: File generation works through single import', async () => {
     const manager = new ProblemManager();
     await manager.init();
     const problem = manager.list({ limit: 1 }).problems[0];
-    assertExists(problem);
+    ok(problem != null);
 
     const language: SupportedLanguage = 'typescript';
 
@@ -137,26 +140,26 @@ Deno.test('PMS-020: File generation works through single import', async () => {
     });
 
     // Verify result
-    assertExists(result.filesCreated);
-    assertEquals(result.filesCreated.length > 0, true, 'Should generate files');
-    assertEquals(result.success, true, 'Generation should succeed');
+    ok(result.filesCreated != null);
+    deepStrictEqual(result.filesCreated.length > 0, true, 'Should generate files');
+    deepStrictEqual(result.success, true, 'Generation should succeed');
 
     // Verify problem exists check
     const exists = await problemExists(tempDir, problem.slug, language);
-    assertEquals(exists, true);
+    deepStrictEqual(exists, true);
 
     // Verify metadata
     const metadata = await getProblemMetadata(tempDir, problem.slug, language);
-    assertExists(metadata);
-    assertEquals(metadata.slug, problem.slug);
+    ok(metadata != null);
+    deepStrictEqual(metadata.slug, problem.slug);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('PMS-020: Typical Phase 3 command pattern works', async () => {
+test('PMS-020: Typical Phase 3 command pattern works', async () => {
   // Simulate a simple challenge command implementation
-  const tempDir = await Deno.makeTempDir();
+  const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
 
   try {
     // Step 1: Initialize workspace
@@ -173,7 +176,7 @@ Deno.test('PMS-020: Typical Phase 3 command pattern works', async () => {
     if (!problem) {
       const allEasy = manager.list({ difficulty: 'easy' });
       // No assertion needed - just verify it doesn't throw
-      assertExists(allEasy);
+      ok(allEasy != null);
     } else {
       // Step 4: Generate files
       const result = await generateProblemFiles({
@@ -185,8 +188,8 @@ Deno.test('PMS-020: Typical Phase 3 command pattern works', async () => {
       });
 
       // Verify generation succeeded
-      assertEquals(result.success, true);
-      assertEquals(
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(
         result.filesCreated.length >= 3,
         true,
         'Should create solution, test, and README',
@@ -194,26 +197,26 @@ Deno.test('PMS-020: Typical Phase 3 command pattern works', async () => {
 
       // Verify all generated files exist
       for (const file of result.filesCreated) {
-        const fileInfo = await Deno.stat(file);
-        assertEquals(fileInfo.isFile, true, `File should exist: ${file}`);
+        const fileInfo = await stat(file);
+        deepStrictEqual(fileInfo.isFile(), true, `File should exist: ${file}`);
       }
     }
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('PMS-020: Sub-module imports still work', async () => {
+test('PMS-020: Sub-module imports still work', async () => {
   // Verify that direct imports from sub-modules still work
   // (for Phase 3 implementers who want more specific imports)
 
   const { ProblemManager: PM1 } = await import('../src/core/problem/mod.ts');
   const { initWorkspace: iw1 } = await import('../src/core/workspace/mod.ts');
 
-  assertExists(PM1);
-  assertExists(iw1);
+  ok(PM1 != null);
+  ok(iw1 != null);
 
   // Verify they're the same as the top-level exports
-  assertEquals(PM1, ProblemManager);
-  assertEquals(iw1, initWorkspace);
+  deepStrictEqual(PM1, ProblemManager);
+  deepStrictEqual(iw1, initWorkspace);
 });

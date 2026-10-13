@@ -1,10 +1,5 @@
 [test]
 preload = ["./test/setup.ts"]
 pathIgnorePatterns = [
-  "test/ai/engine.test.ts",
-  "test/ai/integration.test.ts",
   "test/ai/parser.test.ts",
-  "test/ai/session.test.ts",
-  "test/cli/e2e_test.ts",
-  "test/phase3-integration.test.ts",
 ]

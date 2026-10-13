@@ -26,6 +26,9 @@
   },
   "test": {
     "exclude": [
+      "test/ai/engine.test.ts",
+      "test/ai/integration.test.ts",
+      "test/ai/session.test.ts",
       "test/ai/triggers.test.ts",
       "test/ai/validator.test.ts",
       "test/cli-challenge.test.ts",
@@ -40,6 +43,7 @@
       "test/cli-integration.test.ts",
       "test/cli-teach.test.ts",
       "test/cli-teaching-integration.test.ts",
+      "test/cli/e2e_test.ts",
       "test/config-paths.test.ts",
       "test/config.test.ts",
       "test/core/ai/generator.test.ts",
@@ -58,6 +62,7 @@
       "test/list.test.ts",
       "test/manager.test.ts",
       "test/parser.test.ts",
+      "test/phase3-integration.test.ts",
       "test/prompts.test.ts",
       "test/setup.test.ts",
       "test/utils-fs.test.ts",

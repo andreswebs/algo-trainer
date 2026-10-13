@@ -4,8 +4,8 @@
  * @module tests/ai/session
  */
 
-import { assertEquals, assertExists } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
+import { describe, it } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
 import { TeachingSession } from '../../src/core/ai/session.ts';
 import type { ExecutionResult } from '../../src/core/ai/types.ts';
 
@@ -15,14 +15,14 @@ describe('TeachingSession', () => {
       const session = new TeachingSession('two-sum');
       const state = session.getState();
 
-      assertEquals(state.problemId, 'two-sum');
-      assertEquals(state.attempts, 0);
-      assertEquals(state.passed, false);
-      assertEquals(state.lastOutput, '');
-      assertEquals(state.lastError, '');
-      assertEquals(state.codeHistory, []);
-      assertEquals(state.hintsViewed, 0);
-      assertExists(state.startedAt);
+      deepStrictEqual(state.problemId, 'two-sum');
+      deepStrictEqual(state.attempts, 0);
+      deepStrictEqual(state.passed, false);
+      deepStrictEqual(state.lastOutput, '');
+      deepStrictEqual(state.lastError, '');
+      deepStrictEqual(state.codeHistory, []);
+      deepStrictEqual(state.hintsViewed, 0);
+      ok(state.startedAt != null);
     });
 
     it('should set startedAt to current time', () => {
@@ -32,8 +32,8 @@ describe('TeachingSession', () => {
       const state = session.getState();
 
       // startedAt should be between before and after
-      assertEquals(state.startedAt >= before, true);
-      assertEquals(state.startedAt <= after, true);
+      deepStrictEqual(state.startedAt >= before, true);
+      deepStrictEqual(state.startedAt <= after, true);
     });
   });
 
@@ -44,8 +44,8 @@ describe('TeachingSession', () => {
       const state2 = session.getState();
 
       // Should be equal but not the same object
-      assertEquals(state1.problemId, state2.problemId);
-      assertEquals(state1 === state2, false);
+      deepStrictEqual(state1.problemId, state2.problemId);
+      deepStrictEqual(state1 === state2, false);
     });
 
     it('should return a copy of codeHistory array', () => {
@@ -56,8 +56,8 @@ describe('TeachingSession', () => {
       state.codeHistory.push('modified');
 
       const state2 = session.getState();
-      assertEquals(state2.codeHistory.length, 1);
-      assertEquals(state2.codeHistory[0], 'code1');
+      deepStrictEqual(state2.codeHistory.length, 1);
+      deepStrictEqual(state2.codeHistory[0], 'code1');
     });
 
     it('should return a copy of startedAt date', () => {
@@ -68,20 +68,20 @@ describe('TeachingSession', () => {
       state.startedAt.setFullYear(2000);
 
       const state2 = session.getState();
-      assertEquals(state2.startedAt.getTime(), originalTime);
+      deepStrictEqual(state2.startedAt.getTime(), originalTime);
     });
   });
 
   describe('recordAttempt', () => {
     it('should increment attempts counter', () => {
       const session = new TeachingSession('test-problem');
-      assertEquals(session.getState().attempts, 0);
+      deepStrictEqual(session.getState().attempts, 0);
 
       session.recordAttempt('code1');
-      assertEquals(session.getState().attempts, 1);
+      deepStrictEqual(session.getState().attempts, 1);
 
       session.recordAttempt('code2');
-      assertEquals(session.getState().attempts, 2);
+      deepStrictEqual(session.getState().attempts, 2);
     });
 
     it('should add code to history', () => {
@@ -93,9 +93,9 @@ describe('TeachingSession', () => {
       session.recordAttempt(code2);
 
       const state = session.getState();
-      assertEquals(state.codeHistory.length, 2);
-      assertEquals(state.codeHistory[0], code1);
-      assertEquals(state.codeHistory[1], code2);
+      deepStrictEqual(state.codeHistory.length, 2);
+      deepStrictEqual(state.codeHistory[0], code1);
+      deepStrictEqual(state.codeHistory[1], code2);
     });
 
     it('should handle empty code string', () => {
@@ -103,9 +103,9 @@ describe('TeachingSession', () => {
       session.recordAttempt('');
 
       const state = session.getState();
-      assertEquals(state.attempts, 1);
-      assertEquals(state.codeHistory.length, 1);
-      assertEquals(state.codeHistory[0], '');
+      deepStrictEqual(state.attempts, 1);
+      deepStrictEqual(state.codeHistory.length, 1);
+      deepStrictEqual(state.codeHistory[0], '');
     });
   });
 
@@ -122,8 +122,8 @@ describe('TeachingSession', () => {
       session.recordExecution(result);
 
       const state = session.getState();
-      assertEquals(state.lastOutput, 'Test output');
-      assertEquals(state.lastError, 'Test error');
+      deepStrictEqual(state.lastOutput, 'Test output');
+      deepStrictEqual(state.lastError, 'Test error');
     });
 
     it('should mark as passed when result.passed is true', () => {
@@ -135,11 +135,11 @@ describe('TeachingSession', () => {
         exitCode: 0,
       };
 
-      assertEquals(session.getState().passed, false);
+      deepStrictEqual(session.getState().passed, false);
 
       session.recordExecution(result);
 
-      assertEquals(session.getState().passed, true);
+      deepStrictEqual(session.getState().passed, true);
     });
 
     it('should not mark as passed when result.passed is false', () => {
@@ -153,7 +153,7 @@ describe('TeachingSession', () => {
 
       session.recordExecution(result);
 
-      assertEquals(session.getState().passed, false);
+      deepStrictEqual(session.getState().passed, false);
     });
 
     it('should handle multiple executions', () => {
@@ -166,8 +166,8 @@ describe('TeachingSession', () => {
         exitCode: 1,
       });
 
-      assertEquals(session.getState().lastOutput, 'output1');
-      assertEquals(session.getState().lastError, 'error1');
+      deepStrictEqual(session.getState().lastOutput, 'output1');
+      deepStrictEqual(session.getState().lastError, 'error1');
 
       session.recordExecution({
         stdout: 'output2',
@@ -176,8 +176,8 @@ describe('TeachingSession', () => {
         exitCode: 1,
       });
 
-      assertEquals(session.getState().lastOutput, 'output2');
-      assertEquals(session.getState().lastError, 'error2');
+      deepStrictEqual(session.getState().lastOutput, 'output2');
+      deepStrictEqual(session.getState().lastError, 'error2');
     });
 
     it('should handle empty stdout and stderr', () => {
@@ -190,45 +190,45 @@ describe('TeachingSession', () => {
       });
 
       const state = session.getState();
-      assertEquals(state.lastOutput, '');
-      assertEquals(state.lastError, '');
+      deepStrictEqual(state.lastOutput, '');
+      deepStrictEqual(state.lastError, '');
     });
   });
 
   describe('markPassed', () => {
     it('should set passed to true', () => {
       const session = new TeachingSession('test-problem');
-      assertEquals(session.getState().passed, false);
+      deepStrictEqual(session.getState().passed, false);
 
       session.markPassed();
 
-      assertEquals(session.getState().passed, true);
+      deepStrictEqual(session.getState().passed, true);
     });
 
     it('should be idempotent', () => {
       const session = new TeachingSession('test-problem');
 
       session.markPassed();
-      assertEquals(session.getState().passed, true);
+      deepStrictEqual(session.getState().passed, true);
 
       session.markPassed();
-      assertEquals(session.getState().passed, true);
+      deepStrictEqual(session.getState().passed, true);
     });
   });
 
   describe('incrementHintsViewed', () => {
     it('should increment hintsViewed counter', () => {
       const session = new TeachingSession('test-problem');
-      assertEquals(session.getState().hintsViewed, 0);
+      deepStrictEqual(session.getState().hintsViewed, 0);
 
       session.incrementHintsViewed();
-      assertEquals(session.getState().hintsViewed, 1);
+      deepStrictEqual(session.getState().hintsViewed, 1);
 
       session.incrementHintsViewed();
-      assertEquals(session.getState().hintsViewed, 2);
+      deepStrictEqual(session.getState().hintsViewed, 2);
 
       session.incrementHintsViewed();
-      assertEquals(session.getState().hintsViewed, 3);
+      deepStrictEqual(session.getState().hintsViewed, 3);
     });
   });
 
@@ -250,22 +250,22 @@ describe('TeachingSession', () => {
 
       // Verify state is modified
       const stateBefore = session.getState();
-      assertEquals(stateBefore.attempts, 2);
-      assertEquals(stateBefore.passed, true);
-      assertEquals(stateBefore.codeHistory.length, 2);
-      assertEquals(stateBefore.hintsViewed, 2);
+      deepStrictEqual(stateBefore.attempts, 2);
+      deepStrictEqual(stateBefore.passed, true);
+      deepStrictEqual(stateBefore.codeHistory.length, 2);
+      deepStrictEqual(stateBefore.hintsViewed, 2);
 
       // Reset for new problem
       session.reset('problem2');
 
       const stateAfter = session.getState();
-      assertEquals(stateAfter.problemId, 'problem2');
-      assertEquals(stateAfter.attempts, 0);
-      assertEquals(stateAfter.passed, false);
-      assertEquals(stateAfter.lastOutput, '');
-      assertEquals(stateAfter.lastError, '');
-      assertEquals(stateAfter.codeHistory, []);
-      assertEquals(stateAfter.hintsViewed, 0);
+      deepStrictEqual(stateAfter.problemId, 'problem2');
+      deepStrictEqual(stateAfter.attempts, 0);
+      deepStrictEqual(stateAfter.passed, false);
+      deepStrictEqual(stateAfter.lastOutput, '');
+      deepStrictEqual(stateAfter.lastError, '');
+      deepStrictEqual(stateAfter.codeHistory, []);
+      deepStrictEqual(stateAfter.hintsViewed, 0);
     });
 
     it('should reset startedAt to current time', () => {
@@ -279,7 +279,7 @@ describe('TeachingSession', () => {
         const newStartedAt = session.getState().startedAt;
 
         // New startedAt should be after original
-        assertEquals(newStartedAt > originalStartedAt, true);
+        deepStrictEqual(newStartedAt > originalStartedAt, true);
       });
     });
   });
@@ -291,7 +291,7 @@ describe('TeachingSession', () => {
 
       const context = session.getTriggerContext(code);
 
-      assertEquals(context.code, code);
+      deepStrictEqual(context.code, code);
     });
 
     it('should return context with current session state', () => {
@@ -308,10 +308,10 @@ describe('TeachingSession', () => {
 
       const context = session.getTriggerContext('current code');
 
-      assertEquals(context.stdout, 'Test output');
-      assertEquals(context.stderr, 'Test error');
-      assertEquals(context.passed, false);
-      assertEquals(context.attempts, 2);
+      deepStrictEqual(context.stdout, 'Test output');
+      deepStrictEqual(context.stderr, 'Test error');
+      deepStrictEqual(context.passed, false);
+      deepStrictEqual(context.attempts, 2);
     });
 
     it('should work with passed state', () => {
@@ -327,20 +327,20 @@ describe('TeachingSession', () => {
 
       const context = session.getTriggerContext('passing code');
 
-      assertEquals(context.passed, true);
-      assertEquals(context.attempts, 1);
-      assertEquals(context.stderr, '');
+      deepStrictEqual(context.passed, true);
+      deepStrictEqual(context.attempts, 1);
+      deepStrictEqual(context.stderr, '');
     });
 
     it('should work with empty execution state', () => {
       const session = new TeachingSession('test-problem');
       const context = session.getTriggerContext('first code');
 
-      assertEquals(context.code, 'first code');
-      assertEquals(context.stdout, '');
-      assertEquals(context.stderr, '');
-      assertEquals(context.passed, false);
-      assertEquals(context.attempts, 0);
+      deepStrictEqual(context.code, 'first code');
+      deepStrictEqual(context.stdout, '');
+      deepStrictEqual(context.stderr, '');
+      deepStrictEqual(context.passed, false);
+      deepStrictEqual(context.attempts, 0);
     });
   });
 
@@ -358,8 +358,8 @@ describe('TeachingSession', () => {
       });
 
       let state = session.getState();
-      assertEquals(state.attempts, 1);
-      assertEquals(state.passed, false);
+      deepStrictEqual(state.attempts, 1);
+      deepStrictEqual(state.passed, false);
 
       // Second attempt - still wrong
       session.recordAttempt('function twoSum() { return [0,0]; }');
@@ -371,8 +371,8 @@ describe('TeachingSession', () => {
       });
 
       state = session.getState();
-      assertEquals(state.attempts, 2);
-      assertEquals(state.passed, false);
+      deepStrictEqual(state.attempts, 2);
+      deepStrictEqual(state.passed, false);
 
       // User views a hint
       session.incrementHintsViewed();
@@ -387,10 +387,10 @@ describe('TeachingSession', () => {
       });
 
       state = session.getState();
-      assertEquals(state.attempts, 3);
-      assertEquals(state.passed, true);
-      assertEquals(state.hintsViewed, 1);
-      assertEquals(state.codeHistory.length, 3);
+      deepStrictEqual(state.attempts, 3);
+      deepStrictEqual(state.passed, true);
+      deepStrictEqual(state.hintsViewed, 1);
+      deepStrictEqual(state.codeHistory.length, 3);
     });
 
     it('should track struggle patterns', () => {
@@ -416,10 +416,10 @@ describe('TeachingSession', () => {
       const context = session.getTriggerContext('current code');
 
       // Can detect struggle pattern
-      assertEquals(state.attempts > 3, true);
-      assertEquals(state.hintsViewed > 1, true);
-      assertEquals(context.attempts > 3, true);
-      assertEquals(context.passed, false);
+      deepStrictEqual(state.attempts > 3, true);
+      deepStrictEqual(state.hintsViewed > 1, true);
+      deepStrictEqual(context.attempts > 3, true);
+      deepStrictEqual(context.passed, false);
     });
 
     it('should support session reuse for multiple problems', () => {
@@ -433,21 +433,21 @@ describe('TeachingSession', () => {
         exitCode: 0,
       });
 
-      assertEquals(session.getState().problemId, 'problem1');
-      assertEquals(session.getState().attempts, 1);
-      assertEquals(session.getState().passed, true);
+      deepStrictEqual(session.getState().problemId, 'problem1');
+      deepStrictEqual(session.getState().attempts, 1);
+      deepStrictEqual(session.getState().passed, true);
 
       // Reset for new problem
       session.reset('problem2');
 
-      assertEquals(session.getState().problemId, 'problem2');
-      assertEquals(session.getState().attempts, 0);
-      assertEquals(session.getState().passed, false);
-      assertEquals(session.getState().codeHistory, []);
+      deepStrictEqual(session.getState().problemId, 'problem2');
+      deepStrictEqual(session.getState().attempts, 0);
+      deepStrictEqual(session.getState().passed, false);
+      deepStrictEqual(session.getState().codeHistory, []);
 
       // Work on new problem
       session.recordAttempt('code2');
-      assertEquals(session.getState().attempts, 1);
+      deepStrictEqual(session.getState().attempts, 1);
     });
   });
 });

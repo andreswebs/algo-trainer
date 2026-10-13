@@ -4,17 +4,18 @@
  * @module tests/ai/engine
  */
 
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual, ok, rejects } from 'node:assert/strict';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { TeachingEngine } from '../../src/core/ai/engine.ts';
 import { TeachingSession } from '../../src/core/ai/session.ts';
 import type { ExecutionResult } from '../../src/core/ai/types.ts';
 import { TeachingError } from '../../src/utils/errors.ts';
+import { assertRejectsWith } from '../helpers/assert.ts';
 
 // Test fixture directory
-const TEST_DIR = join(Deno.cwd(), 'test', 'fixtures', 'ai-engine-tests');
+const TEST_DIR = join(import.meta.dir, '..', 'fixtures', 'ai-engine-tests');
 
 describe('TeachingEngine', () => {
   let session: TeachingSession;
@@ -25,12 +26,12 @@ describe('TeachingEngine', () => {
     session = new TeachingSession('test-problem');
     engine = new TeachingEngine(session);
     testProblemDir = join(TEST_DIR, 'test-problem');
-    await ensureDir(testProblemDir);
+    await mkdir(testProblemDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(TEST_DIR, { recursive: true });
+      await rm(TEST_DIR, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -40,12 +41,12 @@ describe('TeachingEngine', () => {
     it('should create an engine with session', () => {
       const newSession = new TeachingSession('another-problem');
       const newEngine = new TeachingEngine(newSession);
-      assertExists(newEngine);
+      ok(newEngine != null);
     });
 
     it('should start with no script loaded', () => {
       const info = engine.getScriptInfo();
-      assertEquals(info, null);
+      deepStrictEqual(info, null);
     });
   });
 
@@ -62,31 +63,31 @@ steps:
   - type: intro
     content: Welcome!
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
 
       const loaded = await engine.loadScript(testProblemDir);
-      assertEquals(loaded, true);
+      deepStrictEqual(loaded, true);
 
       const info = engine.getScriptInfo();
-      assertExists(info);
-      assertEquals(info.id, 'test-problem');
-      assertEquals(info.title, 'Test Problem');
+      ok(info != null);
+      deepStrictEqual(info.id, 'test-problem');
+      deepStrictEqual(info.title, 'Test Problem');
     });
 
     it('should return false when no script exists', async () => {
       const loaded = await engine.loadScript(testProblemDir);
-      assertEquals(loaded, false);
+      deepStrictEqual(loaded, false);
 
       const info = engine.getScriptInfo();
-      assertEquals(info, null);
+      deepStrictEqual(info, null);
     });
 
     it('should throw TeachingError for invalid script', async () => {
       // Create invalid YAML
       const invalidYaml = '{ invalid yaml content: [ }';
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), invalidYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), invalidYaml);
 
-      await assertRejects(
+      await assertRejectsWith(
         async () => await engine.loadScript(testProblemDir),
         TeachingError,
         'Failed to load teaching script',
@@ -99,9 +100,9 @@ steps:
 id: test
 steps: []
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), invalidScript);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), invalidScript);
 
-      await assertRejects(async () => await engine.loadScript(testProblemDir), TeachingError);
+      await rejects(async () => await engine.loadScript(testProblemDir), TeachingError);
     });
   });
 
@@ -118,26 +119,26 @@ steps:
   - type: intro
     content: Welcome!
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       // Verify script is loaded
       let info = engine.getScriptInfo();
-      assertExists(info);
+      ok(info != null);
 
       // Reset
       engine.reset();
 
       // Verify script is cleared
       info = engine.getScriptInfo();
-      assertEquals(info, null);
+      deepStrictEqual(info, null);
     });
   });
 
   describe('getScriptInfo', () => {
     it('should return null when no script loaded', () => {
       const info = engine.getScriptInfo();
-      assertEquals(info, null);
+      deepStrictEqual(info, null);
     });
 
     it('should return script metadata when script loaded', async () => {
@@ -159,17 +160,17 @@ steps:
     content: Hint 2
     trigger: "attempts > 1"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const info = engine.getScriptInfo();
-      assertExists(info);
-      assertEquals(info.id, 'test-problem');
-      assertEquals(info.title, 'Test Problem');
-      assertEquals(info.difficulty, 'medium');
-      assertEquals(info.tags, ['array', 'hash-table']);
-      assertEquals(info.language, 'typescript');
-      assertEquals(info.stepCount, 3);
+      ok(info != null);
+      deepStrictEqual(info.id, 'test-problem');
+      deepStrictEqual(info.title, 'Test Problem');
+      deepStrictEqual(info.difficulty, 'medium');
+      deepStrictEqual(info.tags, ['array', 'hash-table']);
+      deepStrictEqual(info.language, 'typescript');
+      deepStrictEqual(info.stepCount, 3);
     });
 
     it('should return a copy of tags array', async () => {
@@ -183,23 +184,23 @@ steps:
   - type: intro
     content: Welcome!
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const info1 = engine.getScriptInfo();
-      assertExists(info1);
+      ok(info1 != null);
       info1.tags.push('modified');
 
       const info2 = engine.getScriptInfo();
-      assertExists(info2);
-      assertEquals(info2.tags, ['array']);
+      ok(info2 != null);
+      deepStrictEqual(info2.tags, ['array']);
     });
   });
 
   describe('getIntroduction', () => {
     it('should return null when no script loaded', () => {
       const intro = engine.getIntroduction();
-      assertEquals(intro, null);
+      deepStrictEqual(intro, null);
     });
 
     it('should return null when no intro step exists', async () => {
@@ -215,11 +216,11 @@ steps:
     content: Just a hint
     trigger: "attempts > 0"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const intro = engine.getIntroduction();
-      assertEquals(intro, null);
+      deepStrictEqual(intro, null);
     });
 
     it('should return intro step content with formatted variables', async () => {
@@ -233,11 +234,11 @@ steps:
   - type: intro
     content: "Welcome to {{title}}! This is a {{difficulty}} problem."
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const intro = engine.getIntroduction();
-      assertEquals(intro, 'Welcome to Two Sum! This is a easy problem.');
+      deepStrictEqual(intro, 'Welcome to Two Sum! This is a easy problem.');
     });
 
     it('should return first intro step when multiple exist', async () => {
@@ -253,18 +254,18 @@ steps:
   - type: intro
     content: "Second intro"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const intro = engine.getIntroduction();
-      assertEquals(intro, 'First intro');
+      deepStrictEqual(intro, 'First intro');
     });
   });
 
   describe('getPrePrompt', () => {
     it('should return null when no script loaded', () => {
       const prePrompt = engine.getPrePrompt();
-      assertEquals(prePrompt, null);
+      deepStrictEqual(prePrompt, null);
     });
 
     it('should return null when no pre_prompt step exists', async () => {
@@ -278,11 +279,11 @@ steps:
   - type: intro
     content: Intro only
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const prePrompt = engine.getPrePrompt();
-      assertEquals(prePrompt, null);
+      deepStrictEqual(prePrompt, null);
     });
 
     it('should return pre_prompt step content', async () => {
@@ -296,18 +297,18 @@ steps:
   - type: pre_prompt
     content: "Think about using a hash map."
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const prePrompt = engine.getPrePrompt();
-      assertEquals(prePrompt, 'Think about using a hash map.');
+      deepStrictEqual(prePrompt, 'Think about using a hash map.');
     });
   });
 
   describe('getHint', () => {
     it('should return null when no script loaded', () => {
       const hint = engine.getHint('some code');
-      assertEquals(hint, null);
+      deepStrictEqual(hint, null);
     });
 
     it('should return null when no hint steps exist', async () => {
@@ -321,11 +322,11 @@ steps:
   - type: intro
     content: Intro only
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const hint = engine.getHint('function solve() {}');
-      assertEquals(hint, null);
+      deepStrictEqual(hint, null);
     });
 
     it('should return hint when trigger matches', async () => {
@@ -340,12 +341,12 @@ steps:
     content: "Use a Map!"
     trigger: "!code.includes('Map')"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const code = 'function solve() { for (let i = 0; i < n; i++) {} }';
       const hint = engine.getHint(code);
-      assertEquals(hint, 'Use a Map!');
+      deepStrictEqual(hint, 'Use a Map!');
     });
 
     it('should return first matching hint', async () => {
@@ -363,12 +364,12 @@ steps:
     content: "Second hint"
     trigger: "code.includes('for')"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const code = 'for (let i = 0; i < n; i++) {}';
       const hint = engine.getHint(code);
-      assertEquals(hint, 'First hint');
+      deepStrictEqual(hint, 'First hint');
     });
 
     it('should return null when no triggers match', async () => {
@@ -383,12 +384,12 @@ steps:
     content: "Use Map"
     trigger: "code.includes('Map')"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const code = 'function solve() {}';
       const hint = engine.getHint(code);
-      assertEquals(hint, null);
+      deepStrictEqual(hint, null);
     });
 
     it('should increment hints viewed counter', async () => {
@@ -403,17 +404,17 @@ steps:
     content: "Hint"
     trigger: "attempts > 0"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       session.recordAttempt('code');
-      assertEquals(session.getState().hintsViewed, 0);
+      deepStrictEqual(session.getState().hintsViewed, 0);
 
       engine.getHint('code');
-      assertEquals(session.getState().hintsViewed, 1);
+      deepStrictEqual(session.getState().hintsViewed, 1);
 
       engine.getHint('code');
-      assertEquals(session.getState().hintsViewed, 2);
+      deepStrictEqual(session.getState().hintsViewed, 2);
     });
 
     it('should not increment hints viewed when no hint returned', async () => {
@@ -428,11 +429,11 @@ steps:
     content: "Hint"
     trigger: "code.includes('never-matches')"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       engine.getHint('some code');
-      assertEquals(session.getState().hintsViewed, 0);
+      deepStrictEqual(session.getState().hintsViewed, 0);
     });
 
     it('should return hint without trigger', async () => {
@@ -448,18 +449,18 @@ steps:
     content: "Always available hint"
     trigger: "attempts >= 0"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const hint = engine.getHint('any code');
-      assertEquals(hint, 'Always available hint');
+      deepStrictEqual(hint, 'Always available hint');
     });
   });
 
   describe('getSuccessMessage', () => {
     it('should return null when no script loaded', () => {
       const msg = engine.getSuccessMessage();
-      assertEquals(msg, null);
+      deepStrictEqual(msg, null);
     });
 
     it('should return null when no after_success step exists', async () => {
@@ -473,11 +474,11 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const msg = engine.getSuccessMessage();
-      assertEquals(msg, null);
+      deepStrictEqual(msg, null);
     });
 
     it('should return success message with formatted variables', async () => {
@@ -491,7 +492,7 @@ steps:
   - type: after_success
     content: "Great! You completed {{title}} in {{attempts}} attempts."
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       session.recordAttempt('code1');
@@ -499,14 +500,14 @@ steps:
       session.recordAttempt('code3');
 
       const msg = engine.getSuccessMessage();
-      assertEquals(msg, 'Great! You completed Two Sum in 3 attempts.');
+      deepStrictEqual(msg, 'Great! You completed Two Sum in 3 attempts.');
     });
   });
 
   describe('handleRequest', () => {
     it('should return null when no script loaded', () => {
       const help = engine.handleRequest('help me');
-      assertEquals(help, null);
+      deepStrictEqual(help, null);
     });
 
     it('should return null when no on_request steps exist', async () => {
@@ -520,11 +521,11 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const help = engine.handleRequest('optimize');
-      assertEquals(help, null);
+      deepStrictEqual(help, null);
     });
 
     it('should match keywords case-insensitively', async () => {
@@ -539,14 +540,14 @@ steps:
     content: "Use a hash map for optimization."
     keywords: [optimize, faster]
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const help1 = engine.handleRequest('how to OPTIMIZE?');
-      assertEquals(help1, 'Use a hash map for optimization.');
+      deepStrictEqual(help1, 'Use a hash map for optimization.');
 
       const help2 = engine.handleRequest('make it FASTER');
-      assertEquals(help2, 'Use a hash map for optimization.');
+      deepStrictEqual(help2, 'Use a hash map for optimization.');
     });
 
     it('should return null when no keywords match', async () => {
@@ -561,11 +562,11 @@ steps:
     content: "Help text"
     keywords: [optimize]
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const help = engine.handleRequest('something else');
-      assertEquals(help, null);
+      deepStrictEqual(help, null);
     });
 
     it('should return first matching step', async () => {
@@ -583,11 +584,11 @@ steps:
     content: "Second help"
     keywords: [help]
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const help = engine.handleRequest('I need help');
-      assertEquals(help, 'First help');
+      deepStrictEqual(help, 'First help');
     });
   });
 
@@ -603,7 +604,7 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -616,12 +617,12 @@ steps:
       engine.processExecution('some code', result);
 
       const state = session.getState();
-      assertEquals(state.attempts, 1);
-      assertEquals(state.codeHistory.length, 1);
-      assertEquals(state.codeHistory[0], 'some code');
-      assertEquals(state.lastOutput, 'Test output');
-      assertEquals(state.lastError, 'Test error');
-      assertEquals(state.passed, false);
+      deepStrictEqual(state.attempts, 1);
+      deepStrictEqual(state.codeHistory.length, 1);
+      deepStrictEqual(state.codeHistory[0], 'some code');
+      deepStrictEqual(state.lastOutput, 'Test output');
+      deepStrictEqual(state.lastError, 'Test error');
+      deepStrictEqual(state.passed, false);
     });
 
     it('should mark session as passed when tests pass', async () => {
@@ -635,7 +636,7 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -646,7 +647,7 @@ steps:
       };
 
       engine.processExecution('code', result);
-      assertEquals(session.getState().passed, true);
+      deepStrictEqual(session.getState().passed, true);
     });
 
     it('should increment attempts on each execution', async () => {
@@ -660,7 +661,7 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -672,15 +673,15 @@ steps:
 
       // First execution
       engine.processExecution('code1', result);
-      assertEquals(session.getState().attempts, 1);
+      deepStrictEqual(session.getState().attempts, 1);
 
       // Second execution
       engine.processExecution('code2', result);
-      assertEquals(session.getState().attempts, 2);
+      deepStrictEqual(session.getState().attempts, 2);
 
       // Third execution
       engine.processExecution('code3', result);
-      assertEquals(session.getState().attempts, 3);
+      deepStrictEqual(session.getState().attempts, 3);
     });
 
     it('should accumulate code history on each execution', async () => {
@@ -694,7 +695,7 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -710,10 +711,10 @@ steps:
       engine.processExecution('const z = 3;', result);
 
       const state = session.getState();
-      assertEquals(state.codeHistory.length, 3);
-      assertEquals(state.codeHistory[0], 'const x = 1;');
-      assertEquals(state.codeHistory[1], 'const y = 2;');
-      assertEquals(state.codeHistory[2], 'const z = 3;');
+      deepStrictEqual(state.codeHistory.length, 3);
+      deepStrictEqual(state.codeHistory[0], 'const x = 1;');
+      deepStrictEqual(state.codeHistory[1], 'const y = 2;');
+      deepStrictEqual(state.codeHistory[2], 'const z = 3;');
     });
 
     it('should return null when no on_run steps exist', async () => {
@@ -727,7 +728,7 @@ steps:
   - type: intro
     content: Intro
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -738,7 +739,7 @@ steps:
       };
 
       const feedback = engine.processExecution('code', result);
-      assertEquals(feedback, null);
+      deepStrictEqual(feedback, null);
     });
 
     it('should return feedback when trigger matches', async () => {
@@ -753,7 +754,7 @@ steps:
     content: "Keep trying!"
     trigger: "passed === false"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -764,7 +765,7 @@ steps:
       };
 
       const feedback = engine.processExecution('code', result);
-      assertEquals(feedback, 'Keep trying!');
+      deepStrictEqual(feedback, 'Keep trying!');
     });
 
     it('should match based on execution context', async () => {
@@ -782,7 +783,7 @@ steps:
     content: "Multiple attempts!"
     trigger: "attempts > 2"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       // Simulate previous attempts (processExecution will add the third)
@@ -799,7 +800,7 @@ steps:
       // This will be the third attempt (attempts will be 3 after this call)
       // TypeError trigger should match first (before multiple attempts trigger)
       const feedback = engine.processExecution('code3', result);
-      assertEquals(feedback, 'TypeError detected!');
+      deepStrictEqual(feedback, 'TypeError detected!');
     });
 
     it('should return null when no triggers match', async () => {
@@ -814,7 +815,7 @@ steps:
     content: "Feedback"
     trigger: "attempts > 10"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const result: ExecutionResult = {
@@ -825,7 +826,7 @@ steps:
       };
 
       const feedback = engine.processExecution('code', result);
-      assertEquals(feedback, null);
+      deepStrictEqual(feedback, null);
     });
   });
 
@@ -841,14 +842,14 @@ steps:
   - type: intro
     content: "Problem: {{title}}, Difficulty: {{difficulty}}, Attempts: {{attempts}}"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       session.recordAttempt('attempt1');
       session.recordAttempt('attempt2');
 
       const intro = engine.getIntroduction();
-      assertEquals(intro, 'Problem: Binary Search, Difficulty: medium, Attempts: 2');
+      deepStrictEqual(intro, 'Problem: Binary Search, Difficulty: medium, Attempts: 2');
     });
 
     it('should handle multiple occurrences of same variable', async () => {
@@ -862,11 +863,11 @@ steps:
   - type: intro
     content: "{{title}} is great! I love {{title}}!"
 `;
-      await Deno.writeTextFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
+      await writeFile(join(testProblemDir, 'trainer.yaml'), scriptYaml);
       await engine.loadScript(testProblemDir);
 
       const intro = engine.getIntroduction();
-      assertEquals(intro, 'Test is great! I love Test!');
+      deepStrictEqual(intro, 'Test is great! I love Test!');
     });
   });
 });
