@@ -9,7 +9,7 @@
 
 import { afterEach, beforeEach, describe, it } from 'bun:test';
 import { deepStrictEqual, ok } from 'node:assert/strict';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { initializeConfig } from '../../src/config/manager.ts';
 import { getConfigPaths } from '../../src/config/paths.ts';
@@ -20,11 +20,9 @@ import type { ExecutionResult } from '../../src/core/ai/types.ts';
 describe('AI Teaching System Integration Tests', () => {
   const tempDir = '/tmp/ai-integration-test';
   const problemsDir = join(tempDir, 'problems');
-  const customScriptsDir = join(tempDir, 'custom-scripts');
 
   beforeEach(async () => {
     await mkdir(problemsDir, { recursive: true });
-    await mkdir(customScriptsDir, { recursive: true });
   });
 
   afterEach(async () => {
@@ -358,61 +356,43 @@ steps:
   });
 
   describe('Script Discovery Tests', () => {
-    it('should find and load built-in teaching scripts', async () => {
-      // Test finding built-in scripts (these exist in src/data/scripts/)
-      const builtinScripts = ['two-sum', 'valid-parentheses', 'climbing-stairs'];
+    it('should find and load every built-in teaching script', async () => {
+      const scriptsDir = join(import.meta.dir, '..', '..', 'src', 'data', 'scripts');
+      const slugs = await readdir(scriptsDir);
+      ok(slugs.length >= 10, `expected at least 10 built-in scripts, found ${slugs.length}`);
 
-      for (const slug of builtinScripts) {
+      for (const slug of slugs) {
         const scriptPath = await findTeachingScript(slug);
         ok(scriptPath != null, `Should find built-in script for ${slug}`);
         ok(scriptPath.includes('src/data/scripts'), 'Should point to built-in scripts directory');
 
-        // Verify script can be loaded
         const script = await loadAndValidateScript(scriptPath);
         ok(script != null, `Should load built-in script for ${slug}`);
         deepStrictEqual(script.id, slug, 'Script ID should match slug');
+        ok(
+          (
+            await stat(join(import.meta.dir, '..', '..', 'src', 'data', 'problems', `${slug}.json`))
+          ).isFile(),
+          `Built-in script ${slug} should match a problem`,
+        );
       }
     });
 
     it('should prioritize custom scripts over built-in scripts', async () => {
-      // Create a custom script that overrides a built-in one
-      const problemSlug = 'two-sum';
-      const customScriptDir = join(customScriptsDir, problemSlug);
-      await mkdir(customScriptDir, { recursive: true });
+      const userScriptDir = join(getConfigPaths().data, 'scripts', 'two-sum');
+      await mkdir(userScriptDir, { recursive: true });
+      const userScriptPath = join(userScriptDir, 'trainer.yaml');
+      await writeFile(
+        userScriptPath,
+        'id: two-sum\ntitle: Two Sum (Custom)\ndifficulty: easy\ntags: [array]\nlanguage: typescript\nsteps:\n  - type: intro\n    content: Custom intro\n',
+      );
 
-      const customYaml = `
-id: "two-sum"
-title: "Two Sum (Custom Version)"
-difficulty: "easy"
-tags: ["array", "custom"]
-language: "typescript"
-steps:
-  - type: intro
-    content: "This is a CUSTOM teaching script that overrides the built-in one."
-`;
-
-      await writeFile(join(customScriptDir, 'trainer.yaml'), customYaml);
-
-      // Temporarily override config paths to use our temp directory
-      // Note: This test assumes the function checks user data directory first
-      // In actual implementation, this would work with proper XDG_DATA_HOME setup
-
-      // For this test, we'll directly verify the priority order by checking
-      // that custom scripts in data directory are checked first
-      const paths = getConfigPaths();
-      const _userCustomDir = join(paths.data, 'scripts', problemSlug);
-
-      // Test will verify that if custom script exists in user directory,
-      // it takes priority over built-in
-      // Since we can't easily override paths in test, we'll verify the logic
-      // by checking both locations exist and understanding the order
-
-      const builtinPath = await findTeachingScript(problemSlug);
-      ok(builtinPath != null, 'Should find script for two-sum');
-
-      // The built-in script should be found since we didn't actually
-      // set up the user directory structure correctly in this test environment
-      // In production, custom scripts in XDG_DATA_HOME would take precedence
+      try {
+        deepStrictEqual(await findTeachingScript('two-sum'), userScriptPath);
+      } finally {
+        await rm(join(getConfigPaths().data, 'scripts'), { recursive: true, force: true });
+      }
+      ok((await findTeachingScript('two-sum'))?.includes('src/data/scripts'));
     });
 
     it('should handle missing scripts gracefully', async () => {

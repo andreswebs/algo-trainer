@@ -1,0 +1,208 @@
+id: 3sum
+title: 3Sum
+difficulty: medium
+tags:
+  - array
+  - two-pointers
+  - sorting
+language: typescript
+steps:
+  - type: intro
+    content: |
+      # 3Sum
+      
+      Welcome to a classic medium-level problem! 🎯
+      
+      **The challenge:** Find all unique triplets in an array that sum to zero.
+      
+      **Example:**
+      - Input: [-1, 0, 1, 2, -1, -4]
+      - Output: [[-1, -1, 2], [-1, 0, 1]]
+      
+      **Key challenges:**
+      - Finding triplets efficiently (not O(n³))
+      - Avoiding duplicate triplets
+      
+      This builds on Two Sum but adds complexity. Let's tackle it systematically!
+
+  - type: pre_prompt
+    content: |
+      This problem extends Two Sum to three numbers:
+      
+      **Brute force:** O(n³) - check every triplet ❌
+      
+      **Optimal approach:** Sort + Two Pointers = O(n²) ✨
+      
+      **Algorithm:**
+      1. **Sort** the array first
+      2. **Fix** one number (i)
+      3. Use **two pointers** (left, right) to find pairs that sum to -nums[i]
+      4. **Skip duplicates** to avoid duplicate triplets
+      
+      **Key insight:** After sorting, you can use two pointers to find pairs in O(n) time!
+      
+      **Duplicate handling:** 
+      - Skip duplicate values for i
+      - Skip duplicate values for left/right pointers
+
+  - type: hint
+    trigger: '!code.includes(''sort'') && !code.includes(''Sort'')'
+    content: |
+      **Important:** You need to sort the array first!
+      
+      Sorting enables:
+      1. Two-pointer technique to work efficiently
+      2. Easy duplicate detection (consecutive duplicates)
+      
+      ```typescript
+      nums.sort((a, b) => a - b);
+      ```
+      
+      After sorting, you can use two pointers from both ends!
+
+  - type: hint
+    trigger: code.includes('sort') && !code.includes('while')
+    content: |
+      Good! You're sorting the array. Now you need the two-pointer technique:
+      
+      **For each nums[i]:**
+      - Set left = i + 1
+      - Set right = nums.length - 1
+      - While left < right:
+        - Calculate sum = nums[i] + nums[left] + nums[right]
+        - If sum === 0: found triplet! Add it and move both pointers
+        - If sum < 0: move left forward (need larger sum)
+        - If sum > 0: move right backward (need smaller sum)
+      
+      **Don't forget:** Skip duplicates for i, left, and right!
+
+  - type: on_run
+    trigger: '!passed && code.includes(''sort'')'
+    content: |
+      You're on the right track with sorting! Let me help debug:
+      
+      **Common issues:**
+      1. **Duplicate handling:**
+         - Skip duplicate i values: `if (i > 0 && nums[i] === nums[i-1]) continue;`
+         - Skip duplicate left: `while (left < right && nums[left] === nums[left+1]) left++;`
+         - Skip duplicate right: `while (left < right && nums[right] === nums[right-1]) right--;`
+      
+      2. **Loop bounds:**
+         - i should go up to length - 2 (need room for left and right)
+         - left starts at i + 1
+         - right starts at length - 1
+      
+      3. **Moving pointers:**
+         - When sum === 0, move BOTH left and right
+         - When sum < 0, move left forward
+         - When sum > 0, move right backward
+
+  - type: on_run
+    trigger: '!passed && attempts > 2'
+    content: |
+      Still debugging? Let's break down the algorithm step by step:
+      
+      ```typescript
+      nums.sort((a, b) => a - b);
+      const result = [];
+      
+      for (let i = 0; i < nums.length - 2; i++) {
+        // Skip duplicates for i
+        if (i > 0 && nums[i] === nums[i-1]) continue;
+        
+        let left = i + 1;
+        let right = nums.length - 1;
+        
+        while (left < right) {
+          const sum = nums[i] + nums[left] + nums[right];
+          
+          if (sum === 0) {
+            result.push([nums[i], nums[left], nums[right]]);
+            // Skip duplicates for left and right
+            while (left < right && nums[left] === nums[left+1]) left++;
+            while (left < right && nums[right] === nums[right-1]) right--;
+            left++;
+            right--;
+          } else if (sum < 0) {
+            left++;
+          } else {
+            right--;
+          }
+        }
+      }
+      
+      return result;
+      ```
+
+  - type: on_request
+    keywords:
+      - hint
+      - help
+      - stuck
+      - duplicates
+    content: |
+      **Handling duplicates is crucial!**
+      
+      After sorting, duplicates are consecutive. Skip them:
+      
+      **For the fixed number (i):**
+      ```typescript
+      if (i > 0 && nums[i] === nums[i-1]) continue;
+      ```
+      
+      **After finding a triplet:**
+      ```typescript
+      // Skip duplicate left values
+      while (left < right && nums[left] === nums[left+1]) left++;
+      // Skip duplicate right values  
+      while (left < right && nums[right] === nums[right-1]) right--;
+      // Then move pointers
+      left++;
+      right--;
+      ```
+      
+      This ensures each triplet is unique!
+
+  - type: on_request
+    keywords:
+      - complexity
+      - optimization
+    content: |
+      **Complexity Analysis:**
+      
+      **Brute force:** O(n³) time - check every triplet ❌
+      
+      **Optimal solution:**
+      - **Time:** O(n²)
+        - Sorting: O(n log n)
+        - For each element: O(n) with two pointers
+        - Total: O(n²) dominates
+      - **Space:** O(1) or O(n) depending on sorting algorithm
+      
+      **Why O(n²)?**
+      - Outer loop: O(n)
+      - Inner two-pointer search: O(n)
+      - Total: O(n) × O(n) = O(n²)
+      
+      You can't do better than O(n²) for this problem!
+
+  - type: after_success
+    content: |
+      🎉 Excellent! You solved 3Sum!
+      
+      **What you learned:**
+      - Two-pointer technique on sorted arrays
+      - Handling duplicates in result sets
+      - Reducing O(n³) to O(n²) with smart algorithms
+      
+      **Complexity:** O(n²) time, O(1) space ✨
+      
+      **This pattern appears in:**
+      - 4Sum
+      - 3Sum Closest
+      - Container With Most Water
+      - Trapping Rain Water
+      
+      **Key lesson:** Sorting + two pointers is a powerful combination for array problems!
+      
+      Great job on this medium problem! 🚀

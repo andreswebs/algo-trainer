@@ -11,7 +11,7 @@
 
 import { createErrorContext, TeachingError } from '../../utils/errors.ts';
 import { logger } from '../../utils/output.ts';
-import { findScriptPath, loadAndValidateScript } from './parser.ts';
+import { findScriptPath, findTeachingScript, loadAndValidateScript } from './parser.ts';
 import type { TeachingSession } from './session.ts';
 import { evaluateTrigger } from './triggers.ts';
 import type {
@@ -100,8 +100,9 @@ export class TeachingEngine {
   /**
    * Load and validate a teaching script from a problem directory.
    *
-   * Searches for trainer.yaml in the problem directory and loads it
-   * if found. The script is validated before being stored.
+   * Loads trainer.yaml from the problem directory, or else the user's custom
+   * or built-in script for the session's problem (see `findTeachingScript`).
+   * The script is validated before being stored.
    *
    * @param problemPath - Path to the problem directory
    * @returns true if script was loaded successfully, false if no script found
@@ -117,8 +118,9 @@ export class TeachingEngine {
    */
   async loadScript(problemPath: string): Promise<boolean> {
     try {
-      // Find script path in problem directory
-      const scriptPath = await findScriptPath(problemPath);
+      const scriptPath =
+        (await findScriptPath(problemPath)) ??
+        (await findTeachingScript(this.session.getState().problemId));
 
       if (!scriptPath) {
         // No script found - this is not an error
@@ -130,7 +132,7 @@ export class TeachingEngine {
       const script = await loadAndValidateScript(scriptPath);
 
       if (!script) {
-        // Should not happen since findScriptPath already checked existence
+        // Should not happen since the path was found to exist
         this.currentScript = null;
         return false;
       }

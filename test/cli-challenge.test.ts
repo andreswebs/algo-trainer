@@ -3,8 +3,8 @@
  */
 
 import { afterEach, beforeEach, describe, it } from 'bun:test';
-import { deepStrictEqual, notDeepStrictEqual } from 'node:assert/strict';
-import { mkdtemp, rm, stat } from 'node:fs/promises';
+import { deepStrictEqual, notDeepStrictEqual, ok } from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { ChallengeOptions } from '../src/cli/commands/challenge.ts';
@@ -17,6 +17,7 @@ import {
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import type { Args } from '../src/cli/types.ts';
 import { configManager } from '../src/config/manager.ts';
+import { getConfigPaths } from '../src/config/paths.ts';
 import { initWorkspace, ProblemManager } from '../src/core/mod.ts';
 
 describe('extractChallengeOptions', () => {
@@ -359,5 +360,73 @@ describe('resolveLanguage', () => {
   it('should return null for invalid config language', async () => {
     const lang = await resolveLanguage(baseOptions, 'brainfuck');
     deepStrictEqual(lang, null);
+  });
+});
+
+describe('challengeCommand teaching guidance', () => {
+  let tempDir: string;
+  let originalError: typeof console.error;
+  let output: string[];
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-teaching-'));
+    await configManager.load();
+    await configManager.updateConfig({ workspace: tempDir, aiEnabled: true });
+    await initWorkspace(tempDir);
+    output = [];
+    originalError = console.error;
+    console.error = (...args: unknown[]): void => {
+      output.push(args.map(String).join(' '));
+    };
+  });
+
+  afterEach(async () => {
+    console.error = originalError;
+    await configManager.updateConfig({ aiEnabled: true });
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    await rm(join(getConfigPaths().data, 'scripts'), { recursive: true, force: true });
+  });
+
+  const scriptWithIntro = (intro: string): string =>
+    `id: two-sum\ntitle: Two Sum\ndifficulty: easy\ntags: [array]\nlanguage: typescript\nsteps:\n  - type: intro\n    content: ${intro}\n`;
+
+  it('shows the built-in teaching script when the problem directory has none', async () => {
+    const result = await challengeCommand({ _: ['challenge', 'two-sum'] });
+
+    deepStrictEqual(result.success, true);
+    ok(output.join('\n').includes('Teaching Guide'), output.join('\n'));
+  });
+
+  it('prefers a user script in the data directory over the built-in one', async () => {
+    const userDir = join(getConfigPaths().data, 'scripts', 'two-sum');
+    await mkdir(userDir, { recursive: true });
+    await writeFile(join(userDir, 'trainer.yaml'), scriptWithIntro('User custom intro'));
+
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+
+    ok(output.join('\n').includes('User custom intro'), output.join('\n'));
+  });
+
+  it('prefers a script in the problem directory over user and built-in scripts', async () => {
+    const userDir = join(getConfigPaths().data, 'scripts', 'two-sum');
+    await mkdir(userDir, { recursive: true });
+    await writeFile(join(userDir, 'trainer.yaml'), scriptWithIntro('User custom intro'));
+    const problemDir = join(tempDir, 'problems', 'two-sum');
+    await mkdir(problemDir, { recursive: true });
+    await writeFile(join(problemDir, 'trainer.yaml'), scriptWithIntro('Workspace intro'));
+
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+
+    const text = output.join('\n');
+    ok(text.includes('Workspace intro'), text);
+    ok(!text.includes('User custom intro'), text);
+  });
+
+  it('shows no teaching guide when AI is disabled', async () => {
+    await configManager.updateConfig({ aiEnabled: false });
+
+    await challengeCommand({ _: ['challenge', 'two-sum'] });
+
+    ok(!output.join('\n').includes('Teaching Guide'));
   });
 });

@@ -1,0 +1,188 @@
+id: merge-two-sorted-lists
+title: Merge Two Sorted Lists
+difficulty: easy
+tags:
+  - linked-list
+  - recursion
+language: typescript
+steps:
+  - type: intro
+    content: |
+      # Merge Two Sorted Lists
+      
+      Welcome to linked list manipulation! 🎯
+      
+      **The challenge:** Merge two sorted linked lists into one sorted list.
+      
+      **Example:**
+      - List 1: 1 → 3 → 5
+      - List 2: 2 → 4 → 6
+      - Result: 1 → 2 → 3 → 4 → 5 → 6
+      
+      This problem teaches fundamental linked list techniques that appear everywhere!
+
+  - type: pre_prompt
+    content: |
+      Think about merging two sorted lists:
+      
+      **Key insight:** Compare the heads of both lists and pick the smaller one!
+      
+      **Two approaches:**
+      
+      **1. Iterative (recommended for beginners):**
+      - Create a dummy head node
+      - Use a pointer to build the result
+      - Compare values and attach the smaller node
+      - Move the pointer forward
+      
+      **2. Recursive (elegant but uses call stack):**
+      - Base case: if one list is null, return the other
+      - Recursive case: pick smaller head, recurse on rest
+      
+      **Tip:** The iterative approach with a dummy node is cleaner and avoids edge cases!
+
+  - type: hint
+    trigger: '!code.includes(''while'') && !code.includes(''recursion'')'
+    content: |
+      **Hint:** You'll need to iterate through both lists!
+      
+      **Common pattern for linked list problems:**
+      - Create a dummy head: `const dummy = new ListNode(0);`
+      - Use a current pointer: `let current = dummy;`
+      - Build the list by setting `current.next`
+      - Move current forward: `current = current.next;`
+      - Return `dummy.next` (skip the dummy node)
+      
+      This pattern avoids messy null checks at the start!
+
+  - type: hint
+    trigger: code.includes('while') && !code.includes('dummy')
+    content: |
+      **Tip:** Using a dummy head node simplifies your code!
+      
+      Without it, you need special handling for the first node.
+      
+      **Pattern:**
+      ```typescript
+      const dummy = new ListNode(0);
+      let current = dummy;
+      
+      // Build list by setting current.next
+      
+      return dummy.next;  // Skip dummy
+      ```
+      
+      This makes the logic cleaner and handles edge cases naturally!
+
+  - type: on_run
+    trigger: stderr.includes('null') || stderr.includes('undefined')
+    content: |
+      Null/undefined error! Common causes:
+      
+      1. **Accessing .next on null** - check if node exists before accessing
+      2. **Forgetting to handle empty lists** - what if one or both lists are null?
+      3. **Not moving pointers forward** - did you update list1/list2?
+      
+      **Remember:** Always check if a node is null before accessing its properties!
+      
+      ```typescript
+      while (list1 && list2) {
+        // Safe to access list1.val and list2.val here
+      }
+      ```
+
+  - type: on_run
+    trigger: '!passed && attempts > 1'
+    content: |
+      Let me help you debug:
+      
+      **Algorithm checklist:**
+      1. ✅ Handle null inputs (if list1 is null, return list2, etc.)
+      2. ✅ Create dummy head
+      3. ✅ While both lists have nodes:
+         - Compare values
+         - Attach the smaller node to result
+         - Move that list's pointer forward
+      4. ✅ After loop, attach remaining nodes from non-empty list
+      5. ✅ Return dummy.next
+      
+      **Common mistakes:**
+      - Forgetting to attach remaining nodes after the loop
+      - Not moving the list pointers (list1 = list1.next)
+      - Not moving the current pointer (current = current.next)
+
+  - type: on_request
+    keywords:
+      - hint
+      - help
+      - stuck
+    content: |
+      **Iterative approach (step by step):**
+      
+      ```typescript
+      function mergeTwoLists(list1, list2) {
+        // Handle empty lists
+        if (!list1) return list2;
+        if (!list2) return list1;
+        
+        // Dummy head simplifies logic
+        const dummy = new ListNode(0);
+        let current = dummy;
+        
+        // Compare and merge
+        while (list1 && list2) {
+          if (list1.val <= list2.val) {
+            current.next = list1;
+            list1 = list1.next;
+          } else {
+            current.next = list2;
+            list2 = list2.next;
+          }
+          current = current.next;
+        }
+        
+        // Attach remaining nodes
+        current.next = list1 || list2;
+        
+        return dummy.next;
+      }
+      ```
+
+  - type: on_request
+    keywords:
+      - complexity
+      - optimization
+    content: |
+      **Complexity Analysis:**
+      
+      **Iterative approach:**
+      - Time: O(n + m) where n, m are list lengths ✅
+      - Space: O(1) - only using pointers, not creating new nodes
+      
+      **Recursive approach:**
+      - Time: O(n + m) same time complexity
+      - Space: O(n + m) - call stack depth
+      
+      **Note:** We're rearranging existing nodes, not creating new ones!
+      This is space-efficient - we only use O(1) extra space for pointers.
+
+  - type: after_success
+    content: |
+      🎉 Perfect! You merged the sorted lists!
+      
+      **What you learned:**
+      - Dummy node pattern for linked lists
+      - Merging sorted sequences (important for merge sort!)
+      - Pointer manipulation in linked lists
+      
+      **Complexity:** O(n + m) time, O(1) space ✨
+      
+      **This pattern appears in:**
+      - Merge Sort implementation
+      - Merge K Sorted Lists (harder version)
+      - Add Two Numbers
+      - Remove Duplicates from Sorted List
+      
+      **Key technique:** The dummy node pattern makes linked list code much cleaner!
+      
+      Excellent work! 🚀

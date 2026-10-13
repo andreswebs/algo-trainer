@@ -120,6 +120,15 @@ algo-trainer challenge -t "dynamic-programming"
 - Problem files are generated in `problems/[problem-slug]/`
 - You get a solution template in your chosen language
 - Problem description, test cases, and metadata are included
+- If the problem has a teaching script, a short teaching guide and "getting started" advice are printed
+
+**Teaching scripts:** a teaching script is a `trainer.yaml` file. The first one found is used, in this order:
+
+1. `problems/[problem-slug]/trainer.yaml` in your workspace, for example one written by `algo-trainer teach generate [problem-slug]`
+2. Your own script in `$XDG_DATA_HOME/algo-trainer/scripts/[problem-slug]/trainer.yaml` (default `~/.local/share/algo-trainer/scripts/`)
+3. The built-in script shipped with algo-trainer, available for 10 problems
+
+Turn teaching guides off with `algo-trainer config set aiEnabled false`.
 
 ### 3. Solve the Problem
 

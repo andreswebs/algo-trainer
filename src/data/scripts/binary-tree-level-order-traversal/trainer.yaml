@@ -1,0 +1,209 @@
+id: binary-tree-level-order-traversal
+title: Binary Tree Level Order Traversal
+difficulty: medium
+tags:
+  - tree
+  - breadth-first-search
+  - binary-tree
+language: typescript
+steps:
+  - type: intro
+    content: |
+      # Binary Tree Level Order Traversal
+      
+      Welcome to tree traversal! 🎯
+      
+      **The challenge:** Return values of a binary tree level by level (left to right).
+      
+      **Example:**
+      ```
+          3
+         / \
+        9  20
+          /  \
+         15   7
+      ```
+      Output: [[3], [9, 20], [15, 7]]
+      
+      This teaches breadth-first search (BFS) - a fundamental tree/graph algorithm!
+
+  - type: pre_prompt
+    content: |
+      Level-order traversal = visiting nodes level by level = BFS!
+      
+      **Key data structure: Queue** (FIFO - First In, First Out)
+      
+      **Algorithm:**
+      1. Start with root in a queue
+      2. While queue not empty:
+         - Process all nodes at current level
+         - Add their children to queue (next level)
+         - Store current level's values
+      
+      **Important:** Process entire level before moving to next!
+      
+      **Implementation tip:** 
+      - Get queue size at start of each level
+      - Process exactly that many nodes
+      - This ensures you process one complete level at a time
+
+  - type: hint
+    trigger: '!code.includes(''queue'') && !code.includes(''Queue'')'
+    content: |
+      **Hint:** You need a queue for level-order traversal!
+      
+      In TypeScript/JavaScript, use an array as a queue:
+      - `queue.push(node)` - add to end
+      - `queue.shift()` - remove from front
+      
+      **Pattern:**
+      ```typescript
+      const queue = [root];
+      while (queue.length > 0) {
+        const levelSize = queue.length;
+        const currentLevel = [];
+        
+        for (let i = 0; i < levelSize; i++) {
+          const node = queue.shift();
+          currentLevel.push(node.val);
+          if (node.left) queue.push(node.left);
+          if (node.right) queue.push(node.right);
+        }
+        
+        result.push(currentLevel);
+      }
+      ```
+
+  - type: hint
+    trigger: code.includes('queue') || code.includes('Queue')
+    content: |
+      Great! You're using a queue for BFS! 🎉
+      
+      **Key insight for level-by-level:**
+      
+      Capture the queue size BEFORE processing nodes:
+      ```typescript
+      const levelSize = queue.length;  // Size of current level
+      for (let i = 0; i < levelSize; i++) {
+        // Process exactly levelSize nodes
+      }
+      ```
+      
+      This ensures you process one complete level before moving to the next!
+
+  - type: on_run
+    trigger: '!passed && attempts > 1'
+    content: |
+      Let me help you debug the BFS algorithm:
+      
+      **Checklist:**
+      1. ✅ Handle null root: `if (!root) return [];`
+      2. ✅ Initialize queue with root: `const queue = [root];`
+      3. ✅ While queue not empty:
+         - Get current level size: `const size = queue.length;`
+         - Create array for current level
+         - Process exactly 'size' nodes
+         - Add children to queue
+         - Add level array to result
+      
+      **Common mistakes:**
+      - Not capturing level size (queue.length changes as you add children!)
+      - Forgetting to check if children exist before adding
+      - Not handling null root
+
+  - type: on_run
+    trigger: stderr.includes('null') || stderr.includes('undefined')
+    content: |
+      Null/undefined error! Common causes:
+      
+      1. **Not checking if root is null** at the start
+      2. **Not checking if children exist** before adding to queue:
+         ```typescript
+         if (node.left) queue.push(node.left);
+         if (node.right) queue.push(node.right);
+         ```
+      3. **Accessing properties of shifted node** without checking if queue was empty
+      
+      Always validate before accessing node properties!
+
+  - type: on_request
+    keywords:
+      - hint
+      - help
+      - stuck
+      - bfs
+    content: |
+      **Complete BFS solution:**
+      
+      ```typescript
+      function levelOrder(root: TreeNode | null): number[][] {
+        if (!root) return [];
+        
+        const result: number[][] = [];
+        const queue: TreeNode[] = [root];
+        
+        while (queue.length > 0) {
+          const levelSize = queue.length;
+          const currentLevel: number[] = [];
+          
+          // Process all nodes at current level
+          for (let i = 0; i < levelSize; i++) {
+            const node = queue.shift()!;
+            currentLevel.push(node.val);
+            
+            // Add children for next level
+            if (node.left) queue.push(node.left);
+            if (node.right) queue.push(node.right);
+          }
+          
+          result.push(currentLevel);
+        }
+        
+        return result;
+      }
+      ```
+
+  - type: on_request
+    keywords:
+      - complexity
+      - optimization
+    content: |
+      **Complexity Analysis:**
+      
+      **Time:** O(n) where n is number of nodes
+      - Visit each node exactly once
+      - Each node: O(1) operations
+      
+      **Space:** O(w) where w is maximum width of tree
+      - Queue stores at most one complete level
+      - Worst case: complete binary tree has width n/2 at bottom
+      - So space is O(n) in worst case
+      
+      **This is optimal!** BFS must visit every node and store at least one level.
+      
+      **Alternative:** DFS with level tracking also works but less intuitive for level-order.
+
+  - type: after_success
+    content: |
+      🎉 Perfect! You completed level-order traversal!
+      
+      **What you learned:**
+      - Breadth-first search (BFS) algorithm
+      - Using a queue for level-by-level processing
+      - Tree traversal patterns
+      
+      **Complexity:** O(n) time, O(n) space ✨
+      
+      **This pattern appears in:**
+      - Binary Tree Zigzag Level Order
+      - Binary Tree Right Side View
+      - Average of Levels in Binary Tree
+      - Graph BFS problems
+      
+      **Key lesson:** BFS with a queue is perfect for level-by-level processing!
+      
+      **DFS vs BFS:**
+      - DFS: Stack/recursion, goes deep first
+      - BFS: Queue, goes wide first
+      
+      Excellent work! 🚀
