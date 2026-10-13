@@ -596,8 +596,8 @@ function buildPlaceholderValues(context: TemplateContext): PlaceholderValues {
  * Replace placeholders in template content
  *
  * Replaces all occurrences of {{PLACEHOLDER_NAME}} with corresponding values.
- * A placeholder alone on an indented line has that indentation applied to every
- * line of its value.
+ * A placeholder alone on its line after indentation or a `//`, `///` or `//!`
+ * marker has that prefix applied to every line of its value.
  * Unknown placeholders will throw an error by default.
  *
  * @param content - The template content with placeholders
@@ -637,17 +637,18 @@ export function replacePlaceholders(
     }
   }
 
-  // A placeholder alone on an indented line indents every line of its value, so multi-line
-  // values keep the block structure of code templates.
+  // A placeholder alone on its line after indentation or a line comment marker repeats that
+  // prefix on every line of its value, so multi-line values stay inside the block or comment.
   let result = content.replace(
-    /^([ \t]+)\{\{([A-Z_]+)\}\}[ \t]*$/gm,
-    (line, indent: string, key: string) =>
-      key in values
-        ? values[key]
-            .split('\n')
-            .map((valueLine) => (valueLine ? indent + valueLine : ''))
-            .join('\n')
-        : line,
+    /^([ \t]*)(\/\/[/!]? )?\{\{([A-Z_]+)\}\}[ \t]*$/gm,
+    (line, indent: string, marker: string | undefined, key: string) => {
+      if (!(key in values)) return line;
+      const blankLine = marker ? indent + marker.trimEnd() : '';
+      return values[key]
+        .split('\n')
+        .map((valueLine) => (valueLine ? indent + (marker ?? '') + valueLine : blankLine))
+        .join('\n');
+    },
   );
   for (const [key, value] of Object.entries(values)) {
     const placeholder = `{{${key}}}`;

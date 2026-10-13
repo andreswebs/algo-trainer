@@ -260,6 +260,24 @@ test('replacePlaceholders - indents every line of a value placed alone on an ind
   deepStrictEqual(result, 'class A:\n    # one\n\n    # two\n    pass\n');
 });
 
+test('replacePlaceholders - repeats a line comment marker on every line of a value', () => {
+  const content = '  //! {{BODY}}\n/// {{BODY}}\n// {{BODY}}\n';
+  const values = { BODY: 'one\n\ntwo' };
+
+  const result = replacePlaceholders(content, values);
+  deepStrictEqual(
+    result,
+    '  //! one\n  //!\n  //! two\n/// one\n///\n/// two\n// one\n//\n// two\n',
+  );
+});
+
+test('replacePlaceholders - leaves a markdown heading placeholder alone', () => {
+  const content = '# {{BODY}}';
+  const values = { BODY: 'one\ntwo' };
+
+  deepStrictEqual(replacePlaceholders(content, values), '# one\ntwo');
+});
+
 test('replacePlaceholders - leaves continuation lines alone when the placeholder follows text', () => {
   const content = 'Examples: {{BODY}}';
   const values = { BODY: 'one\ntwo' };
@@ -538,4 +556,43 @@ test('renderTemplate - python minimal test class keeps a body', async () => {
 
   ok(rendered.includes('(unittest.TestCase):\n    # Example 1:'));
   ok(rendered.includes('    # Output: [1,2]\n    pass\n'));
+});
+
+const multiLineProblem: Problem = {
+  ...mockProblem,
+  description: 'First paragraph line.\nSecond line.\n\nThird paragraph.',
+};
+
+for (const [language, style, marker] of [
+  ['typescript', 'documented', '//'],
+  ['javascript', 'documented', '//'],
+  ['rust', 'documented', '//!'],
+  ['rust', 'comprehensive', '//!'],
+] as const) {
+  test(`renderTemplate - ${language} ${style} solution comments every description line`, async () => {
+    const rendered = await renderTemplate(
+      { problem: multiLineProblem, config: { ...mockTemplateConfig, language, style } },
+      'solution',
+    );
+
+    ok(
+      rendered.includes(
+        `${marker} First paragraph line.\n${marker} Second line.\n${marker}\n${marker} Third paragraph.\n`,
+      ),
+    );
+  });
+}
+
+test('renderTemplate - rust comprehensive solution comments every constraint and example line', async () => {
+  const rendered = await renderTemplate(
+    {
+      problem: mockProblem,
+      config: { ...mockTemplateConfig, language: 'rust', style: 'comprehensive' },
+    },
+    'solution',
+  );
+
+  ok(rendered.includes('//! - 2 <= nums.length <= 10^4\n//! - -10^9 <= nums[i] <= 10^9\n'));
+  ok(rendered.includes('/// Example 1:\n/// Input: nums = [2,7,11,15], target = 9\n'));
+  ok(rendered.includes('///\n/// Example 2:\n'));
 });
