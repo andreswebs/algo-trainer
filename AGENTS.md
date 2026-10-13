@@ -7,7 +7,7 @@
 ```sh
 deno task check
 deno task lint
-deno task test
+bun test
 ```
 
 If any fail, fix errors BEFORE starting the task.
@@ -19,7 +19,7 @@ After completing ANY modification:
 ```sh
 deno task check
 deno task lint
-deno task test
+bun test
 ```
 
 If any fail, fix errors BEFORE considering task complete.
@@ -107,8 +107,8 @@ deno task lint
 deno task lint:fix
 
 # Testing (MANDATORY before/after tasks)
-deno task test
-deno task test:watch
+bun test
+bun run test:watch
 
 # Format code
 deno task fmt
@@ -255,7 +255,7 @@ All from Deno standard library:
 
 ## Workflow Summary
 
-1. Run checks: `deno task check && deno task lint && deno task test`
+1. Run checks: `deno task check && deno task lint && bun test`
 2. Make changes
 3. Run checks again
 4. Fix any issues
