@@ -63,6 +63,18 @@ describe('extractCompleteOptions', () => {
     assertEquals(options.noArchive, true);
   });
 
+  it('should extract language with --language and -l flags', () => {
+    assertEquals(
+      extractCompleteOptions({ _: ['complete', 'two-sum'], language: 'typescript' }).language,
+      'typescript',
+    );
+    assertEquals(
+      extractCompleteOptions({ _: ['complete', 'two-sum'], l: 'python' }).language,
+      'python',
+    );
+    assertEquals(extractCompleteOptions({ _: ['complete', 'two-sum'] }).language, undefined);
+  });
+
   it('should handle no arguments', () => {
     const args: Args = { _: ['complete'] };
     const options = extractCompleteOptions(args);
@@ -178,6 +190,35 @@ describe('completeCommand', () => {
     assertEquals(result.exitCode, ExitCode.SUCCESS);
   });
 
+  it('should complete a problem scaffolded in a language other than the configured one', async () => {
+    await configManager.updateConfig({ language: 'cpp' });
+    const challengeResult = await challengeCommand({
+      _: ['challenge', 'two-sum'],
+      language: 'typescript',
+    });
+    assertEquals(challengeResult.success, true);
+
+    const result = await completeCommand({
+      _: ['complete', 'two-sum'],
+      language: 'typescript',
+    });
+    assertEquals(result.success, true);
+    assertEquals(result.exitCode, ExitCode.SUCCESS);
+  });
+
+  it('should reject an invalid --language value', async () => {
+    await challengeCommand({
+      _: ['challenge', 'two-sum'],
+    });
+
+    const result = await completeCommand({
+      _: ['complete', 'two-sum'],
+      language: 'cobol',
+    });
+    assertEquals(result.success, false);
+    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+  });
+
   it('should fail when problem is not in current workspace', async () => {
     // Initialize workspace but don't add the problem
     await challengeCommand({
@@ -222,14 +263,24 @@ describe('resolveTargetProblem', () => {
 
   it('should return provided slug as-is', async () => {
     const structure = getWorkspaceStructure(tempDir);
-    const options: CompleteOptions = { problemSlug: 'two-sum', notes: undefined, noArchive: false };
+    const options: CompleteOptions = {
+      problemSlug: 'two-sum',
+      notes: undefined,
+      noArchive: false,
+      language: undefined,
+    };
     const slug = await resolveTargetProblem(options, structure);
     assertEquals(slug, 'two-sum');
   });
 
   it('should resolve numeric ID to slug', async () => {
     const structure = getWorkspaceStructure(tempDir);
-    const options: CompleteOptions = { problemSlug: '1', notes: undefined, noArchive: false };
+    const options: CompleteOptions = {
+      problemSlug: '1',
+      notes: undefined,
+      noArchive: false,
+      language: undefined,
+    };
     const slug = await resolveTargetProblem(options, structure);
     assertEquals(slug, 'two-sum');
   });
@@ -237,14 +288,24 @@ describe('resolveTargetProblem', () => {
   it('should auto-select single problem when no slug provided', async () => {
     await challengeCommand({ _: ['challenge', 'two-sum'] });
     const structure = getWorkspaceStructure(tempDir);
-    const options: CompleteOptions = { problemSlug: undefined, notes: undefined, noArchive: false };
+    const options: CompleteOptions = {
+      problemSlug: undefined,
+      notes: undefined,
+      noArchive: false,
+      language: undefined,
+    };
     const slug = await resolveTargetProblem(options, structure);
     assertEquals(slug, 'two-sum');
   });
 
   it('should throw ProblemError when no problems in workspace', async () => {
     const structure = getWorkspaceStructure(tempDir);
-    const options: CompleteOptions = { problemSlug: undefined, notes: undefined, noArchive: false };
+    const options: CompleteOptions = {
+      problemSlug: undefined,
+      notes: undefined,
+      noArchive: false,
+      language: undefined,
+    };
     await assertRejects(() => resolveTargetProblem(options, structure), ProblemError);
   });
 });

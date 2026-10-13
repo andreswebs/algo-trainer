@@ -26,6 +26,7 @@ import {
 import { logger } from '../../utils/output.ts';
 import { ExitCode } from '../exit-codes.ts';
 import { promptSelect, promptText } from '../prompts.ts';
+import { VALID_LANGUAGES } from './challenge.ts';
 import { showCommandHelp } from './help.ts';
 import { formatProblemSummary, requireWorkspace, resolveProblem } from './shared.ts';
 
@@ -36,6 +37,10 @@ function showHelp(): void {
     usage: ['algo-trainer complete <slug>', 'algo-trainer complete'],
     options: [
       { flags: '-n, --notes <text>', description: 'Add completion notes' },
+      {
+        flags: '-l, --language <lang>',
+        description: 'Language of the solution to complete (default: configured language)',
+      },
       {
         flags: '--no-archive',
         description: "Keep files in current (don't move)",
@@ -67,6 +72,7 @@ export interface CompleteOptions {
   problemSlug: string | undefined;
   notes: string | undefined;
   noArchive: boolean;
+  language: string | undefined;
 }
 
 export function extractCompleteOptions(args: Args): CompleteOptions {
@@ -75,6 +81,7 @@ export function extractCompleteOptions(args: Args): CompleteOptions {
     problemSlug: positionalArgs[0] as string | undefined,
     notes: (args.notes || args.n) as string | undefined,
     noArchive: Boolean(args['no-archive']),
+    language: (args.language || args.l) as string | undefined,
   };
 }
 
@@ -236,7 +243,12 @@ export async function completeCommand(args: Args): Promise<CommandResult> {
     const options = extractCompleteOptions(args);
     const config = configManager.getConfig();
     const structure = await requireWorkspace();
-    const language = (config.language || 'typescript') as SupportedLanguage;
+    const language = (options.language || config.language || 'typescript') as SupportedLanguage;
+    if (!VALID_LANGUAGES.includes(language)) {
+      logger.error(`Invalid language: ${language}`);
+      logger.info(`Valid languages: ${VALID_LANGUAGES.join(', ')}`);
+      return { success: false, exitCode: ExitCode.USAGE_ERROR };
+    }
 
     const problemSlug = await resolveTargetProblem(options, structure);
     await validateCompletion(problemSlug, structure.root, language);

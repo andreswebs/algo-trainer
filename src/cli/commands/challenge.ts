@@ -116,7 +116,7 @@ export function extractChallengeOptions(args: Args): ChallengeOptions {
   };
 }
 
-const VALID_LANGUAGES: SupportedLanguage[] = [
+export const VALID_LANGUAGES: SupportedLanguage[] = [
   'typescript',
   'javascript',
   'python',
