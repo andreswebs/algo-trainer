@@ -141,10 +141,10 @@ describe('listCommand', () => {
     stdoutOutput = [];
     stderrOutput = [];
 
-    console.log = (...args: unknown[]) => {
+    console.log = (...args: unknown[]): void => {
       stdoutOutput.push(args.map(String).join(' '));
     };
-    console.error = (...args: unknown[]) => {
+    console.error = (...args: unknown[]): void => {
       stderrOutput.push(args.map(String).join(' '));
     };
   });

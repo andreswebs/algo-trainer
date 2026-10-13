@@ -35,6 +35,14 @@ import {
   validateWorkspace,
 } from '../src/core/mod.ts';
 
+type _ExportedTypes = [
+  _Difficulty,
+  _GenerateProblemFilesOptions,
+  _Problem,
+  _ProblemQuery,
+  _WorkspaceStructure,
+];
+
 Deno.test('PMS-020: Core module exports all required APIs', () => {
   // Verify problem management exports
   assertExists(ProblemManager);

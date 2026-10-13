@@ -11,7 +11,10 @@ import { ENV_VARS, getEnvVarDocumentation, loadEnvConfig } from '../src/cli/env.
 describe('Environment Variable Configuration', () => {
   // Helper to set env vars and clean up. Clears ALL known AT_* vars on entry
   // so pre-existing shell exports don't leak into tests that expect defaults.
-  const withEnv = async (vars: Record<string, string>, fn: () => void | Promise<void>) => {
+  const withEnv = async (
+    vars: Record<string, string>,
+    fn: () => void | Promise<void>,
+  ): Promise<void> => {
     const managedKeys = new Set<string>([...Object.values(ENV_VARS), ...Object.keys(vars)]);
     const original: Record<string, string | undefined> = {};
 

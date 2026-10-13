@@ -13,7 +13,9 @@ import { ConfigManager } from '../src/config/manager.ts';
 import { writeJsonFile } from '../src/utils/fs.ts';
 
 describe('Environment Variable Integration', () => {
-  const withTempConfig = async (fn: (configPath: string) => void | Promise<void>) => {
+  const withTempConfig = async (
+    fn: (configPath: string) => void | Promise<void>,
+  ): Promise<void> => {
     const tempDir = await Deno.makeTempDir();
     const configPath = join(tempDir, 'config.json');
 
@@ -26,7 +28,10 @@ describe('Environment Variable Integration', () => {
 
   // Clears ALL known AT_* vars on entry so pre-existing shell exports don't
   // leak into tests that expect a clean environment.
-  const withEnv = async (vars: Record<string, string>, fn: () => void | Promise<void>) => {
+  const withEnv = async (
+    vars: Record<string, string>,
+    fn: () => void | Promise<void>,
+  ): Promise<void> => {
     const managedKeys = new Set<string>([...Object.values(ENV_VARS), ...Object.keys(vars)]);
     const original: Record<string, string | undefined> = {};
 

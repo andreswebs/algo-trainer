@@ -166,6 +166,7 @@ Notes:
 - `vcs.useIgnoreFile` reads the repo `.gitignore`. Directories a developer ignores only globally are not excluded automatically. After the first reformat, `git status` must show changes to tracked files only.
 - Biome 2.5.15 does not format Markdown or YAML. markdownlint-cli2 keeps covering Markdown. JSONC files keep their comments but lose trailing commas.
 - Commands: `biome check --write` (format, imports, safe fixes), `biome check --write --linter-enabled=false` (format and imports only), `biome lint`, `biome ci` (read-only, for CI).
+- Several recommended rules default to warning severity (`noUnusedVariables` and `noUnusedImports` among them), and both `biome lint` and `biome ci` exit 0 on warnings. Every gate passes `--error-on-warnings`, so the zero-diagnostics policy holds.
 
 Diagnostics the full config reports on the current code, before fixes:
 
@@ -247,11 +248,11 @@ Notes:
     "typecheck": "bun check --no-pretty",
     "format": "biome check --write --linter-enabled=false",
     "format:check": "biome check --linter-enabled=false",
-    "lint": "biome lint",
+    "lint": "biome lint --error-on-warnings",
     "lint:fix": "biome lint --write",
     "test": "bun test",
     "test:watch": "bun test --watch",
-    "verify": "bun run typecheck && biome ci && bun test"
+    "verify": "bun run typecheck && biome ci --error-on-warnings && bun test"
   },
   "dependencies": {
     "@std/cli": "npm:@jsr/std__cli@^1.0.32",
@@ -546,7 +547,7 @@ jobs:
         run: bun run typecheck
 
       - name: Format and lint
-        run: bunx biome ci
+        run: bunx biome ci --error-on-warnings
 
       - name: Test
         run: bun test

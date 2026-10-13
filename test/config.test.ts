@@ -32,7 +32,7 @@ async function setupTestEnv(): Promise<TestEnv> {
 
   return {
     tempDir,
-    cleanup: async () => {
+    cleanup: async (): Promise<void> => {
       for (const key of managedKeys) {
         const value = original[key];
         if (value === undefined) {

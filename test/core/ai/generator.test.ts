@@ -158,8 +158,8 @@ Deno.test('COMPREHENSIVE_TEMPLATE - has more steps than basic', () => {
 });
 
 Deno.test('COMPREHENSIVE_TEMPLATE - includes attempt-based hints', () => {
-  const hasAttemptHints = COMPREHENSIVE_TEMPLATE.steps.some(
-    (step) => step.trigger && step.trigger.includes('attempts'),
+  const hasAttemptHints = COMPREHENSIVE_TEMPLATE.steps.some((step) =>
+    step.trigger?.includes('attempts'),
   );
   assertEquals(hasAttemptHints, true, 'Should include attempt-based hints with triggers');
 });
@@ -180,8 +180,8 @@ Deno.test('COMPREHENSIVE_TEMPLATE - on_request steps have keywords', () => {
 });
 
 Deno.test('COMPREHENSIVE_TEMPLATE - includes error handling', () => {
-  const hasErrorHandling = COMPREHENSIVE_TEMPLATE.steps.some(
-    (step) => step.trigger && step.trigger.includes('stderr'),
+  const hasErrorHandling = COMPREHENSIVE_TEMPLATE.steps.some((step) =>
+    step.trigger?.includes('stderr'),
   );
   assertEquals(hasErrorHandling, true, 'Should include error handling with stderr checks');
 });
@@ -1163,8 +1163,8 @@ Deno.test('TeachingScriptGenerator - difficulty affects hint triggers', () => {
   const mediumMatch = mediumTrigger.match(/attempts\s*>=\s*(\d+)/);
 
   if (hardMatch && mediumMatch) {
-    const hardThreshold = parseInt(hardMatch[1]);
-    const mediumThreshold = parseInt(mediumMatch[1]);
+    const hardThreshold = parseInt(hardMatch[1], 10);
+    const mediumThreshold = parseInt(mediumMatch[1], 10);
     assertEquals(
       hardThreshold <= mediumThreshold,
       true,

@@ -150,7 +150,7 @@ describe('resolveProblem', () => {
   it('should resolve problem by ID (number)', () => {
     // Convert ID to number if it's numeric
     if (/^\d+$/.test(testProblem.id)) {
-      const numericId = parseInt(testProblem.id);
+      const numericId = parseInt(testProblem.id, 10);
       const problem = resolveProblem(numericId, manager);
       assertEquals(problem?.id, testProblem.id);
     }

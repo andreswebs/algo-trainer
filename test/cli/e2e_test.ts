@@ -34,17 +34,17 @@ const originalConsoleLog = console.log;
 // Mock console output to avoid noise during tests
 let capturedOutput: string[] = [];
 
-function setupConsoleCapture() {
+function setupConsoleCapture(): void {
   capturedOutput = [];
-  console.error = (...args: unknown[]) => {
+  console.error = (...args: unknown[]): void => {
     capturedOutput.push(args.map(String).join(' '));
   };
-  console.log = (...args: unknown[]) => {
+  console.log = (...args: unknown[]): void => {
     capturedOutput.push(args.map(String).join(' '));
   };
 }
 
-function restoreConsole() {
+function restoreConsole(): void {
   console.error = originalConsoleError;
   console.log = originalConsoleLog;
 }

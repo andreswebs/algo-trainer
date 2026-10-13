@@ -4,7 +4,7 @@
  * @module test/utils-output.test
  */
 
-import { assertEquals, assertMatch, assertStringIncludes } from '@std/assert';
+import { assertEquals, assertExists, assertMatch, assertStringIncludes } from '@std/assert';
 import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { Logger, logger, resetOutputOptions, setOutputOptions } from '../src/utils/output.ts';
 
@@ -19,7 +19,7 @@ class ConsoleErrorCapture {
 
   start(): void {
     this.captured = [];
-    console.error = (...args: unknown[]) => {
+    console.error = (...args: unknown[]): void => {
       this.captured.push(args.map((arg) => String(arg)).join(' '));
     };
   }
@@ -282,8 +282,8 @@ describe('Logger class', () => {
       });
       const lines = capture.getLines();
       const dataLine = lines.find((line) => line.includes('1'));
-      assertEquals(dataLine !== undefined, true);
-      assertMatch(dataLine!, /\s+1/); // Should have leading spaces
+      assertExists(dataLine);
+      assertMatch(dataLine, /\s+1/); // Should have leading spaces
     });
   });
 

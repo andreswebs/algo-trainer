@@ -23,7 +23,7 @@ interface ProblemFile {
   content: string;
 }
 
-async function main() {
+async function main(): Promise<void> {
   logger.debug('Scanning for problem files...');
 
   // Read all JSON files from problems directory

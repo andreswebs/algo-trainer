@@ -32,18 +32,18 @@ class ConsoleCapture {
   private logOutput: string[] = [];
   private errorOutput: string[] = [];
 
-  start() {
+  start(): void {
     this.logOutput = [];
     this.errorOutput = [];
-    console.log = (...args: unknown[]) => {
+    console.log = (...args: unknown[]): void => {
       this.logOutput.push(args.map(String).join(' '));
     };
-    console.error = (...args: unknown[]) => {
+    console.error = (...args: unknown[]): void => {
       this.errorOutput.push(args.map(String).join(' '));
     };
   }
 
-  stop() {
+  stop(): void {
     console.log = this.originalLog;
     console.error = this.originalError;
   }

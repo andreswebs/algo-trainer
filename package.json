@@ -17,7 +17,7 @@
     "typecheck": "bun check --no-pretty",
     "format": "biome check --write --linter-enabled=false",
     "format:check": "biome check --linter-enabled=false",
-    "lint": "biome lint",
+    "lint": "biome lint --error-on-warnings",
     "lint:fix": "biome lint --write"
   },
   "dependencies": {
