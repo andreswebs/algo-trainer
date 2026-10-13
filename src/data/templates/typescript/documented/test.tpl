@@ -4,8 +4,8 @@
  * @date {{DATE}}
  */
 
-import { assertEquals } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import { {{FUNCTION_NAME}} } from './solution{{FILE_EXTENSION}}';
 
 describe('{{PROBLEM_TITLE}}', () => {

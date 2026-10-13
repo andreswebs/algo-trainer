@@ -596,3 +596,19 @@ test('renderTemplate - rust comprehensive solution comments every constraint and
   ok(rendered.includes('/// Example 1:\n/// Input: nums = [2,7,11,15], target = 9\n'));
   ok(rendered.includes('///\n/// Example 2:\n'));
 });
+
+for (const language of ['typescript', 'javascript'] as const) {
+  for (const style of ['minimal', 'documented', 'comprehensive'] as const) {
+    test(`renderTemplate - ${language} ${style} test template uses node:test and node:assert/strict`, async () => {
+      const rendered = await renderTemplate(
+        { problem: mockProblem, config: { ...mockTemplateConfig, language, style } },
+        'test',
+      );
+
+      ok(rendered.includes("import assert from 'node:assert/strict';\n"));
+      ok(/^import \{ [a-z, ]+ \} from 'node:test';$/m.test(rendered));
+      ok(!rendered.includes('@std/'));
+      ok(/^\s*(test|it(\.skip)?)\(/m.test(rendered), 'registers at least one test');
+    });
+  }
+}

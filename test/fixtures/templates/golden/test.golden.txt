@@ -1,4 +1,5 @@
-import { assertEquals } from '@std/assert';
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
 import { twoSum } from './solution.ts';
 
 // Two Sum tests
@@ -6,3 +7,7 @@ import { twoSum } from './solution.ts';
 // Input: nums = [2,7,11,15], target = 9
 // Output: [0,1]
 // Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
+
+test('Two Sum', () => {
+  assert.equal(typeof twoSum, 'function');
+});
