@@ -30,13 +30,17 @@
       "test/ai/validator.test.ts",
       "test/config-paths.test.ts",
       "test/core/runner.test.ts",
+      "test/database.test.ts",
       "test/escaping.test.ts",
       "test/exit-codes.test.ts",
       "test/helpers/assert.test.ts",
+      "test/manager.test.ts",
       "test/parser.test.ts",
       "test/setup.test.ts",
       "test/utils-fs.test.ts",
-      "test/validation.test.ts"
+      "test/validation.test.ts",
+      "test/workspace-manager.test.ts",
+      "test/workspace.test.ts"
     ]
   },
   "imports": {

@@ -4,11 +4,15 @@
  * @module tests/database
  */
 
-import { assertEquals, assertRejects } from '@std/assert';
-import { join } from '@std/path';
+import { test } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { ProblemDatabase } from '../src/core/problem/database.ts';
 import type { RawProblemJson } from '../src/core/problem/types.ts';
 import { ProblemError } from '../src/utils/errors.ts';
+import { assertRejectsWith } from './helpers/assert.ts';
 
 const PROBLEM_1: RawProblemJson = {
   id: '1',
@@ -79,17 +83,17 @@ const PROBLEM_4: RawProblemJson = {
 };
 
 async function createTestProblemsDirectory(problems: RawProblemJson[]): Promise<string> {
-  const tempDir = await Deno.makeTempDir({ prefix: 'db-test-' });
+  const tempDir = await mkdtemp(join(tmpdir(), 'db-test-'));
 
   for (const problem of problems) {
     const filePath = join(tempDir, `${problem.slug}.json`);
-    await Deno.writeTextFile(filePath, JSON.stringify(problem));
+    await writeFile(filePath, JSON.stringify(problem));
   }
 
   return tempDir;
 }
 
-Deno.test('ProblemDatabase.load - loads problems from directory', async () => {
+test('ProblemDatabase.load - loads problems from directory', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2]);
 
   try {
@@ -98,13 +102,13 @@ Deno.test('ProblemDatabase.load - loads problems from directory', async () => {
       loadCustomProblems: false,
     });
 
-    assertEquals(db.getAll().length, 2);
+    deepStrictEqual(db.getAll().length, 2);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - builds byId index correctly', async () => {
+test('ProblemDatabase.load - builds byId index correctly', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2]);
 
   try {
@@ -117,15 +121,15 @@ Deno.test('ProblemDatabase.load - builds byId index correctly', async () => {
     const problem2 = db.getById('2');
     const missing = db.getById('999');
 
-    assertEquals(problem1?.slug, 'two-sum');
-    assertEquals(problem2?.slug, 'reverse-string');
-    assertEquals(missing, null);
+    deepStrictEqual(problem1?.slug, 'two-sum');
+    deepStrictEqual(problem2?.slug, 'reverse-string');
+    deepStrictEqual(missing, null);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - builds bySlug index correctly', async () => {
+test('ProblemDatabase.load - builds bySlug index correctly', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2]);
 
   try {
@@ -138,15 +142,15 @@ Deno.test('ProblemDatabase.load - builds bySlug index correctly', async () => {
     const problem2 = db.getBySlug('reverse-string');
     const missing = db.getBySlug('non-existent');
 
-    assertEquals(problem1?.id, '1');
-    assertEquals(problem2?.id, '2');
-    assertEquals(missing, null);
+    deepStrictEqual(problem1?.id, '1');
+    deepStrictEqual(problem2?.id, '2');
+    deepStrictEqual(missing, null);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - builds byDifficulty index correctly', async () => {
+test('ProblemDatabase.load - builds byDifficulty index correctly', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3, PROBLEM_4]);
 
   try {
@@ -159,19 +163,19 @@ Deno.test('ProblemDatabase.load - builds byDifficulty index correctly', async ()
     const medium = db.getByDifficulty('medium');
     const hard = db.getByDifficulty('hard');
 
-    assertEquals(easy.length, 2);
-    assertEquals(medium.length, 1);
-    assertEquals(hard.length, 1);
+    deepStrictEqual(easy.length, 2);
+    deepStrictEqual(medium.length, 1);
+    deepStrictEqual(hard.length, 1);
 
-    assertEquals(easy.map((p) => p.slug).sort(), ['reverse-string', 'two-sum']);
-    assertEquals(medium[0].slug, 'binary-search');
-    assertEquals(hard[0].slug, 'merge-intervals');
+    deepStrictEqual(easy.map((p) => p.slug).sort(), ['reverse-string', 'two-sum']);
+    deepStrictEqual(medium[0].slug, 'binary-search');
+    deepStrictEqual(hard[0].slug, 'merge-intervals');
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - builds byTag index correctly', async () => {
+test('ProblemDatabase.load - builds byTag index correctly', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3, PROBLEM_4]);
 
   try {
@@ -185,16 +189,16 @@ Deno.test('ProblemDatabase.load - builds byTag index correctly', async () => {
     const sortingProblems = db.getByTag('sorting');
     const nonExistent = db.getByTag('non-existent');
 
-    assertEquals(arrayProblems.length, 3);
-    assertEquals(stringProblems.length, 1);
-    assertEquals(sortingProblems.length, 1);
-    assertEquals(nonExistent.length, 0);
+    deepStrictEqual(arrayProblems.length, 3);
+    deepStrictEqual(stringProblems.length, 1);
+    deepStrictEqual(sortingProblems.length, 1);
+    deepStrictEqual(nonExistent.length, 0);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - builds byCompany index correctly', async () => {
+test('ProblemDatabase.load - builds byCompany index correctly', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_4]);
 
   try {
@@ -208,16 +212,16 @@ Deno.test('ProblemDatabase.load - builds byCompany index correctly', async () =>
     const facebookProblems = db.getByCompany('facebook');
     const nonExistent = db.getByCompany('non-existent');
 
-    assertEquals(googleProblems.length, 2);
-    assertEquals(amazonProblems.length, 1);
-    assertEquals(facebookProblems.length, 1);
-    assertEquals(nonExistent.length, 0);
+    deepStrictEqual(googleProblems.length, 2);
+    deepStrictEqual(amazonProblems.length, 1);
+    deepStrictEqual(facebookProblems.length, 1);
+    deepStrictEqual(nonExistent.length, 0);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - byTag is case-insensitive', async () => {
+test('ProblemDatabase.load - byTag is case-insensitive', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1]);
 
   try {
@@ -230,15 +234,15 @@ Deno.test('ProblemDatabase.load - byTag is case-insensitive', async () => {
     const upper = db.getByTag('ARRAY');
     const mixed = db.getByTag('Array');
 
-    assertEquals(lower.length, 1);
-    assertEquals(upper.length, 1);
-    assertEquals(mixed.length, 1);
+    deepStrictEqual(lower.length, 1);
+    deepStrictEqual(upper.length, 1);
+    deepStrictEqual(mixed.length, 1);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - byCompany is case-insensitive', async () => {
+test('ProblemDatabase.load - byCompany is case-insensitive', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1]);
 
   try {
@@ -251,20 +255,20 @@ Deno.test('ProblemDatabase.load - byCompany is case-insensitive', async () => {
     const upper = db.getByCompany('GOOGLE');
     const mixed = db.getByCompany('Google');
 
-    assertEquals(lower.length, 1);
-    assertEquals(upper.length, 1);
-    assertEquals(mixed.length, 1);
+    deepStrictEqual(lower.length, 1);
+    deepStrictEqual(upper.length, 1);
+    deepStrictEqual(mixed.length, 1);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - fails on duplicate ID in built-in problems', async () => {
+test('ProblemDatabase.load - fails on duplicate ID in built-in problems', async () => {
   const duplicate = { ...PROBLEM_2, id: '1', slug: 'duplicate-id' };
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, duplicate]);
 
   try {
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await ProblemDatabase.load({
           builtInPath: tempDir,
@@ -275,20 +279,20 @@ Deno.test('ProblemDatabase.load - fails on duplicate ID in built-in problems', a
       'Duplicate problem ID',
     );
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - fails on duplicate slug across directories', async () => {
+test('ProblemDatabase.load - fails on duplicate slug across directories', async () => {
   const builtInDir = await createTestProblemsDirectory([PROBLEM_1]);
-  const customDir = await Deno.makeTempDir({ prefix: 'db-test-custom-' });
+  const customDir = await mkdtemp(join(tmpdir(), 'db-test-custom-'));
 
   try {
     const duplicateSlug = { ...PROBLEM_2, id: '99', slug: 'two-sum' };
     const customFilePath = join(customDir, 'two-sum.json');
-    await Deno.writeTextFile(customFilePath, JSON.stringify(duplicateSlug));
+    await writeFile(customFilePath, JSON.stringify(duplicateSlug));
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await ProblemDatabase.load({
           builtInPath: builtInDir,
@@ -301,13 +305,13 @@ Deno.test('ProblemDatabase.load - fails on duplicate slug across directories', a
       'Failed to load custom problem',
     );
   } finally {
-    await Deno.remove(builtInDir, { recursive: true });
-    await Deno.remove(customDir, { recursive: true });
+    await rm(builtInDir, { recursive: true, force: true });
+    await rm(customDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - handles empty directory', async () => {
-  const tempDir = await Deno.makeTempDir({ prefix: 'db-test-empty-' });
+test('ProblemDatabase.load - handles empty directory', async () => {
+  const tempDir = await mkdtemp(join(tmpdir(), 'db-test-empty-'));
 
   try {
     const db = await ProblemDatabase.load({
@@ -315,22 +319,22 @@ Deno.test('ProblemDatabase.load - handles empty directory', async () => {
       loadCustomProblems: false,
     });
 
-    assertEquals(db.getAll().length, 0);
+    deepStrictEqual(db.getAll().length, 0);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - handles non-existent directory', async () => {
+test('ProblemDatabase.load - handles non-existent directory', async () => {
   const db = await ProblemDatabase.load({
     builtInPath: '/non/existent/path',
     loadCustomProblems: false,
   });
 
-  assertEquals(db.getAll().length, 0);
+  deepStrictEqual(db.getAll().length, 0);
 });
 
-Deno.test('ProblemDatabase - getAll returns copy of problems array', async () => {
+test('ProblemDatabase - getAll returns copy of problems array', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1]);
 
   try {
@@ -342,14 +346,14 @@ Deno.test('ProblemDatabase - getAll returns copy of problems array', async () =>
     const all1 = db.getAll();
     const all2 = db.getAll();
 
-    assertEquals(all1 !== all2, true);
-    assertEquals(all1.length, all2.length);
+    deepStrictEqual(all1 !== all2, true);
+    deepStrictEqual(all1.length, all2.length);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase - getAllTags returns sorted unique tags', async () => {
+test('ProblemDatabase - getAllTags returns sorted unique tags', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3]);
 
   try {
@@ -360,14 +364,14 @@ Deno.test('ProblemDatabase - getAllTags returns sorted unique tags', async () =>
 
     const tags = db.getAllTags();
 
-    assertEquals(tags.length, 5);
-    assertEquals(tags, ['array', 'binary-search', 'hash-table', 'string', 'two-pointers']);
+    deepStrictEqual(tags.length, 5);
+    deepStrictEqual(tags, ['array', 'binary-search', 'hash-table', 'string', 'two-pointers']);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase - getAllCompanies returns sorted unique companies', async () => {
+test('ProblemDatabase - getAllCompanies returns sorted unique companies', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_4]);
 
   try {
@@ -378,14 +382,14 @@ Deno.test('ProblemDatabase - getAllCompanies returns sorted unique companies', a
 
     const companies = db.getAllCompanies();
 
-    assertEquals(companies.length, 4);
-    assertEquals(companies, ['amazon', 'facebook', 'google', 'microsoft']);
+    deepStrictEqual(companies.length, 4);
+    deepStrictEqual(companies, ['amazon', 'facebook', 'google', 'microsoft']);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase - getDifficultyDistribution returns correct counts', async () => {
+test('ProblemDatabase - getDifficultyDistribution returns correct counts', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1, PROBLEM_2, PROBLEM_3, PROBLEM_4]);
 
   try {
@@ -396,15 +400,15 @@ Deno.test('ProblemDatabase - getDifficultyDistribution returns correct counts', 
 
     const dist = db.getDifficultyDistribution();
 
-    assertEquals(dist.easy, 2);
-    assertEquals(dist.medium, 1);
-    assertEquals(dist.hard, 1);
+    deepStrictEqual(dist.easy, 2);
+    deepStrictEqual(dist.medium, 1);
+    deepStrictEqual(dist.hard, 1);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase - hasId returns correct values', async () => {
+test('ProblemDatabase - hasId returns correct values', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1]);
 
   try {
@@ -413,14 +417,14 @@ Deno.test('ProblemDatabase - hasId returns correct values', async () => {
       loadCustomProblems: false,
     });
 
-    assertEquals(db.hasId('1'), true);
-    assertEquals(db.hasId('999'), false);
+    deepStrictEqual(db.hasId('1'), true);
+    deepStrictEqual(db.hasId('999'), false);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase - hasSlug returns correct values', async () => {
+test('ProblemDatabase - hasSlug returns correct values', async () => {
   const tempDir = await createTestProblemsDirectory([PROBLEM_1]);
 
   try {
@@ -429,22 +433,22 @@ Deno.test('ProblemDatabase - hasSlug returns correct values', async () => {
       loadCustomProblems: false,
     });
 
-    assertEquals(db.hasSlug('two-sum'), true);
-    assertEquals(db.hasSlug('non-existent'), false);
+    deepStrictEqual(db.hasSlug('two-sum'), true);
+    deepStrictEqual(db.hasSlug('non-existent'), false);
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('ProblemDatabase.load - loads from real src/data/problems', async () => {
+test('ProblemDatabase.load - loads from real src/data/problems', async () => {
   const db = await ProblemDatabase.load({
     builtInPath: 'src/data/problems',
     loadCustomProblems: false,
   });
 
-  assertEquals(db.getAll().length >= 1, true);
+  deepStrictEqual(db.getAll().length >= 1, true);
 
   const twoSum = db.getBySlug('two-sum');
-  assertEquals(twoSum !== null, true);
-  assertEquals(twoSum?.title, 'Two Sum');
+  deepStrictEqual(twoSum !== null, true);
+  deepStrictEqual(twoSum?.title, 'Two Sum');
 });
