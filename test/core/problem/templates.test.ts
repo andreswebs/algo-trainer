@@ -548,15 +548,22 @@ for (const language of ['typescript', 'javascript', 'go', 'java', 'python', 'rus
   }
 }
 
-test('renderTemplate - python minimal test class keeps a body', async () => {
-  const rendered = await renderTemplate(
-    { problem: mockProblem, config: { ...mockTemplateConfig, language: 'python' } },
-    'test',
-  );
+for (const [language, testPattern] of [
+  [
+    'python',
+    /\(unittest\.TestCase\):\n( {4}#.*\n)+\n {4}@unittest\.skip\(.*\)\n {4}def test_\w+\(self\):/,
+  ],
+  ['go', /^func Test\w+\(t \*testing\.T\) \{\n\tt\.Skip\(/m],
+] as const) {
+  test(`renderTemplate - ${language} minimal test template registers a skipped test`, async () => {
+    const rendered = await renderTemplate(
+      { problem: mockProblem, config: { ...mockTemplateConfig, language } },
+      'test',
+    );
 
-  ok(rendered.includes('(unittest.TestCase):\n    # Example 1:'));
-  ok(rendered.includes('    # Output: [1,2]\n    pass\n'));
-});
+    ok(testPattern.test(rendered), rendered);
+  });
+}
 
 const multiLineProblem: Problem = {
   ...mockProblem,
