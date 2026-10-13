@@ -3,7 +3,7 @@
  *
  * Only the language-agnostic helpers are unit-tested here; the cpp adapter
  * shells out to cmake and is exercised end-to-end by the manual smoke test
- * in CLAUDE.md, not by `deno test`.
+ * in CLAUDE.md, not by `bun test`.
  *
  * @module test/core/runner
  */
