@@ -2,8 +2,7 @@
 
 set -o errexit -o nounset -o pipefail
 
-deno task check
+bun run typecheck
 deno task fmt:check
 deno task lint
 bun test
-deno task build

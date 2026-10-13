@@ -6,7 +6,6 @@
  * @module config/paths
  */
 
-import { fileURLToPath } from 'node:url';
 import { getAppPaths, joinPath } from '../utils/fs.ts';
 
 /**
@@ -17,10 +16,12 @@ export const APP_NAME = 'algo-trainer';
 /**
  * Get the directory holding the bundled data (templates and teaching scripts).
  *
- * Resolved relative to this module, so it must stay one directory below `src/`.
+ * Resolved relative to this module, so it must stay one directory below `src/`. In a compiled
+ * binary every module reports `import.meta.dir` as the bundle root, where the build places the
+ * `templates` and `scripts` assets.
  */
 export function getDataRoot(): string {
-  return fileURLToPath(new URL('../data', import.meta.url));
+  return Bun.isStandaloneExecutable ? import.meta.dir : joinPath(import.meta.dir, '..', 'data');
 }
 
 /**

@@ -9,7 +9,6 @@
 
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { parse as parseYaml } from '@std/yaml';
 import { getConfigPaths, getDataRoot } from '../../config/paths.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';
@@ -46,7 +45,7 @@ export function parseTeachingScript(yamlContent: string): TeachingScript {
   let parsed: unknown;
 
   try {
-    parsed = parseYaml(yamlContent);
+    parsed = Bun.YAML.parse(yamlContent);
   } catch (error) {
     throw new ScriptError(
       'Failed to parse YAML content',

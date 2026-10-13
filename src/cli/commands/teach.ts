@@ -9,7 +9,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { parse as parseYaml } from '@std/yaml';
 import { configManager } from '../../config/manager.ts';
 import { TeachingScriptGenerator, validateTeachingScript } from '../../core/ai/mod.ts';
 import type { CommandResult } from '../../types/global.ts';
@@ -166,7 +165,7 @@ async function handleValidate(options: TeachOptions): Promise<CommandResult> {
   // Read and parse YAML file
   logger.info(`Validating teaching script: ${options.path}`);
   const content = await readFile(options.path, 'utf8');
-  const script = parseYaml(content);
+  const script = Bun.YAML.parse(content);
 
   // Validate
   const result = validateTeachingScript(script);
