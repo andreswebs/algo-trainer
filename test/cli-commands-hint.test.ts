@@ -4,11 +4,12 @@
  * @module test/cli-commands-hint
  */
 
-import { assertEquals } from '@std/assert';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import {
   extractHintOptions,
   hintCommand,
@@ -29,9 +30,9 @@ describe('extractHintOptions', () => {
 
     const options = extractHintOptions(args);
 
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.level, undefined);
-    assertEquals(options.all, false);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.level, undefined);
+    deepStrictEqual(options.all, false);
   });
 
   it('should extract level from flags', () => {
@@ -42,9 +43,9 @@ describe('extractHintOptions', () => {
 
     const options = extractHintOptions(args);
 
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.level, 2);
-    assertEquals(options.all, false);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.level, 2);
+    deepStrictEqual(options.all, false);
   });
 
   it('should extract all flag', () => {
@@ -55,9 +56,9 @@ describe('extractHintOptions', () => {
 
     const options = extractHintOptions(args);
 
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.level, undefined);
-    assertEquals(options.all, true);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.level, undefined);
+    deepStrictEqual(options.all, true);
   });
 
   it('should extract all flag using short form', () => {
@@ -68,8 +69,8 @@ describe('extractHintOptions', () => {
 
     const options = extractHintOptions(args);
 
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.all, true);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.all, true);
   });
 
   it('should handle missing problem slug', () => {
@@ -79,9 +80,9 @@ describe('extractHintOptions', () => {
 
     const options = extractHintOptions(args);
 
-    assertEquals(options.problemSlug, undefined);
-    assertEquals(options.level, undefined);
-    assertEquals(options.all, false);
+    deepStrictEqual(options.problemSlug, undefined);
+    deepStrictEqual(options.level, undefined);
+    deepStrictEqual(options.all, false);
   });
 });
 
@@ -94,15 +95,15 @@ describe('hintCommand', () => {
     // Clear AT_* env vars so the user's shell doesn't override the test workspace.
     originalAtEnv = {};
     for (const key of Object.values(ENV_VARS)) {
-      originalAtEnv[key] = Deno.env.get(key);
-      Deno.env.delete(key);
+      originalAtEnv[key] = process.env[key];
+      delete process.env[key];
     }
 
     // Load config first
     await configManager.load();
 
     // Create a temporary workspace
-    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-test-' });
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-hint-test-'));
 
     // Save original config
     const config = configManager.getConfig();
@@ -114,10 +115,10 @@ describe('hintCommand', () => {
     });
 
     // Create workspace structure
-    await ensureDir(join(tempDir, 'problems'));
-    await ensureDir(join(tempDir, 'completed'));
-    await ensureDir(join(tempDir, 'templates'));
-    await ensureDir(join(tempDir, 'config'));
+    await mkdir(join(tempDir, 'problems'), { recursive: true });
+    await mkdir(join(tempDir, 'completed'), { recursive: true });
+    await mkdir(join(tempDir, 'templates'), { recursive: true });
+    await mkdir(join(tempDir, 'config'), { recursive: true });
   });
 
   afterEach(async () => {
@@ -128,13 +129,13 @@ describe('hintCommand', () => {
 
     // Clean up temp directory
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
     for (const [key, value] of Object.entries(originalAtEnv)) {
-      if (value === undefined) Deno.env.delete(key);
-      else Deno.env.set(key, value);
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 
@@ -145,9 +146,9 @@ describe('hintCommand', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
-    assertEquals(typeof result.error, 'string');
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
+    deepStrictEqual(typeof result.error, 'string');
   });
 
   it('should return error for non-existent problem', async () => {
@@ -157,8 +158,8 @@ describe('hintCommand', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
   });
 
   it('should display hints for valid problem', async () => {
@@ -168,8 +169,8 @@ describe('hintCommand', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should handle specific hint level', async () => {
@@ -180,8 +181,8 @@ describe('hintCommand', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should handle all hints flag', async () => {
@@ -192,8 +193,8 @@ describe('hintCommand', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should handle problem by ID', async () => {
@@ -203,8 +204,8 @@ describe('hintCommand', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 });
 
@@ -216,15 +217,15 @@ describe('hintCommand with workspace tracking', () => {
   beforeEach(async () => {
     originalAtEnv = {};
     for (const key of Object.values(ENV_VARS)) {
-      originalAtEnv[key] = Deno.env.get(key);
-      Deno.env.delete(key);
+      originalAtEnv[key] = process.env[key];
+      delete process.env[key];
     }
 
     // Load config first
     await configManager.load();
 
     // Create a temporary workspace
-    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-workspace-test-' });
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-hint-workspace-test-'));
 
     // Save original config
     const config = configManager.getConfig();
@@ -236,10 +237,10 @@ describe('hintCommand with workspace tracking', () => {
     });
 
     // Create workspace structure
-    await ensureDir(join(tempDir, 'problems'));
-    await ensureDir(join(tempDir, 'completed'));
-    await ensureDir(join(tempDir, 'templates'));
-    await ensureDir(join(tempDir, 'config'));
+    await mkdir(join(tempDir, 'problems'), { recursive: true });
+    await mkdir(join(tempDir, 'completed'), { recursive: true });
+    await mkdir(join(tempDir, 'templates'), { recursive: true });
+    await mkdir(join(tempDir, 'config'), { recursive: true });
   });
 
   afterEach(async () => {
@@ -250,13 +251,13 @@ describe('hintCommand with workspace tracking', () => {
 
     // Clean up temp directory
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
     for (const [key, value] of Object.entries(originalAtEnv)) {
-      if (value === undefined) Deno.env.delete(key);
-      else Deno.env.set(key, value);
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 
@@ -266,7 +267,7 @@ describe('hintCommand with workspace tracking', () => {
 
     // Create problem directory and metadata file
     const problemDir = join(tempDir, 'problems', problemSlug);
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
 
     const metadataPath = join(problemDir, '.problem.json');
     const metadata = {
@@ -278,11 +279,11 @@ describe('hintCommand with workspace tracking', () => {
       lastModified: new Date().toISOString(),
       hintsUsed: [],
     };
-    await Deno.writeTextFile(metadataPath, JSON.stringify(metadata, null, 2));
+    await writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
     // Create solution file with the correct name for the configured language
     const solutionPath = join(problemDir, getSolutionFileName(config.language));
-    await Deno.writeTextFile(solutionPath, '// Solution placeholder');
+    await writeFile(solutionPath, '// Solution placeholder');
 
     // Run hint command
     const args: Args = {
@@ -291,13 +292,13 @@ describe('hintCommand with workspace tracking', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
     // Check that metadata was updated
-    const updatedMetadata = JSON.parse(await Deno.readTextFile(metadataPath));
-    assertEquals(Array.isArray(updatedMetadata.hintsUsed), true);
-    assertEquals(updatedMetadata.hintsUsed.length > 0, true);
+    const updatedMetadata = JSON.parse(await readFile(metadataPath, 'utf8'));
+    deepStrictEqual(Array.isArray(updatedMetadata.hintsUsed), true);
+    deepStrictEqual(updatedMetadata.hintsUsed.length > 0, true);
   });
 
   it('should work when problem not in workspace', async () => {
@@ -308,8 +309,8 @@ describe('hintCommand with workspace tracking', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should handle progressive hint display', async () => {
@@ -318,7 +319,7 @@ describe('hintCommand with workspace tracking', () => {
 
     // Create problem directory and metadata file with some hints already used
     const problemDir = join(tempDir, 'problems', problemSlug);
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
 
     const metadataPath = join(problemDir, '.problem.json');
     const metadata = {
@@ -330,11 +331,11 @@ describe('hintCommand with workspace tracking', () => {
       lastModified: new Date().toISOString(),
       hintsUsed: [0], // First hint already used
     };
-    await Deno.writeTextFile(metadataPath, JSON.stringify(metadata, null, 2));
+    await writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
     // Create solution file with the correct name for the configured language
     const solutionPath = join(problemDir, getSolutionFileName(config.language));
-    await Deno.writeTextFile(solutionPath, '// Solution placeholder');
+    await writeFile(solutionPath, '// Solution placeholder');
 
     // Run hint command - should show second hint
     const args: Args = {
@@ -343,13 +344,13 @@ describe('hintCommand with workspace tracking', () => {
 
     const result = await hintCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
     // Check that metadata was updated with second hint
-    const updatedMetadata = JSON.parse(await Deno.readTextFile(metadataPath));
-    assertEquals(updatedMetadata.hintsUsed.includes(0), true);
-    assertEquals(updatedMetadata.hintsUsed.includes(1), true);
+    const updatedMetadata = JSON.parse(await readFile(metadataPath, 'utf8'));
+    deepStrictEqual(updatedMetadata.hintsUsed.includes(0), true);
+    deepStrictEqual(updatedMetadata.hintsUsed.includes(1), true);
   });
 });
 
@@ -357,12 +358,12 @@ describe('loadProblemState', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-state-test-' });
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-hint-state-test-'));
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // ignore
     }
@@ -370,24 +371,24 @@ describe('loadProblemState', () => {
 
   it('returns exists=false and empty hintsUsed when problem not in workspace', async () => {
     const state = await loadProblemState(tempDir, 'two-sum', 'typescript');
-    assertEquals(state.exists, false);
-    assertEquals(state.hintsUsed, []);
+    deepStrictEqual(state.exists, false);
+    deepStrictEqual(state.hintsUsed, []);
   });
 
   it('returns exists=true when solution file is present', async () => {
     const problemDir = join(tempDir, 'problems', 'two-sum');
-    await ensureDir(problemDir);
-    await Deno.writeTextFile(join(problemDir, 'solution.ts'), '// stub');
+    await mkdir(problemDir, { recursive: true });
+    await writeFile(join(problemDir, 'solution.ts'), '// stub');
 
     const state = await loadProblemState(tempDir, 'two-sum', 'typescript');
-    assertEquals(state.exists, true);
+    deepStrictEqual(state.exists, true);
   });
 
   it('returns hintsUsed from metadata when problem exists', async () => {
     const problemDir = join(tempDir, 'problems', 'two-sum');
-    await ensureDir(problemDir);
-    await Deno.writeTextFile(join(problemDir, 'solution.ts'), '// stub');
-    await Deno.writeTextFile(
+    await mkdir(problemDir, { recursive: true });
+    await writeFile(join(problemDir, 'solution.ts'), '// stub');
+    await writeFile(
       join(problemDir, '.problem.json'),
       JSON.stringify({
         problemId: '1',
@@ -401,8 +402,8 @@ describe('loadProblemState', () => {
     );
 
     const state = await loadProblemState(tempDir, 'two-sum', 'typescript');
-    assertEquals(state.exists, true);
-    assertEquals(state.hintsUsed, [0, 1]);
+    deepStrictEqual(state.exists, true);
+    deepStrictEqual(state.hintsUsed, [0, 1]);
   });
 });
 
@@ -410,28 +411,28 @@ describe('validateHintLevel', () => {
   const hints = ['hint1', 'hint2', 'hint3'];
 
   it('returns null for undefined level (no validation needed)', () => {
-    assertEquals(validateHintLevel(undefined, hints), null);
+    deepStrictEqual(validateHintLevel(undefined, hints), null);
   });
 
   it('returns null for valid level within range', () => {
-    assertEquals(validateHintLevel(1, hints), null);
-    assertEquals(validateHintLevel(2, hints), null);
-    assertEquals(validateHintLevel(3, hints), null);
+    deepStrictEqual(validateHintLevel(1, hints), null);
+    deepStrictEqual(validateHintLevel(2, hints), null);
+    deepStrictEqual(validateHintLevel(3, hints), null);
   });
 
   it('returns error message for level 0', () => {
     const result = validateHintLevel(0, hints);
-    assertEquals(typeof result, 'string');
+    deepStrictEqual(typeof result, 'string');
   });
 
   it('returns error message for level exceeding hint count', () => {
     const result = validateHintLevel(4, hints);
-    assertEquals(typeof result, 'string');
+    deepStrictEqual(typeof result, 'string');
   });
 
   it('returns error message for negative level', () => {
     const result = validateHintLevel(-1, hints);
-    assertEquals(typeof result, 'string');
+    deepStrictEqual(typeof result, 'string');
   });
 });
 
@@ -439,12 +440,12 @@ describe('updateHintTracking', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-hint-tracking-test-' });
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-hint-tracking-test-'));
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // ignore
     }
@@ -457,9 +458,9 @@ describe('updateHintTracking', () => {
 
   it('does nothing when no new hints were added', async () => {
     const problemDir = join(tempDir, 'problems', 'two-sum');
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
     const metadataPath = join(problemDir, '.problem.json');
-    await Deno.writeTextFile(
+    await writeFile(
       metadataPath,
       JSON.stringify({
         problemId: '1',
@@ -475,15 +476,15 @@ describe('updateHintTracking', () => {
     await updateHintTracking(tempDir, 'two-sum', 'typescript', true, [0], [0]);
 
     // Metadata should be unchanged (no new hints)
-    const meta = JSON.parse(await Deno.readTextFile(metadataPath));
-    assertEquals(meta.hintsUsed, [0]);
+    const meta = JSON.parse(await readFile(metadataPath, 'utf8'));
+    deepStrictEqual(meta.hintsUsed, [0]);
   });
 
   it('updates metadata when new hints were added', async () => {
     const problemDir = join(tempDir, 'problems', 'two-sum');
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
     const metadataPath = join(problemDir, '.problem.json');
-    await Deno.writeTextFile(
+    await writeFile(
       metadataPath,
       JSON.stringify({
         problemId: '1',
@@ -498,7 +499,7 @@ describe('updateHintTracking', () => {
 
     await updateHintTracking(tempDir, 'two-sum', 'typescript', true, [0], []);
 
-    const meta = JSON.parse(await Deno.readTextFile(metadataPath));
-    assertEquals(meta.hintsUsed, [0]);
+    const meta = JSON.parse(await readFile(metadataPath, 'utf8'));
+    deepStrictEqual(meta.hintsUsed, [0]);
   });
 });

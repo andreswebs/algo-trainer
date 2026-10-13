@@ -4,8 +4,8 @@
  * Tests that each command properly displays help when --help or -h flag is provided.
  */
 
-import { assertEquals } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
+import { describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
 import { challengeCommand } from '../src/cli/commands/challenge.ts';
 import { completeCommand } from '../src/cli/commands/complete.ts';
 import { configCommand } from '../src/cli/commands/config.ts';
@@ -22,8 +22,8 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('challenge command should handle -h flag', async () => {
@@ -32,8 +32,8 @@ describe('Per-command help system', () => {
       h: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('complete command should handle --help flag', async () => {
@@ -42,8 +42,8 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('config command should handle --help flag', async () => {
@@ -52,8 +52,8 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('hint command should handle --help flag', async () => {
@@ -62,8 +62,8 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('init command should handle --help flag', async () => {
@@ -72,8 +72,8 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('list command should handle --help flag', async () => {
@@ -82,8 +82,8 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('progress command should handle --help flag', async () => {
@@ -92,7 +92,7 @@ describe('Per-command help system', () => {
       help: true,
     });
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 });

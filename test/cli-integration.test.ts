@@ -7,9 +7,11 @@
  * @module test/cli-integration
  */
 
-import { assertEquals } from '@std/assert';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { challengeCommand } from '../src/cli/commands/challenge.ts';
 import { completeCommand } from '../src/cli/commands/complete.ts';
 import { configCommand } from '../src/cli/commands/config.ts';
@@ -36,10 +38,10 @@ describe('CLI Integration Tests - CLI-051', () => {
     // Clear AT_* env vars so user shell exports don't override the test workspace.
     originalAtEnv = {};
     for (const key of Object.values(ENV_VARS)) {
-      originalAtEnv[key] = Deno.env.get(key);
-      Deno.env.delete(key);
+      originalAtEnv[key] = process.env[key];
+      delete process.env[key];
     }
-    tempDir = await Deno.makeTempDir();
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
     // Save original workspace + language so we don't permanently mutate user config.
     const config = await configManager.load();
     originalWorkspace = config.workspace;
@@ -56,13 +58,13 @@ describe('CLI Integration Tests - CLI-051', () => {
     });
     // Clean up temp directory
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
     for (const [key, value] of Object.entries(originalAtEnv)) {
-      if (value === undefined) Deno.env.delete(key);
-      else Deno.env.set(key, value);
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
     }
   });
 
@@ -70,38 +72,38 @@ describe('CLI Integration Tests - CLI-051', () => {
     it('should create correct directory structure', async () => {
       const result = await initCommand({ _: ['init', tempDir] });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
       // Verify workspace structure
       const structure = getWorkspaceStructure(tempDir);
 
       // Check all directories exist
-      const problemsDir = await Deno.stat(structure.problems);
-      assertEquals(problemsDir.isDirectory, true);
+      const problemsDir = await stat(structure.problems);
+      deepStrictEqual(problemsDir.isDirectory(), true);
 
-      const completedDir = await Deno.stat(structure.completed);
-      assertEquals(completedDir.isDirectory, true);
+      const completedDir = await stat(structure.completed);
+      deepStrictEqual(completedDir.isDirectory(), true);
 
-      const templatesDir = await Deno.stat(structure.templates);
-      assertEquals(templatesDir.isDirectory, true);
+      const templatesDir = await stat(structure.templates);
+      deepStrictEqual(templatesDir.isDirectory(), true);
 
-      const configDir = await Deno.stat(structure.config);
-      assertEquals(configDir.isDirectory, true);
+      const configDir = await stat(structure.config);
+      deepStrictEqual(configDir.isDirectory(), true);
     });
 
     it('should be idempotent (safe to run multiple times)', async () => {
       // Initialize once
       const result1 = await initCommand({ _: ['init', tempDir] });
-      assertEquals(result1.success, true);
+      deepStrictEqual(result1.success, true);
 
       // Initialize again
       const result2 = await initCommand({ _: ['init', tempDir] });
-      assertEquals(result2.success, true);
+      deepStrictEqual(result2.success, true);
 
       // Verify workspace is still properly initialized
       const initialized = await isWorkspaceInitialized(tempDir);
-      assertEquals(initialized, true);
+      deepStrictEqual(initialized, true);
     });
 
     it('should reinitialize with --force flag', async () => {
@@ -110,8 +112,8 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       // Reinitialize with force
       const result = await initCommand({ _: ['init', tempDir], force: true });
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
   });
 
@@ -126,13 +128,13 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['challenge', 'two-sum'],
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
       // Verify problem exists
       const config = configManager.getConfig();
       const exists = await problemExists(tempDir, 'two-sum', config.language);
-      assertEquals(exists, true);
+      deepStrictEqual(exists, true);
 
       // Verify files were created based on the actual language configuration
       const structure = getWorkspaceStructure(tempDir);
@@ -140,12 +142,12 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       // README should exist regardless of language
       const readmeFile = join(problemDir, 'README.md');
-      const readmeStat = await Deno.stat(readmeFile);
-      assertEquals(readmeStat.isFile, true);
+      const readmeStat = await stat(readmeFile);
+      deepStrictEqual(readmeStat.isFile(), true);
 
       const solutionFile = join(problemDir, `solution${getFileExtension(config.language)}`);
-      const solutionStat = await Deno.stat(solutionFile);
-      assertEquals(solutionStat.isFile, true);
+      const solutionStat = await stat(solutionFile);
+      deepStrictEqual(solutionStat.isFile(), true);
     });
 
     it('should generate files with different languages', async () => {
@@ -154,18 +156,18 @@ describe('CLI Integration Tests - CLI-051', () => {
         language: 'python',
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // Verify Python files were created
       const exists = await problemExists(tempDir, 'two-sum', 'python');
-      assertEquals(exists, true);
+      deepStrictEqual(exists, true);
 
       const structure = getWorkspaceStructure(tempDir);
       const problemDir = join(structure.problems, 'two-sum');
       const pythonFile = join(problemDir, 'solution.py');
 
-      const stat = await Deno.stat(pythonFile);
-      assertEquals(stat.isFile, true);
+      const stats = await stat(pythonFile);
+      deepStrictEqual(stats.isFile(), true);
     });
 
     it('should warn about existing files without --force', async () => {
@@ -176,7 +178,7 @@ describe('CLI Integration Tests - CLI-051', () => {
       // For testing purposes, we just verify the first generation worked
       const config = configManager.getConfig();
       const exists = await problemExists(tempDir, 'two-sum', config.language);
-      assertEquals(exists, true);
+      deepStrictEqual(exists, true);
     });
 
     it('should overwrite files with --force flag', async () => {
@@ -190,9 +192,9 @@ describe('CLI Integration Tests - CLI-051', () => {
       const solutionFile = join(problemDir, `solution${getFileExtension(config.language)}`);
 
       // Modify the file
-      await Deno.writeTextFile(solutionFile, '// Modified content');
-      const modifiedContent = await Deno.readTextFile(solutionFile);
-      assertEquals(modifiedContent, '// Modified content');
+      await writeFile(solutionFile, '// Modified content');
+      const modifiedContent = await readFile(solutionFile, 'utf8');
+      deepStrictEqual(modifiedContent, '// Modified content');
 
       // Generate again with force
       const result = await challengeCommand({
@@ -200,11 +202,11 @@ describe('CLI Integration Tests - CLI-051', () => {
         force: true,
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // Verify file was overwritten (should contain more than just the modified content)
-      const newContent = await Deno.readTextFile(solutionFile);
-      assertEquals(newContent.length > '// Modified content'.length, true);
+      const newContent = await readFile(solutionFile, 'utf8');
+      deepStrictEqual(newContent.length > '// Modified content'.length, true);
     });
   });
 
@@ -220,15 +222,15 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['complete', 'two-sum'],
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
       // Verify problem was moved to completed
       const structure = getWorkspaceStructure(tempDir);
       const completedDir = join(structure.completed, 'two-sum');
 
-      const stat = await Deno.stat(completedDir);
-      assertEquals(stat.isDirectory, true);
+      const stats = await stat(completedDir);
+      deepStrictEqual(stats.isDirectory(), true);
     });
 
     it('should preserve all files when archiving', async () => {
@@ -237,8 +239,8 @@ describe('CLI Integration Tests - CLI-051', () => {
       // Get list of files before archiving
       const problemDir = join(structure.problems, 'two-sum');
       const filesBefore: string[] = [];
-      for await (const entry of Deno.readDir(problemDir)) {
-        if (entry.isFile) {
+      for (const entry of await readdir(problemDir, { withFileTypes: true })) {
+        if (entry.isFile()) {
           filesBefore.push(entry.name);
         }
       }
@@ -249,14 +251,14 @@ describe('CLI Integration Tests - CLI-051', () => {
       // Verify all files are in completed directory
       const completedDir = join(structure.completed, 'two-sum');
       const filesAfter: string[] = [];
-      for await (const entry of Deno.readDir(completedDir)) {
-        if (entry.isFile) {
+      for (const entry of await readdir(completedDir, { withFileTypes: true })) {
+        if (entry.isFile()) {
           filesAfter.push(entry.name);
         }
       }
 
       // Should have at least the same number of files
-      assertEquals(filesAfter.length >= filesBefore.length, true);
+      deepStrictEqual(filesAfter.length >= filesBefore.length, true);
     });
 
     it('should fail when problem does not exist', async () => {
@@ -264,8 +266,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['complete', 'non-existent-problem'],
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
     });
   });
 
@@ -276,13 +278,13 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['config', 'set', 'language', 'python'],
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // Reload config from disk
       await configManager.load();
       const config = configManager.getConfig();
 
-      assertEquals(config.language, 'python');
+      deepStrictEqual(config.language, 'python');
     });
 
     it('should list all configuration values', async () => {
@@ -290,8 +292,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['config', 'list'],
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should get specific configuration value', async () => {
@@ -299,8 +301,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['config', 'get', 'language'],
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should reset configuration to defaults', async () => {
@@ -314,11 +316,11 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['config', 'reset', 'language'],
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // Verify it was reset
       const config = configManager.getConfig();
-      assertEquals(config.language, 'cpp'); // Default
+      deepStrictEqual(config.language, 'cpp'); // Default
     });
   });
 
@@ -326,8 +328,8 @@ describe('CLI Integration Tests - CLI-051', () => {
     it('should list all problems', async () => {
       const result = await listCommand({ _: ['list'] });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should filter by difficulty', async () => {
@@ -336,8 +338,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         difficulty: 'easy',
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should filter by category', async () => {
@@ -346,8 +348,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         category: 'array',
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should search problems by text', async () => {
@@ -356,8 +358,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         search: 'sum',
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should limit results', async () => {
@@ -366,8 +368,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         limit: 5,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
   });
 
@@ -383,8 +385,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['hint', 'two-sum'],
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should show specific hint level', async () => {
@@ -393,8 +395,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         level: 1,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should fail for non-existent problem', async () => {
@@ -402,8 +404,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['hint', 'non-existent-problem'],
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
     });
   });
 
@@ -416,14 +418,14 @@ describe('CLI Integration Tests - CLI-051', () => {
     it('should show progress statistics', async () => {
       const result = await progressCommand({ _: ['progress'] });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should handle empty workspace gracefully', async () => {
       const result = await progressCommand({ _: ['progress'] });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
       // Should succeed even with no completed problems
     });
 
@@ -434,8 +436,8 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       const result = await progressCommand({ _: ['progress'] });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
   });
 
@@ -443,30 +445,30 @@ describe('CLI Integration Tests - CLI-051', () => {
     it('should support init -> challenge -> complete workflow', async () => {
       // 1. Initialize workspace
       const initResult = await initCommand({ _: ['init', tempDir] });
-      assertEquals(initResult.success, true);
+      deepStrictEqual(initResult.success, true);
 
       // 2. Start a challenge
       const challengeResult = await challengeCommand({
         _: ['challenge', 'two-sum'],
       });
-      assertEquals(challengeResult.success, true);
+      deepStrictEqual(challengeResult.success, true);
 
       // Verify problem exists
       const config = configManager.getConfig();
       const exists = await problemExists(tempDir, 'two-sum', config.language);
-      assertEquals(exists, true);
+      deepStrictEqual(exists, true);
 
       // 3. Complete the challenge
       const completeResult = await completeCommand({
         _: ['complete', 'two-sum'],
       });
-      assertEquals(completeResult.success, true);
+      deepStrictEqual(completeResult.success, true);
 
       // Verify problem was moved to completed
       const structure = getWorkspaceStructure(tempDir);
       const completedDir = join(structure.completed, 'two-sum');
-      const stat = await Deno.stat(completedDir);
-      assertEquals(stat.isDirectory, true);
+      const stats = await stat(completedDir);
+      deepStrictEqual(stats.isDirectory(), true);
     });
 
     it('should support configuration workflow', async () => {
@@ -477,23 +479,23 @@ describe('CLI Integration Tests - CLI-051', () => {
       const setResult = await configCommand({
         _: ['config', 'set', 'language', 'python'],
       });
-      assertEquals(setResult.success, true);
+      deepStrictEqual(setResult.success, true);
 
       // 2. Verify the change
       const getResult = await configCommand({
         _: ['config', 'get', 'language'],
       });
-      assertEquals(getResult.success, true);
+      deepStrictEqual(getResult.success, true);
 
       // 3. Use the language in a challenge
       const challengeResult = await challengeCommand({
         _: ['challenge', 'two-sum'],
       });
-      assertEquals(challengeResult.success, true);
+      deepStrictEqual(challengeResult.success, true);
 
       // Verify Python files were created
       const exists = await problemExists(tempDir, 'two-sum', 'python');
-      assertEquals(exists, true);
+      deepStrictEqual(exists, true);
     });
 
     it('should support multiple problems workflow', async () => {
@@ -508,18 +510,18 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       // Check progress
       const progressResult = await progressCommand({ _: ['progress'] });
-      assertEquals(progressResult.success, true);
+      deepStrictEqual(progressResult.success, true);
 
       // List remaining problems
       const listResult = await listCommand({ _: ['list'] });
-      assertEquals(listResult.success, true);
+      deepStrictEqual(listResult.success, true);
     });
   });
 
   describe('Error Recovery', () => {
     it('should handle workspace not initialized error', async () => {
       // Create a new temp directory without initializing
-      const uninitializedDir = await Deno.makeTempDir();
+      const uninitializedDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
 
       try {
         await configManager.updateConfig({ workspace: uninitializedDir });
@@ -530,9 +532,9 @@ describe('CLI Integration Tests - CLI-051', () => {
         });
 
         // Should fail with appropriate error
-        assertEquals(result.success, false);
+        deepStrictEqual(result.success, false);
       } finally {
-        await Deno.remove(uninitializedDir, { recursive: true });
+        await rm(uninitializedDir, { recursive: true, force: true });
         await configManager.updateConfig({ workspace: tempDir });
       }
     });
@@ -545,8 +547,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['complete', 'non-existent-problem'],
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
     });
 
     it('should handle invalid difficulty values', async () => {
@@ -557,8 +559,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         difficulty: 'invalid-difficulty',
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
 
     it('should handle invalid language values', async () => {
@@ -569,8 +571,8 @@ describe('CLI Integration Tests - CLI-051', () => {
         language: 'invalid-language',
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
 
     it('should recover from partial workspace deletion', async () => {
@@ -578,15 +580,15 @@ describe('CLI Integration Tests - CLI-051', () => {
 
       // Delete problems directory
       const structure = getWorkspaceStructure(tempDir);
-      await Deno.remove(structure.problems, { recursive: true });
+      await rm(structure.problems, { recursive: true, force: true });
 
       // Reinitialize should recreate missing directories
       const result = await initCommand({ _: ['init', tempDir], force: true });
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // Verify problems directory was recreated
-      const stat = await Deno.stat(structure.problems);
-      assertEquals(stat.isDirectory, true);
+      const stats = await stat(structure.problems);
+      deepStrictEqual(stats.isDirectory(), true);
     });
   });
 
@@ -604,18 +606,18 @@ describe('CLI Integration Tests - CLI-051', () => {
       ]);
 
       // At least the first two should succeed (they are valid problems)
-      assertEquals(results[0].success, true);
-      assertEquals(results[1].success, true);
-      assertEquals(results[2].success, true);
+      deepStrictEqual(results[0].success, true);
+      deepStrictEqual(results[1].success, true);
+      deepStrictEqual(results[2].success, true);
 
       // Verify all problems exist
       const tsExists = await problemExists(tempDir, 'two-sum', 'typescript');
       const pyExists = await problemExists(tempDir, 'add-two-numbers', 'python');
       const javaExists = await problemExists(tempDir, 'valid-parentheses', 'java');
 
-      assertEquals(tsExists, true);
-      assertEquals(pyExists, true);
-      assertEquals(javaExists, true);
+      deepStrictEqual(tsExists, true);
+      deepStrictEqual(pyExists, true);
+      deepStrictEqual(javaExists, true);
     });
   });
 
@@ -630,7 +632,7 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['challenge', 'two-sum'], // Valid slug
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
     });
 
     it('should handle long file paths gracefully', async () => {
@@ -639,20 +641,20 @@ describe('CLI Integration Tests - CLI-051', () => {
         _: ['challenge', 'two-sum'],
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
     });
 
     it('should handle workspace with existing files', async () => {
       // Create some random files in the workspace
       const structure = getWorkspaceStructure(tempDir);
-      await Deno.writeTextFile(join(structure.problems, 'random.txt'), 'test');
+      await writeFile(join(structure.problems, 'random.txt'), 'test');
 
       // Should still be able to work normally
       const result = await challengeCommand({
         _: ['challenge', 'two-sum'],
       });
 
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
     });
   });
 });

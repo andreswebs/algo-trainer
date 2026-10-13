@@ -4,9 +4,12 @@
  * Tests the initialization command implementation (CLI-010)
  */
 
-import { assertEquals } from '@std/assert';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { extractInitOptions, initCommand } from '../src/cli/commands/init.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { isWorkspaceInitialized } from '../src/core/mod.ts';
@@ -17,8 +20,8 @@ describe('extractInitOptions', () => {
       _: ['init', '/path/to/workspace'],
     };
     const options = extractInitOptions(args);
-    assertEquals(options.path, '/path/to/workspace');
-    assertEquals(options.force, false);
+    deepStrictEqual(options.path, '/path/to/workspace');
+    deepStrictEqual(options.force, false);
   });
 
   it('should extract force flag (--force)', () => {
@@ -27,8 +30,8 @@ describe('extractInitOptions', () => {
       force: true,
     };
     const options = extractInitOptions(args);
-    assertEquals(options.path, undefined);
-    assertEquals(options.force, true);
+    deepStrictEqual(options.path, undefined);
+    deepStrictEqual(options.force, true);
   });
 
   it('should extract force flag (-f)', () => {
@@ -37,8 +40,8 @@ describe('extractInitOptions', () => {
       f: true,
     };
     const options = extractInitOptions(args);
-    assertEquals(options.path, undefined);
-    assertEquals(options.force, true);
+    deepStrictEqual(options.path, undefined);
+    deepStrictEqual(options.force, true);
   });
 
   it('should handle no arguments', () => {
@@ -46,8 +49,8 @@ describe('extractInitOptions', () => {
       _: ['init'],
     };
     const options = extractInitOptions(args);
-    assertEquals(options.path, undefined);
-    assertEquals(options.force, false);
+    deepStrictEqual(options.path, undefined);
+    deepStrictEqual(options.force, false);
   });
 
   it('should extract both path and force flag', () => {
@@ -56,8 +59,8 @@ describe('extractInitOptions', () => {
       force: true,
     };
     const options = extractInitOptions(args);
-    assertEquals(options.path, '/some/path');
-    assertEquals(options.force, true);
+    deepStrictEqual(options.path, '/some/path');
+    deepStrictEqual(options.force, true);
   });
 });
 
@@ -65,12 +68,12 @@ describe('initCommand', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir();
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -83,12 +86,12 @@ describe('initCommand', () => {
 
     const result = await initCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
     // Verify workspace was initialized
     const initialized = await isWorkspaceInitialized(tempDir);
-    assertEquals(initialized, true);
+    deepStrictEqual(initialized, true);
   });
 
   it('should succeed if workspace already initialized (without force)', async () => {
@@ -102,8 +105,8 @@ describe('initCommand', () => {
     // Try to initialize again without force
     const result = await initCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should reinitialize workspace with --force flag', async () => {
@@ -121,12 +124,12 @@ describe('initCommand', () => {
     };
     const result = await initCommand(args2);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
     // Verify workspace is still initialized
     const initialized = await isWorkspaceInitialized(tempDir);
-    assertEquals(initialized, true);
+    deepStrictEqual(initialized, true);
   });
 
   it('should create all required directories', async () => {
@@ -137,17 +140,17 @@ describe('initCommand', () => {
     await initCommand(args);
 
     // Check that all directories exist
-    const problemsDir = await Deno.stat(`${tempDir}/problems`);
-    assertEquals(problemsDir.isDirectory, true);
+    const problemsDir = await stat(`${tempDir}/problems`);
+    deepStrictEqual(problemsDir.isDirectory(), true);
 
-    const completedDir = await Deno.stat(`${tempDir}/completed`);
-    assertEquals(completedDir.isDirectory, true);
+    const completedDir = await stat(`${tempDir}/completed`);
+    deepStrictEqual(completedDir.isDirectory(), true);
 
-    const templatesDir = await Deno.stat(`${tempDir}/templates`);
-    assertEquals(templatesDir.isDirectory, true);
+    const templatesDir = await stat(`${tempDir}/templates`);
+    deepStrictEqual(templatesDir.isDirectory(), true);
 
-    const configDir = await Deno.stat(`${tempDir}/config`);
-    assertEquals(configDir.isDirectory, true);
+    const configDir = await stat(`${tempDir}/config`);
+    deepStrictEqual(configDir.isDirectory(), true);
   });
 
   it('should handle relative paths', async () => {
@@ -162,19 +165,19 @@ describe('initCommand', () => {
 
       const result = await initCommand(args);
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
       // Verify workspace was initialized at the resolved path
       const initialized = await isWorkspaceInitialized(subdir);
-      assertEquals(initialized, true);
+      deepStrictEqual(initialized, true);
 
       // Cleanup
-      await Deno.remove(subdir, { recursive: true });
+      await rm(subdir, { recursive: true, force: true });
     } catch (error) {
       // Try to cleanup on error
       try {
-        await Deno.remove(subdir, { recursive: true });
+        await rm(subdir, { recursive: true, force: true });
       } catch {
         // Ignore cleanup errors
       }
@@ -189,43 +192,38 @@ describe('initCommand', () => {
     };
 
     // Add some existing files to make the directory non-empty
-    await Deno.writeTextFile(`${tempDir}/existing-file.txt`, 'This is an existing file');
-    await Deno.mkdir(`${tempDir}/existing-folder`, { recursive: true });
-    await Deno.writeTextFile(
-      `${tempDir}/existing-folder/another-file.js`,
-      'console.log("existing");',
-    );
+    await writeFile(`${tempDir}/existing-file.txt`, 'This is an existing file');
+    await mkdir(`${tempDir}/existing-folder`, { recursive: true });
+    await writeFile(`${tempDir}/existing-folder/another-file.js`, 'console.log("existing");');
 
     const result = await initCommand(args);
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
     // Verify workspace was initialized
     const initialized = await isWorkspaceInitialized(tempDir);
-    assertEquals(initialized, true);
+    deepStrictEqual(initialized, true);
 
     // Verify existing files are still there
-    const existingFile = await Deno.readTextFile(`${tempDir}/existing-file.txt`);
-    assertEquals(existingFile, 'This is an existing file');
+    const existingFile = await readFile(`${tempDir}/existing-file.txt`, 'utf8');
+    deepStrictEqual(existingFile, 'This is an existing file');
 
-    const existingFolderFile = await Deno.readTextFile(
-      `${tempDir}/existing-folder/another-file.js`,
-    );
-    assertEquals(existingFolderFile, 'console.log("existing");');
+    const existingFolderFile = await readFile(`${tempDir}/existing-folder/another-file.js`, 'utf8');
+    deepStrictEqual(existingFolderFile, 'console.log("existing");');
 
     // Verify all workspace directories were created
-    const problemsDir = await Deno.stat(`${tempDir}/problems`);
-    assertEquals(problemsDir.isDirectory, true);
+    const problemsDir = await stat(`${tempDir}/problems`);
+    deepStrictEqual(problemsDir.isDirectory(), true);
 
-    const completedDir = await Deno.stat(`${tempDir}/completed`);
-    assertEquals(completedDir.isDirectory, true);
+    const completedDir = await stat(`${tempDir}/completed`);
+    deepStrictEqual(completedDir.isDirectory(), true);
 
-    const templatesDir = await Deno.stat(`${tempDir}/templates`);
-    assertEquals(templatesDir.isDirectory, true);
+    const templatesDir = await stat(`${tempDir}/templates`);
+    deepStrictEqual(templatesDir.isDirectory(), true);
 
-    const configDir = await Deno.stat(`${tempDir}/config`);
-    assertEquals(configDir.isDirectory, true);
+    const configDir = await stat(`${tempDir}/config`);
+    deepStrictEqual(configDir.isDirectory(), true);
   });
 
   it('should handle errors gracefully for permission denied paths', async () => {
@@ -243,7 +241,7 @@ describe('initCommand', () => {
     // 1. Fail with an error (if permissions are denied)
     // 2. Succeed if the path becomes initialized (unlikely but possible)
     // We check that it returns a valid result structure
-    assertEquals(typeof result.success, 'boolean');
-    assertEquals(typeof result.exitCode, 'number');
+    deepStrictEqual(typeof result.success, 'boolean');
+    deepStrictEqual(typeof result.exitCode, 'number');
   });
 });

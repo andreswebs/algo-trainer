@@ -2,11 +2,11 @@
  * Tests for teach command
  */
 
-import { assertEquals } from '@std/assert';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { extractTeachOptions, teachCommand } from '../src/cli/commands/teach.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { initializeConfig } from '../src/config/manager.ts';
@@ -15,27 +15,27 @@ describe('extractTeachOptions', () => {
   it('should extract generate subcommand with slug', () => {
     const args: Args = { _: ['teach', 'generate', 'two-sum'] };
     const options = extractTeachOptions(args);
-    assertEquals(options.subcommand, 'generate');
-    assertEquals(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.subcommand, 'generate');
+    deepStrictEqual(options.problemSlug, 'two-sum');
   });
 
   it('should extract validate subcommand with path', () => {
     const args: Args = { _: ['teach', 'validate', './trainer.yaml'] };
     const options = extractTeachOptions(args);
-    assertEquals(options.subcommand, 'validate');
-    assertEquals(options.path, './trainer.yaml');
+    deepStrictEqual(options.subcommand, 'validate');
+    deepStrictEqual(options.path, './trainer.yaml');
   });
 
   it('should extract info subcommand', () => {
     const args: Args = { _: ['teach', 'info'] };
     const options = extractTeachOptions(args);
-    assertEquals(options.subcommand, 'info');
+    deepStrictEqual(options.subcommand, 'info');
   });
 
   it('should extract output option', () => {
     const args: Args = { _: ['teach', 'generate', 'two-sum'], output: './custom.yaml' };
     const options = extractTeachOptions(args);
-    assertEquals(options.output, './custom.yaml');
+    deepStrictEqual(options.output, './custom.yaml');
   });
 });
 
@@ -46,13 +46,13 @@ describe('teachCommand', () => {
     // Ensure config is loaded before each test
     await initializeConfig();
     // Create temp directory
-    await ensureDir(tempDir);
+    await mkdir(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up temp directory
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore errors if directory doesn't exist
     }
@@ -61,50 +61,50 @@ describe('teachCommand', () => {
   it('should show help with --help flag', async () => {
     const args: Args = { _: ['teach'], help: true };
     const result = await teachCommand(args);
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should show help with -h flag', async () => {
     const args: Args = { _: ['teach'], h: true };
     const result = await teachCommand(args);
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should return error when no subcommand provided', async () => {
     const args: Args = { _: ['teach'] };
     const result = await teachCommand(args);
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
   });
 
   it('should return error for unknown subcommand', async () => {
     const args: Args = { _: ['teach', 'unknown'] };
     const result = await teachCommand(args);
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
   });
 
   it('should handle info subcommand', async () => {
     const args: Args = { _: ['teach', 'info'] };
     const result = await teachCommand(args);
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should return error for generate without slug', async () => {
     const args: Args = { _: ['teach', 'generate'] };
     const result = await teachCommand(args);
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
   });
 
   it('should return error for validate without path', async () => {
     const args: Args = { _: ['teach', 'validate'] };
     const result = await teachCommand(args);
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
   });
 
   it('should validate a valid teaching script', async () => {
@@ -122,12 +122,12 @@ steps:
   - type: pre_prompt
     content: "Think about hash tables."
 `;
-    await Deno.writeTextFile(scriptPath, validScript);
+    await writeFile(scriptPath, validScript);
 
     const args: Args = { _: ['teach', 'validate', scriptPath] };
     const result = await teachCommand(args);
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should reject an invalid teaching script', async () => {
@@ -138,11 +138,11 @@ id: "two-sum"
 # Missing title, difficulty, and other required fields
 steps: []
 `;
-    await Deno.writeTextFile(scriptPath, invalidScript);
+    await writeFile(scriptPath, invalidScript);
 
     const args: Args = { _: ['teach', 'validate', scriptPath] };
     const result = await teachCommand(args);
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.GENERAL_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.GENERAL_ERROR);
   });
 });

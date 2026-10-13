@@ -2,11 +2,12 @@
  * Tests for complete command
  */
 
-import { assert, assertEquals, assertFalse, assertRejects } from '@std/assert';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual, ok, rejects } from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { exists } from '@std/fs';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import { challengeCommand } from '../src/cli/commands/challenge.ts';
 import type { CompleteOptions } from '../src/cli/commands/complete.ts';
 import {
@@ -20,35 +21,36 @@ import { ExitCode } from '../src/cli/exit-codes.ts';
 import { configManager } from '../src/config/manager.ts';
 import { getWorkspaceStructure, initWorkspace } from '../src/core/mod.ts';
 import { ProblemError } from '../src/utils/errors.ts';
+import { pathExists } from '../src/utils/fs.ts';
 
 describe('extractCompleteOptions', () => {
   it('should extract slug from first positional arg', () => {
     const args: Args = { _: ['complete', 'two-sum'] };
     const options = extractCompleteOptions(args);
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.notes, undefined);
-    assertEquals(options.noArchive, false);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.notes, undefined);
+    deepStrictEqual(options.noArchive, false);
   });
 
   it('should extract notes with --notes flag', () => {
     const args: Args = { _: ['complete', 'two-sum'], notes: 'Great problem!' };
     const options = extractCompleteOptions(args);
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.notes, 'Great problem!');
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.notes, 'Great problem!');
   });
 
   it('should extract notes with -n flag', () => {
     const args: Args = { _: ['complete', 'two-sum'], n: 'Nice solution' };
     const options = extractCompleteOptions(args);
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.notes, 'Nice solution');
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.notes, 'Nice solution');
   });
 
   it('should extract no-archive flag', () => {
     const args: Args = { _: ['complete', 'two-sum'], 'no-archive': true };
     const options = extractCompleteOptions(args);
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.noArchive, true);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.noArchive, true);
   });
 
   it('should extract multiple options together', () => {
@@ -58,29 +60,29 @@ describe('extractCompleteOptions', () => {
       'no-archive': true,
     };
     const options = extractCompleteOptions(args);
-    assertEquals(options.problemSlug, 'two-sum');
-    assertEquals(options.notes, 'Completed successfully');
-    assertEquals(options.noArchive, true);
+    deepStrictEqual(options.problemSlug, 'two-sum');
+    deepStrictEqual(options.notes, 'Completed successfully');
+    deepStrictEqual(options.noArchive, true);
   });
 
   it('should extract language with --language and -l flags', () => {
-    assertEquals(
+    deepStrictEqual(
       extractCompleteOptions({ _: ['complete', 'two-sum'], language: 'typescript' }).language,
       'typescript',
     );
-    assertEquals(
+    deepStrictEqual(
       extractCompleteOptions({ _: ['complete', 'two-sum'], l: 'python' }).language,
       'python',
     );
-    assertEquals(extractCompleteOptions({ _: ['complete', 'two-sum'] }).language, undefined);
+    deepStrictEqual(extractCompleteOptions({ _: ['complete', 'two-sum'] }).language, undefined);
   });
 
   it('should handle no arguments', () => {
     const args: Args = { _: ['complete'] };
     const options = extractCompleteOptions(args);
-    assertEquals(options.problemSlug, undefined);
-    assertEquals(options.notes, undefined);
-    assertEquals(options.noArchive, false);
+    deepStrictEqual(options.problemSlug, undefined);
+    deepStrictEqual(options.notes, undefined);
+    deepStrictEqual(options.noArchive, false);
   });
 });
 
@@ -88,7 +90,7 @@ describe('completeCommand', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir();
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
     // Initialize config for testing
     await configManager.load();
     await configManager.updateConfig({ workspace: tempDir });
@@ -97,7 +99,7 @@ describe('completeCommand', () => {
   });
 
   afterEach(async () => {
-    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
   });
 
   it('should auto-select single problem when no slug provided', async () => {
@@ -109,8 +111,8 @@ describe('completeCommand', () => {
     const result = await completeCommand({
       _: ['complete'],
     });
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should fail when no problems in workspace', async () => {
@@ -128,8 +130,8 @@ describe('completeCommand', () => {
     const result = await completeCommand({
       _: ['complete'],
     });
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
   });
 
   it('should fail when problem does not exist', async () => {
@@ -141,8 +143,8 @@ describe('completeCommand', () => {
     const result = await completeCommand({
       _: ['complete', 'non-existent-problem'],
     });
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
   });
 
   it('should complete a problem successfully', async () => {
@@ -150,14 +152,14 @@ describe('completeCommand', () => {
     const challengeResult = await challengeCommand({
       _: ['challenge', 'two-sum'],
     });
-    assertEquals(challengeResult.success, true);
+    deepStrictEqual(challengeResult.success, true);
 
     // Then, complete it
     const result = await completeCommand({
       _: ['complete', 'two-sum'],
     });
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should complete a problem with notes', async () => {
@@ -171,8 +173,8 @@ describe('completeCommand', () => {
       _: ['complete', 'two-sum'],
       notes: 'Great learning experience',
     });
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should complete a problem without archiving when --no-archive is set', async () => {
@@ -186,8 +188,8 @@ describe('completeCommand', () => {
       _: ['complete', 'two-sum'],
       'no-archive': true,
     });
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should complete a problem scaffolded in a language other than the configured one', async () => {
@@ -196,14 +198,14 @@ describe('completeCommand', () => {
       _: ['challenge', 'two-sum'],
       language: 'typescript',
     });
-    assertEquals(challengeResult.success, true);
+    deepStrictEqual(challengeResult.success, true);
 
     const result = await completeCommand({
       _: ['complete', 'two-sum'],
       language: 'typescript',
     });
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 
   it('should reject an invalid --language value', async () => {
@@ -215,8 +217,8 @@ describe('completeCommand', () => {
       _: ['complete', 'two-sum'],
       language: 'cobol',
     });
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
   });
 
   it('should fail when problem is not in current workspace', async () => {
@@ -228,8 +230,8 @@ describe('completeCommand', () => {
     const result = await completeCommand({
       _: ['complete', 'two-sum'],
     });
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.PROBLEM_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.PROBLEM_ERROR);
   });
 
   it('should complete a problem by ID', async () => {
@@ -242,8 +244,8 @@ describe('completeCommand', () => {
     const result = await completeCommand({
       _: ['complete', '1'],
     });
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
   });
 });
 
@@ -251,14 +253,14 @@ describe('resolveTargetProblem', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir();
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
     await configManager.load();
     await configManager.updateConfig({ workspace: tempDir });
     await initWorkspace(tempDir);
   });
 
   afterEach(async () => {
-    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
   });
 
   it('should return provided slug as-is', async () => {
@@ -270,7 +272,7 @@ describe('resolveTargetProblem', () => {
       language: undefined,
     };
     const slug = await resolveTargetProblem(options, structure);
-    assertEquals(slug, 'two-sum');
+    deepStrictEqual(slug, 'two-sum');
   });
 
   it('should resolve numeric ID to slug', async () => {
@@ -282,7 +284,7 @@ describe('resolveTargetProblem', () => {
       language: undefined,
     };
     const slug = await resolveTargetProblem(options, structure);
-    assertEquals(slug, 'two-sum');
+    deepStrictEqual(slug, 'two-sum');
   });
 
   it('should auto-select single problem when no slug provided', async () => {
@@ -295,7 +297,7 @@ describe('resolveTargetProblem', () => {
       language: undefined,
     };
     const slug = await resolveTargetProblem(options, structure);
-    assertEquals(slug, 'two-sum');
+    deepStrictEqual(slug, 'two-sum');
   });
 
   it('should throw ProblemError when no problems in workspace', async () => {
@@ -306,7 +308,7 @@ describe('resolveTargetProblem', () => {
       noArchive: false,
       language: undefined,
     };
-    await assertRejects(() => resolveTargetProblem(options, structure), ProblemError);
+    await rejects(() => resolveTargetProblem(options, structure), ProblemError);
   });
 });
 
@@ -314,14 +316,14 @@ describe('validateCompletion', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir();
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
     await configManager.load();
     await configManager.updateConfig({ workspace: tempDir, language: 'typescript' });
     await initWorkspace(tempDir);
   });
 
   afterEach(async () => {
-    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
   });
 
   it('should not throw when problem exists in workspace', async () => {
@@ -330,10 +332,7 @@ describe('validateCompletion', () => {
   });
 
   it('should throw ProblemError when problem not in workspace', async () => {
-    await assertRejects(
-      () => validateCompletion('non-existent', tempDir, 'typescript'),
-      ProblemError,
-    );
+    await rejects(() => validateCompletion('non-existent', tempDir, 'typescript'), ProblemError);
   });
 });
 
@@ -341,25 +340,25 @@ describe('markCompleted', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir();
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
     await configManager.load();
     await configManager.updateConfig({ workspace: tempDir });
     await initWorkspace(tempDir);
   });
 
   afterEach(async () => {
-    await Deno.remove(tempDir, { recursive: true }).catch(() => {});
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
   });
 
   it('should archive problem when noArchive is false', async () => {
     await challengeCommand({ _: ['challenge', 'two-sum'] });
     await markCompleted('two-sum', tempDir, 'typescript', false);
-    assertFalse(await exists(join(tempDir, 'problems', 'two-sum')));
+    ok(!(await pathExists(join(tempDir, 'problems', 'two-sum'))));
   });
 
   it('should keep files in workspace when noArchive is true', async () => {
     await challengeCommand({ _: ['challenge', 'two-sum'] });
     await markCompleted('two-sum', tempDir, 'typescript', true);
-    assert(await exists(join(tempDir, 'problems', 'two-sum')));
+    ok(await pathExists(join(tempDir, 'problems', 'two-sum')));
   });
 });

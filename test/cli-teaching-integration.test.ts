@@ -4,10 +4,10 @@
  * Tests the full workflow of teaching system integration with CLI commands
  */
 
-import { assertEquals, assertExists } from '@std/assert';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { initializeConfig } from '../src/config/manager.ts';
 import { TeachingEngine, TeachingSession } from '../src/core/ai/mod.ts';
 
@@ -16,12 +16,12 @@ describe('CLI Teaching System Integration', () => {
 
   beforeEach(async () => {
     await initializeConfig();
-    await ensureDir(tempDir);
+    await mkdir(tempDir, { recursive: true });
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore errors
     }
@@ -30,7 +30,7 @@ describe('CLI Teaching System Integration', () => {
   it('should load teaching script when available', async () => {
     // Create a test problem directory with a trainer.yaml
     const problemDir = join(tempDir, 'test-problem');
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
 
     const trainerYaml = `
 id: "test-problem"
@@ -50,29 +50,29 @@ steps:
     content: "Congratulations! You solved it!"
 `;
 
-    await Deno.writeTextFile(join(problemDir, 'trainer.yaml'), trainerYaml);
+    await writeFile(join(problemDir, 'trainer.yaml'), trainerYaml);
 
     // Simulate challenge command loading teaching script
     const session = new TeachingSession('test-problem');
     const engine = new TeachingEngine(session);
     const loaded = await engine.loadScript(problemDir);
 
-    assertEquals(loaded, true, 'Teaching script should be loaded');
+    deepStrictEqual(loaded, true, 'Teaching script should be loaded');
 
     // Test introduction
     const intro = engine.getIntroduction();
-    assertExists(intro, 'Introduction should exist');
-    assertEquals(intro?.includes('Welcome to the test problem!'), true);
+    ok(intro != null, 'Introduction should exist');
+    deepStrictEqual(intro?.includes('Welcome to the test problem!'), true);
 
     // Test pre-prompt
     const prePrompt = engine.getPrePrompt();
-    assertExists(prePrompt, 'Pre-prompt should exist');
-    assertEquals(prePrompt?.includes('Think about arrays'), true);
+    ok(prePrompt != null, 'Pre-prompt should exist');
+    deepStrictEqual(prePrompt?.includes('Think about arrays'), true);
 
     // Test success message
     const successMsg = engine.getSuccessMessage();
-    assertExists(successMsg, 'Success message should exist');
-    assertEquals(successMsg?.includes('Congratulations'), true);
+    ok(successMsg != null, 'Success message should exist');
+    deepStrictEqual(successMsg?.includes('Congratulations'), true);
   });
 
   it('should respect aiEnabled config setting', async () => {
@@ -80,7 +80,7 @@ steps:
     const config = await initializeConfig();
 
     // Default should be true
-    assertEquals(config.aiEnabled, true, 'aiEnabled should default to true');
+    deepStrictEqual(config.aiEnabled, true, 'aiEnabled should default to true');
 
     // Teaching features should check this setting
     // The actual command implementations check config.aiEnabled before loading scripts
@@ -88,23 +88,23 @@ steps:
 
   it('should fall back gracefully when no teaching script exists', async () => {
     const problemDir = join(tempDir, 'no-script-problem');
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
 
     const session = new TeachingSession('no-script-problem');
     const engine = new TeachingEngine(session);
     const loaded = await engine.loadScript(problemDir);
 
-    assertEquals(loaded, false, 'Should return false when no script exists');
+    deepStrictEqual(loaded, false, 'Should return false when no script exists');
 
     // Methods should return null when no script is loaded
-    assertEquals(engine.getIntroduction(), null);
-    assertEquals(engine.getPrePrompt(), null);
-    assertEquals(engine.getSuccessMessage(), null);
+    deepStrictEqual(engine.getIntroduction(), null);
+    deepStrictEqual(engine.getPrePrompt(), null);
+    deepStrictEqual(engine.getSuccessMessage(), null);
   });
 
   it('should provide contextual hints based on code', async () => {
     const problemDir = join(tempDir, 'hint-problem');
-    await ensureDir(problemDir);
+    await mkdir(problemDir, { recursive: true });
 
     const trainerYaml = `
 id: "hint-problem"
@@ -121,7 +121,7 @@ steps:
     content: "Have you tried a different approach?"
 `;
 
-    await Deno.writeTextFile(join(problemDir, 'trainer.yaml'), trainerYaml);
+    await writeFile(join(problemDir, 'trainer.yaml'), trainerYaml);
 
     const session = new TeachingSession('hint-problem');
     const engine = new TeachingEngine(session);
@@ -131,8 +131,8 @@ steps:
     const code =
       'function solve() { for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) {} } }';
     const hint = engine.getHint(code);
-    assertExists(hint, 'Should provide hint for nested loops');
-    assertEquals(hint?.includes('hash table'), true);
+    ok(hint != null, 'Should provide hint for nested loops');
+    deepStrictEqual(hint?.includes('hash table'), true);
 
     // Test hint with multiple attempts
     session.recordAttempt('attempt 1');
@@ -140,27 +140,27 @@ steps:
     session.recordAttempt('attempt 3');
 
     const attemptsHint = engine.getHint('some code');
-    assertExists(attemptsHint, 'Should provide hint after multiple attempts');
-    assertEquals(attemptsHint?.includes('different approach'), true);
+    ok(attemptsHint != null, 'Should provide hint after multiple attempts');
+    deepStrictEqual(attemptsHint?.includes('different approach'), true);
   });
 
   it('should track teaching session state', () => {
     const session = new TeachingSession('state-test');
     const state = session.getState();
 
-    assertEquals(state.problemId, 'state-test');
-    assertEquals(state.attempts, 0);
-    assertEquals(state.hintsViewed, 0);
+    deepStrictEqual(state.problemId, 'state-test');
+    deepStrictEqual(state.attempts, 0);
+    deepStrictEqual(state.hintsViewed, 0);
 
     // Record attempts
     session.recordAttempt('code 1');
     session.recordAttempt('code 2');
-    assertEquals(session.getState().attempts, 2);
+    deepStrictEqual(session.getState().attempts, 2);
 
     // Track hints viewed
     session.incrementHintsViewed();
     session.incrementHintsViewed();
-    assertEquals(session.getState().hintsViewed, 2);
+    deepStrictEqual(session.getState().hintsViewed, 2);
 
     // Record execution
     session.recordExecution({
@@ -169,6 +169,6 @@ steps:
       passed: true,
       exitCode: 0,
     });
-    assertEquals(session.getState().passed, true);
+    deepStrictEqual(session.getState().passed, true);
   });
 });

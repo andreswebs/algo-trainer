@@ -8,10 +8,12 @@
  * - Error handling
  */
 
-import { assertEquals, assertStringIncludes } from '@std/assert';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
 import type { ProblemStatusMetadata } from '../src/cli/commands/progress.ts';
 import {
   buildCategoryStats,
@@ -61,46 +63,46 @@ describe('extractProgressOptions', () => {
   it('should extract default options', () => {
     const args: Args = { _: [] };
     const options = extractProgressOptions(args);
-    assertEquals(options.detailed, false);
-    assertEquals(options.byCategory, false);
-    assertEquals(options.json, false);
+    deepStrictEqual(options.detailed, false);
+    deepStrictEqual(options.byCategory, false);
+    deepStrictEqual(options.json, false);
   });
 
   it('should extract detailed flag', () => {
     const args: Args = { _: [], detailed: true };
     const options = extractProgressOptions(args);
-    assertEquals(options.detailed, true);
+    deepStrictEqual(options.detailed, true);
   });
 
   it('should extract detailed flag (short form)', () => {
     const args: Args = { _: [], d: true };
     const options = extractProgressOptions(args);
-    assertEquals(options.detailed, true);
+    deepStrictEqual(options.detailed, true);
   });
 
   it('should extract byCategory flag', () => {
     const args: Args = { _: [], category: true };
     const options = extractProgressOptions(args);
-    assertEquals(options.byCategory, true);
+    deepStrictEqual(options.byCategory, true);
   });
 
   it('should extract byCategory flag (short form)', () => {
     const args: Args = { _: [], c: true };
     const options = extractProgressOptions(args);
-    assertEquals(options.byCategory, true);
+    deepStrictEqual(options.byCategory, true);
   });
 
   it('should extract json flag', () => {
     const args: Args = { _: [], json: true };
     const options = extractProgressOptions(args);
-    assertEquals(options.json, true);
+    deepStrictEqual(options.json, true);
   });
 
   it('should extract multiple flags', () => {
     const args: Args = { _: [], detailed: true, json: true };
     const options = extractProgressOptions(args);
-    assertEquals(options.detailed, true);
-    assertEquals(options.json, true);
+    deepStrictEqual(options.detailed, true);
+    deepStrictEqual(options.json, true);
   });
 });
 
@@ -110,7 +112,7 @@ describe('progressCommand', () => {
 
   beforeEach(async () => {
     // Create temp directory
-    tempDir = await Deno.makeTempDir({ prefix: 'progress_test_' });
+    tempDir = await mkdtemp(join(tmpdir(), 'progress_test_'));
 
     // Initialize console capture
     capture = new ConsoleCapture();
@@ -126,7 +128,7 @@ describe('progressCommand', () => {
 
     // Clean up temp directory
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -137,9 +139,9 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.WORKSPACE_ERROR);
-    assertStringIncludes(capture.getError(), 'not initialized');
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.WORKSPACE_ERROR);
+    ok(capture.getError().includes('not initialized'));
   });
 
   it('should show empty progress for initialized empty workspace', async () => {
@@ -150,13 +152,13 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, true);
-    assertEquals(result.exitCode, ExitCode.SUCCESS);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'Progress Summary');
-    assertStringIncludes(output, 'Problems Completed: 0');
-    assertStringIncludes(output, 'Problems In Progress: 0');
+    ok(output.includes('Progress Summary'));
+    ok(output.includes('Problems Completed: 0'));
+    ok(output.includes('Problems In Progress: 0'));
   });
 
   it('should display by difficulty breakdown', async () => {
@@ -167,13 +169,13 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'By Difficulty');
-    assertStringIncludes(output, 'easy');
-    assertStringIncludes(output, 'medium');
-    assertStringIncludes(output, 'hard');
+    ok(output.includes('By Difficulty'));
+    ok(output.includes('easy'));
+    ok(output.includes('medium'));
+    ok(output.includes('hard'));
   });
 
   it('should show categories with --category flag', async () => {
@@ -184,10 +186,10 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [], category: true });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'By Category');
+    ok(output.includes('By Category'));
   });
 
   it('should show detailed view with --detailed flag', async () => {
@@ -198,11 +200,11 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [], detailed: true });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'By Category');
-    assertStringIncludes(output, 'By Difficulty');
+    ok(output.includes('By Category'));
+    ok(output.includes('By Difficulty'));
   });
 
   it('should output JSON with --json flag', async () => {
@@ -213,16 +215,16 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [], json: true });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getLog();
     // Should be valid JSON
     const parsed = JSON.parse(output);
-    assertEquals(typeof parsed.totalProblems, 'number');
-    assertEquals(typeof parsed.currentProblems, 'number');
-    assertEquals(typeof parsed.completedProblems, 'number');
-    assertEquals(Array.isArray(parsed.byDifficulty), true);
-    assertEquals(Array.isArray(parsed.byCategory), true);
+    deepStrictEqual(typeof parsed.totalProblems, 'number');
+    deepStrictEqual(typeof parsed.currentProblems, 'number');
+    deepStrictEqual(typeof parsed.completedProblems, 'number');
+    deepStrictEqual(Array.isArray(parsed.byDifficulty), true);
+    deepStrictEqual(Array.isArray(parsed.byCategory), true);
   });
 
   it('should count current problems when they exist', async () => {
@@ -231,7 +233,7 @@ describe('progressCommand', () => {
 
     // Create a fake problem in current directory
     const problemDir = join(tempDir, 'problems', 'test-problem');
-    await Deno.mkdir(problemDir, { recursive: true });
+    await mkdir(problemDir, { recursive: true });
 
     // Create .problem.json metadata
     const metadata = {
@@ -240,16 +242,16 @@ describe('progressCommand', () => {
       difficulty: 'easy',
       tags: ['array', 'test'],
     };
-    await Deno.writeTextFile(join(problemDir, '.problem.json'), JSON.stringify(metadata, null, 2));
+    await writeFile(join(problemDir, '.problem.json'), JSON.stringify(metadata, null, 2));
 
     capture.start();
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'Problems In Progress: 1');
+    ok(output.includes('Problems In Progress: 1'));
   });
 
   it('should count completed problems when they exist', async () => {
@@ -258,7 +260,7 @@ describe('progressCommand', () => {
 
     // Create a fake problem in completed directory
     const problemDir = join(tempDir, 'completed', 'test-problem');
-    await Deno.mkdir(problemDir, { recursive: true });
+    await mkdir(problemDir, { recursive: true });
 
     // Create .problem.json metadata
     const metadata = {
@@ -267,16 +269,16 @@ describe('progressCommand', () => {
       difficulty: 'medium',
       tags: ['string', 'test'],
     };
-    await Deno.writeTextFile(join(problemDir, '.problem.json'), JSON.stringify(metadata, null, 2));
+    await writeFile(join(problemDir, '.problem.json'), JSON.stringify(metadata, null, 2));
 
     capture.start();
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'Problems Completed: 1');
+    ok(output.includes('Problems Completed: 1'));
   });
 
   it('should count both current and completed problems', async () => {
@@ -285,8 +287,8 @@ describe('progressCommand', () => {
 
     // Create current problem
     const currentDir = join(tempDir, 'problems', 'current-problem');
-    await Deno.mkdir(currentDir, { recursive: true });
-    await Deno.writeTextFile(
+    await mkdir(currentDir, { recursive: true });
+    await writeFile(
       join(currentDir, '.problem.json'),
       JSON.stringify(
         {
@@ -302,8 +304,8 @@ describe('progressCommand', () => {
 
     // Create completed problem
     const completedDir = join(tempDir, 'completed', 'completed-problem');
-    await Deno.mkdir(completedDir, { recursive: true });
-    await Deno.writeTextFile(
+    await mkdir(completedDir, { recursive: true });
+    await writeFile(
       join(completedDir, '.problem.json'),
       JSON.stringify(
         {
@@ -321,11 +323,11 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'Problems In Progress: 1');
-    assertStringIncludes(output, 'Problems Completed: 1');
+    ok(output.includes('Problems In Progress: 1'));
+    ok(output.includes('Problems Completed: 1'));
   });
 
   it('should calculate completion percentage correctly', async () => {
@@ -336,11 +338,11 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const output = capture.getError();
-    assertStringIncludes(output, 'Overall Completion:');
-    assertStringIncludes(output, '%');
+    ok(output.includes('Overall Completion:'));
+    ok(output.includes('%'));
   });
 
   it('should handle errors gracefully', async () => {
@@ -351,23 +353,23 @@ describe('progressCommand', () => {
     const result = await progressCommand({ _: [] });
     capture.stop();
 
-    assertEquals(result.success, false);
-    assertEquals(result.exitCode, ExitCode.WORKSPACE_ERROR);
+    deepStrictEqual(result.success, false);
+    deepStrictEqual(result.exitCode, ExitCode.WORKSPACE_ERROR);
   });
 });
 
 describe('countByDifficulty', () => {
   it('returns empty map for empty input', () => {
     const result = countByDifficulty([]);
-    assertEquals(result.size, 0);
+    deepStrictEqual(result.size, 0);
   });
 
   it('counts a single easy problem', () => {
     const meta: ProblemStatusMetadata[] = [{ difficulty: 'easy' }];
     const result = countByDifficulty(meta);
-    assertEquals(result.get('easy'), 1);
-    assertEquals(result.get('medium'), undefined);
-    assertEquals(result.get('hard'), undefined);
+    deepStrictEqual(result.get('easy'), 1);
+    deepStrictEqual(result.get('medium'), undefined);
+    deepStrictEqual(result.get('hard'), undefined);
   });
 
   it('counts multiple difficulties', () => {
@@ -378,36 +380,36 @@ describe('countByDifficulty', () => {
       { difficulty: 'hard' },
     ];
     const result = countByDifficulty(meta);
-    assertEquals(result.get('easy'), 2);
-    assertEquals(result.get('medium'), 1);
-    assertEquals(result.get('hard'), 1);
+    deepStrictEqual(result.get('easy'), 2);
+    deepStrictEqual(result.get('medium'), 1);
+    deepStrictEqual(result.get('hard'), 1);
   });
 
   it('ignores items with undefined difficulty', () => {
     const meta: ProblemStatusMetadata[] = [{ tags: ['array'] }, { difficulty: 'medium' }];
     const result = countByDifficulty(meta);
-    assertEquals(result.get('medium'), 1);
-    assertEquals(result.size, 1);
+    deepStrictEqual(result.get('medium'), 1);
+    deepStrictEqual(result.size, 1);
   });
 });
 
 describe('countByTag', () => {
   it('returns empty map for empty input', () => {
     const result = countByTag([]);
-    assertEquals(result.size, 0);
+    deepStrictEqual(result.size, 0);
   });
 
   it('counts a single tag', () => {
     const meta: ProblemStatusMetadata[] = [{ tags: ['array'] }];
     const result = countByTag(meta);
-    assertEquals(result.get('array'), 1);
+    deepStrictEqual(result.get('array'), 1);
   });
 
   it('counts multiple tags per item', () => {
     const meta: ProblemStatusMetadata[] = [{ tags: ['array', 'hash-map'] }];
     const result = countByTag(meta);
-    assertEquals(result.get('array'), 1);
-    assertEquals(result.get('hash-map'), 1);
+    deepStrictEqual(result.get('array'), 1);
+    deepStrictEqual(result.get('hash-map'), 1);
   });
 
   it('accumulates the same tag across multiple items', () => {
@@ -416,15 +418,15 @@ describe('countByTag', () => {
       { tags: ['array', 'two-pointers'] },
     ];
     const result = countByTag(meta);
-    assertEquals(result.get('array'), 2);
-    assertEquals(result.get('two-pointers'), 1);
+    deepStrictEqual(result.get('array'), 2);
+    deepStrictEqual(result.get('two-pointers'), 1);
   });
 
   it('ignores items with no tags', () => {
     const meta: ProblemStatusMetadata[] = [{ difficulty: 'easy' }, { tags: ['dp'] }];
     const result = countByTag(meta);
-    assertEquals(result.get('dp'), 1);
-    assertEquals(result.size, 1);
+    deepStrictEqual(result.get('dp'), 1);
+    deepStrictEqual(result.size, 1);
   });
 });
 
@@ -444,7 +446,7 @@ describe('buildDifficultyStats', () => {
       ['hard', 3],
     ] as [string, number][]) as Map<'easy' | 'medium' | 'hard', number>;
     const stats = buildDifficultyStats(current, completed, total);
-    assertEquals(stats.length, 3);
+    deepStrictEqual(stats.length, 3);
   });
 
   it('maps current/completed/total counts per difficulty', () => {
@@ -462,9 +464,9 @@ describe('buildDifficultyStats', () => {
     >;
     const stats = buildDifficultyStats(current, completed, total);
     const mediumStat = stats.find((s) => s.difficulty === 'medium');
-    assertEquals(mediumStat?.current, 2);
-    assertEquals(mediumStat?.completed, 3);
-    assertEquals(mediumStat?.total, 20);
+    deepStrictEqual(mediumStat?.current, 2);
+    deepStrictEqual(mediumStat?.completed, 3);
+    deepStrictEqual(mediumStat?.total, 20);
   });
 
   it('defaults missing counts to 0', () => {
@@ -476,9 +478,9 @@ describe('buildDifficultyStats', () => {
     >;
     const stats = buildDifficultyStats(current, completed, total);
     const hardStat = stats.find((s) => s.difficulty === 'hard');
-    assertEquals(hardStat?.current, 0);
-    assertEquals(hardStat?.completed, 0);
-    assertEquals(hardStat?.total, 7);
+    deepStrictEqual(hardStat?.current, 0);
+    deepStrictEqual(hardStat?.completed, 0);
+    deepStrictEqual(hardStat?.total, 7);
   });
 });
 
@@ -492,7 +494,7 @@ describe('buildCategoryStats', () => {
       ['graph', 3],
     ]);
     const stats = buildCategoryStats(current, completed, total);
-    assertEquals(stats.length, 3);
+    deepStrictEqual(stats.length, 3);
   });
 
   it('assigns current/completed/total per category', () => {
@@ -501,9 +503,9 @@ describe('buildCategoryStats', () => {
     const total = new Map([['array', 10]]);
     const stats = buildCategoryStats(current, completed, total);
     const arrayStat = stats.find((s) => s.category === 'array');
-    assertEquals(arrayStat?.current, 1);
-    assertEquals(arrayStat?.completed, 4);
-    assertEquals(arrayStat?.total, 10);
+    deepStrictEqual(arrayStat?.current, 1);
+    deepStrictEqual(arrayStat?.completed, 4);
+    deepStrictEqual(arrayStat?.total, 10);
   });
 
   it('defaults to 0 when a category is absent from a map', () => {
@@ -512,9 +514,9 @@ describe('buildCategoryStats', () => {
     const total = new Map([['tree', 6]]);
     const stats = buildCategoryStats(current, completed, total);
     const treeStat = stats.find((s) => s.category === 'tree');
-    assertEquals(treeStat?.current, 0);
-    assertEquals(treeStat?.completed, 0);
-    assertEquals(treeStat?.total, 6);
+    deepStrictEqual(treeStat?.current, 0);
+    deepStrictEqual(treeStat?.completed, 0);
+    deepStrictEqual(treeStat?.total, 6);
   });
 
   it('sorts by completed descending then category name ascending', () => {
@@ -531,8 +533,8 @@ describe('buildCategoryStats', () => {
     ]);
     const stats = buildCategoryStats(current, completed, total);
     // dp and graph both have 5 completed, sorted alphabetically → graph < dp? No: 'dp' < 'graph'
-    assertEquals(stats[0].category, 'dp');
-    assertEquals(stats[1].category, 'graph');
-    assertEquals(stats[2].category, 'array');
+    deepStrictEqual(stats[0].category, 'dp');
+    deepStrictEqual(stats[1].category, 'graph');
+    deepStrictEqual(stats[2].category, 'array');
   });
 });

@@ -4,8 +4,8 @@
  * @module test/cli-commands-config
  */
 
-import { assertEquals } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
 import { configCommand, extractConfigOptions } from '../src/cli/commands/config.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
 import { initializeConfig } from '../src/config/manager.ts';
@@ -16,10 +16,10 @@ describe('extractConfigOptions', () => {
       _: ['config', 'list'],
       json: false,
     });
-    assertEquals(options.subcommand, 'list');
-    assertEquals(options.key, undefined);
-    assertEquals(options.value, undefined);
-    assertEquals(options.json, false);
+    deepStrictEqual(options.subcommand, 'list');
+    deepStrictEqual(options.key, undefined);
+    deepStrictEqual(options.value, undefined);
+    deepStrictEqual(options.json, false);
   });
 
   it('should extract get subcommand with key', () => {
@@ -27,9 +27,9 @@ describe('extractConfigOptions', () => {
       _: ['config', 'get', 'language'],
       json: false,
     });
-    assertEquals(options.subcommand, 'get');
-    assertEquals(options.key, 'language');
-    assertEquals(options.value, undefined);
+    deepStrictEqual(options.subcommand, 'get');
+    deepStrictEqual(options.key, 'language');
+    deepStrictEqual(options.value, undefined);
   });
 
   it('should extract set subcommand with key and value', () => {
@@ -37,9 +37,9 @@ describe('extractConfigOptions', () => {
       _: ['config', 'set', 'language', 'python'],
       json: false,
     });
-    assertEquals(options.subcommand, 'set');
-    assertEquals(options.key, 'language');
-    assertEquals(options.value, 'python');
+    deepStrictEqual(options.subcommand, 'set');
+    deepStrictEqual(options.key, 'language');
+    deepStrictEqual(options.value, 'python');
   });
 
   it('should extract reset subcommand', () => {
@@ -47,9 +47,9 @@ describe('extractConfigOptions', () => {
       _: ['config', 'reset'],
       json: false,
     });
-    assertEquals(options.subcommand, 'reset');
-    assertEquals(options.key, undefined);
-    assertEquals(options.value, undefined);
+    deepStrictEqual(options.subcommand, 'reset');
+    deepStrictEqual(options.key, undefined);
+    deepStrictEqual(options.value, undefined);
   });
 
   it('should extract reset subcommand with key', () => {
@@ -57,9 +57,9 @@ describe('extractConfigOptions', () => {
       _: ['config', 'reset', 'language'],
       json: false,
     });
-    assertEquals(options.subcommand, 'reset');
-    assertEquals(options.key, 'language');
-    assertEquals(options.value, undefined);
+    deepStrictEqual(options.subcommand, 'reset');
+    deepStrictEqual(options.key, 'language');
+    deepStrictEqual(options.value, undefined);
   });
 
   it('should extract json flag', () => {
@@ -67,7 +67,7 @@ describe('extractConfigOptions', () => {
       _: ['config', 'list'],
       json: true,
     });
-    assertEquals(options.json, true);
+    deepStrictEqual(options.json, true);
   });
 });
 
@@ -88,8 +88,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should default to list when no subcommand provided', async () => {
@@ -98,8 +98,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
   });
 
@@ -110,8 +110,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should get nested preference value', async () => {
@@ -120,8 +120,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should fail with missing key', async () => {
@@ -130,8 +130,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
 
     it('should fail with invalid key', async () => {
@@ -140,8 +140,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
   });
 
@@ -152,15 +152,15 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
 
       // Verify value was set
       const getResult = await configCommand({
         _: ['config', 'get', 'language'],
         json: false,
       });
-      assertEquals(getResult.success, true);
+      deepStrictEqual(getResult.success, true);
     });
 
     it('should set boolean value', async () => {
@@ -169,8 +169,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should set nested preference value', async () => {
@@ -179,8 +179,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should set workspace path', async () => {
@@ -189,8 +189,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should fail with missing key', async () => {
@@ -199,8 +199,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
 
     it('should fail with missing value', async () => {
@@ -209,8 +209,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
 
     it('should fail with invalid key', async () => {
@@ -219,8 +219,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
 
     it('should fail with invalid language value', async () => {
@@ -229,8 +229,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.CONFIG_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.CONFIG_ERROR);
     });
 
     it('should fail with invalid theme value', async () => {
@@ -239,8 +239,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.CONFIG_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.CONFIG_ERROR);
     });
 
     it('should fail with invalid verbosity value', async () => {
@@ -249,8 +249,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.CONFIG_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.CONFIG_ERROR);
     });
 
     it('should fail with invalid templateStyle value', async () => {
@@ -259,8 +259,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.CONFIG_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.CONFIG_ERROR);
     });
 
     it('should parse boolean values correctly', async () => {
@@ -281,7 +281,7 @@ describe('configCommand', () => {
           _: ['config', 'set', 'aiEnabled', test.value],
           json: false,
         });
-        assertEquals(result.success, true, `Failed for value: ${test.value}`);
+        deepStrictEqual(result.success, true, `Failed for value: ${test.value}`);
       }
     });
 
@@ -291,8 +291,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.CONFIG_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.CONFIG_ERROR);
     });
 
     it('should set companies as comma-separated list', async () => {
@@ -301,8 +301,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
   });
 
@@ -320,8 +320,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should reset all configuration to defaults', async () => {
@@ -341,8 +341,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should fail with invalid key', async () => {
@@ -351,8 +351,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
   });
 
@@ -363,8 +363,8 @@ describe('configCommand', () => {
         json: false,
       });
 
-      assertEquals(result.success, false);
-      assertEquals(result.exitCode, ExitCode.USAGE_ERROR);
+      deepStrictEqual(result.success, false);
+      deepStrictEqual(result.exitCode, ExitCode.USAGE_ERROR);
     });
   });
 
@@ -375,8 +375,8 @@ describe('configCommand', () => {
         json: true,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
 
     it('should output get as JSON', async () => {
@@ -385,8 +385,8 @@ describe('configCommand', () => {
         json: true,
       });
 
-      assertEquals(result.success, true);
-      assertEquals(result.exitCode, ExitCode.SUCCESS);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
     });
   });
 });

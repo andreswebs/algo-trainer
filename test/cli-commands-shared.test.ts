@@ -4,9 +4,11 @@
  * @module test/cli-commands-shared
  */
 
-import { assertEquals, assertRejects } from '@std/assert';
-import { join } from '@std/path';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual, rejects } from 'node:assert/strict';
+import { mkdtemp, realpath, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   confirmAction,
   formatProblemSummary,
@@ -18,17 +20,18 @@ import { configManager } from '../src/config/manager.ts';
 import { initWorkspace } from '../src/core/mod.ts';
 import type { Problem } from '../src/types/global.ts';
 import { WorkspaceError } from '../src/utils/errors.ts';
+import { assertRejectsWith } from './helpers/assert.ts';
 
 describe('requireWorkspace', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-test-' });
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-test-'));
   });
 
   afterEach(async () => {
     try {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }
@@ -41,17 +44,17 @@ describe('requireWorkspace', () => {
     // Test requireWorkspace
     const structure = await requireWorkspace(tempDir);
 
-    assertEquals(structure.root, tempDir);
-    assertEquals(structure.problems, join(tempDir, 'problems'));
-    assertEquals(structure.completed, join(tempDir, 'completed'));
-    assertEquals(structure.templates, join(tempDir, 'templates'));
-    assertEquals(structure.config, join(tempDir, 'config'));
+    deepStrictEqual(structure.root, tempDir);
+    deepStrictEqual(structure.problems, join(tempDir, 'problems'));
+    deepStrictEqual(structure.completed, join(tempDir, 'completed'));
+    deepStrictEqual(structure.templates, join(tempDir, 'templates'));
+    deepStrictEqual(structure.config, join(tempDir, 'config'));
   });
 
   it('should throw WorkspaceError for uninitialized workspace', async () => {
     // Don't initialize workspace, just use temp dir
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await requireWorkspace(tempDir);
       },
@@ -63,7 +66,7 @@ describe('requireWorkspace', () => {
   it('should throw WorkspaceError for non-existent directory', async () => {
     const nonExistentPath = join(tempDir, 'does-not-exist');
 
-    await assertRejects(async () => {
+    await rejects(async () => {
       await requireWorkspace(nonExistentPath);
     }, WorkspaceError);
   });
@@ -72,14 +75,14 @@ describe('requireWorkspace', () => {
     let originalCwd: string;
 
     beforeEach(async () => {
-      originalCwd = Deno.cwd();
+      originalCwd = process.cwd();
       await configManager.load();
       await configManager.updateConfig({ workspace: '' });
-      Deno.chdir(tempDir);
+      process.chdir(tempDir);
     });
 
     afterEach(() => {
-      Deno.chdir(originalCwd);
+      process.chdir(originalCwd);
     });
 
     it('should fall back to an initialized current directory', async () => {
@@ -87,11 +90,11 @@ describe('requireWorkspace', () => {
 
       const structure = await requireWorkspace();
 
-      assertEquals(structure.root, await Deno.realPath(tempDir));
+      deepStrictEqual(structure.root, await realpath(tempDir));
     });
 
     it('should throw WorkspaceError when current directory is not initialized', async () => {
-      await assertRejects(
+      await assertRejectsWith(
         async () => {
           await requireWorkspace();
         },
@@ -108,8 +111,8 @@ describe('requireProblemManager', () => {
 
     // Manager should be able to perform operations
     const allProblems = manager.list();
-    assertEquals(typeof allProblems.total, 'number');
-    assertEquals(Array.isArray(allProblems.problems), true);
+    deepStrictEqual(typeof allProblems.total, 'number');
+    deepStrictEqual(Array.isArray(allProblems.problems), true);
   });
 
   it('should return a working manager that can find problems', async () => {
@@ -121,7 +124,7 @@ describe('requireProblemManager', () => {
     if (allProblems.problems.length > 0) {
       const firstProblem = allProblems.problems[0];
       const foundProblem = manager.getById(firstProblem.id);
-      assertEquals(foundProblem?.id, firstProblem.id);
+      deepStrictEqual(foundProblem?.id, firstProblem.id);
     }
   });
 });
@@ -143,8 +146,8 @@ describe('resolveProblem', () => {
 
   it('should resolve problem by ID (string)', () => {
     const problem = resolveProblem(testProblem.id, manager);
-    assertEquals(problem?.id, testProblem.id);
-    assertEquals(problem?.slug, testProblem.slug);
+    deepStrictEqual(problem?.id, testProblem.id);
+    deepStrictEqual(problem?.slug, testProblem.slug);
   });
 
   it('should resolve problem by ID (number)', () => {
@@ -152,34 +155,34 @@ describe('resolveProblem', () => {
     if (/^\d+$/.test(testProblem.id)) {
       const numericId = parseInt(testProblem.id, 10);
       const problem = resolveProblem(numericId, manager);
-      assertEquals(problem?.id, testProblem.id);
+      deepStrictEqual(problem?.id, testProblem.id);
     }
   });
 
   it('should resolve problem by slug', () => {
     const problem = resolveProblem(testProblem.slug, manager);
-    assertEquals(problem?.id, testProblem.id);
-    assertEquals(problem?.slug, testProblem.slug);
+    deepStrictEqual(problem?.id, testProblem.id);
+    deepStrictEqual(problem?.slug, testProblem.slug);
   });
 
   it('should return null for non-existent ID', () => {
     const problem = resolveProblem('999999', manager);
-    assertEquals(problem, null);
+    deepStrictEqual(problem, null);
   });
 
   it('should return null for non-existent slug', () => {
     const problem = resolveProblem('non-existent-problem-slug', manager);
-    assertEquals(problem, null);
+    deepStrictEqual(problem, null);
   });
 
   it('should return null for "current" (not yet implemented)', () => {
     const problem = resolveProblem('current', manager);
-    assertEquals(problem, null);
+    deepStrictEqual(problem, null);
   });
 
   it('should return null when identifier is undefined', () => {
     const problem = resolveProblem(undefined, manager);
-    assertEquals(problem, null);
+    deepStrictEqual(problem, null);
   });
 });
 
@@ -215,23 +218,23 @@ describe('formatProblemSummary', () => {
     const summary = formatProblemSummary(mockProblem);
 
     // Check that key information is present
-    assertEquals(summary.includes('Two Sum'), true);
-    assertEquals(summary.includes('EASY'), true);
-    assertEquals(summary.includes('ID: 1'), true);
-    assertEquals(summary.includes('Slug: two-sum'), true);
-    assertEquals(summary.includes('array'), true);
-    assertEquals(summary.includes('hash-table'), true);
+    deepStrictEqual(summary.includes('Two Sum'), true);
+    deepStrictEqual(summary.includes('EASY'), true);
+    deepStrictEqual(summary.includes('ID: 1'), true);
+    deepStrictEqual(summary.includes('Slug: two-sum'), true);
+    deepStrictEqual(summary.includes('array'), true);
+    deepStrictEqual(summary.includes('hash-table'), true);
   });
 
   it('should truncate description by default', () => {
     const summary = formatProblemSummary(mockProblem);
 
     // Should include start of description
-    assertEquals(summary.includes('Given an array'), true);
+    deepStrictEqual(summary.includes('Given an array'), true);
 
     // Should be truncated (not full description)
     if (mockProblem.description.length > 100) {
-      assertEquals(summary.includes('...'), true);
+      deepStrictEqual(summary.includes('...'), true);
     }
   });
 
@@ -239,18 +242,18 @@ describe('formatProblemSummary', () => {
     const summary = formatProblemSummary(mockProblem, { verbose: true });
 
     // Should include full description
-    assertEquals(summary.includes(mockProblem.description), true);
-    assertEquals(summary.includes('Description:'), true);
+    deepStrictEqual(summary.includes(mockProblem.description), true);
+    deepStrictEqual(summary.includes('Description:'), true);
   });
 
   it('should show examples count', () => {
     const summary = formatProblemSummary(mockProblem);
-    assertEquals(summary.includes('Examples: 1'), true);
+    deepStrictEqual(summary.includes('Examples: 1'), true);
   });
 
   it('should show hints count', () => {
     const summary = formatProblemSummary(mockProblem);
-    assertEquals(summary.includes('Hints available: 2'), true);
+    deepStrictEqual(summary.includes('Hints available: 2'), true);
   });
 
   it('should handle problem with no tags', () => {
@@ -258,8 +261,8 @@ describe('formatProblemSummary', () => {
     const summary = formatProblemSummary(problemNoTags);
 
     // Should not throw, should still format correctly
-    assertEquals(summary.includes('Two Sum'), true);
-    assertEquals(summary.includes('Tags:'), false);
+    deepStrictEqual(summary.includes('Two Sum'), true);
+    deepStrictEqual(summary.includes('Tags:'), false);
   });
 
   it('should handle problem with no examples', () => {
@@ -267,8 +270,8 @@ describe('formatProblemSummary', () => {
     const summary = formatProblemSummary(problemNoExamples);
 
     // Should not throw, should still format correctly
-    assertEquals(summary.includes('Two Sum'), true);
-    assertEquals(summary.includes('Examples:'), false);
+    deepStrictEqual(summary.includes('Two Sum'), true);
+    deepStrictEqual(summary.includes('Examples:'), false);
   });
 
   it('should handle problem with no hints', () => {
@@ -276,8 +279,8 @@ describe('formatProblemSummary', () => {
     const summary = formatProblemSummary(problemNoHints);
 
     // Should not throw, should still format correctly
-    assertEquals(summary.includes('Two Sum'), true);
-    assertEquals(summary.includes('Hints available:'), false);
+    deepStrictEqual(summary.includes('Two Sum'), true);
+    deepStrictEqual(summary.includes('Hints available:'), false);
   });
 });
 
@@ -286,7 +289,7 @@ describe('confirmAction', () => {
   // These tests document expected behavior but would need manual testing or stdin mocking
 
   it('should exist and be callable', () => {
-    assertEquals(typeof confirmAction, 'function');
+    deepStrictEqual(typeof confirmAction, 'function');
   });
 
   // TODO(CLI-001): Add tests with stdin mocking when test infrastructure supports it
