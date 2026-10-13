@@ -4,8 +4,11 @@
  * @module tests/core/workspace/archive
  */
 
-import { assertEquals, assertExists, assertRejects } from '@std/assert';
-import { join } from '@std/path';
+import { test } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   type ArchiveProblemOptions,
   archiveProblem,
@@ -16,6 +19,7 @@ import {
 } from '../../../src/core/workspace/archive.ts';
 import { WorkspaceError } from '../../../src/utils/errors.ts';
 import { createDirectory, pathExists } from '../../../src/utils/fs.ts';
+import { assertRejectsWith } from '../../helpers/assert.ts';
 
 // =============================================================================
 // Test Setup and Helpers
@@ -25,7 +29,7 @@ import { createDirectory, pathExists } from '../../../src/utils/fs.ts';
  * Create a temporary test workspace
  */
 async function createTestWorkspace(): Promise<string> {
-  const tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-test-' });
+  const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-test-'));
   const workspace = join(tempDir, 'workspace');
 
   // Create workspace structure
@@ -51,10 +55,10 @@ async function createTestProblem(
   await createDirectory(problemDir);
 
   // Create some test files
-  await Deno.writeTextFile(join(problemDir, 'solution.ts'), '// Solution code');
-  await Deno.writeTextFile(join(problemDir, 'solution_test.ts'), '// Test code');
-  await Deno.writeTextFile(join(problemDir, 'README.md'), '# Problem');
-  await Deno.writeTextFile(
+  await writeFile(join(problemDir, 'solution.ts'), '// Solution code');
+  await writeFile(join(problemDir, 'solution_test.ts'), '// Test code');
+  await writeFile(join(problemDir, 'README.md'), '# Problem');
+  await writeFile(
     join(problemDir, '.problem.json'),
     JSON.stringify({
       problemId: slug,
@@ -71,7 +75,7 @@ async function createTestProblem(
 async function cleanupWorkspace(workspace: string): Promise<void> {
   try {
     const tempDir = join(workspace, '..');
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   } catch (_error) {
     // Ignore cleanup errors
   }
@@ -81,7 +85,7 @@ async function cleanupWorkspace(workspace: string): Promise<void> {
 // archiveProblem tests
 // =============================================================================
 
-Deno.test('archiveProblem - moves problem from problems to completed', async () => {
+test('archiveProblem - moves problem from problems to completed', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum');
@@ -94,29 +98,29 @@ Deno.test('archiveProblem - moves problem from problems to completed', async () 
 
     const result = await archiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, false);
-    assertEquals(result.from, join(workspace, 'problems', 'two-sum'));
-    assertEquals(result.archivedTo, join(workspace, 'completed', 'two-sum'));
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, false);
+    deepStrictEqual(result.from, join(workspace, 'problems', 'two-sum'));
+    deepStrictEqual(result.archivedTo, join(workspace, 'completed', 'two-sum'));
 
     // Verify source no longer exists
     const sourceExists = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(sourceExists, false);
+    deepStrictEqual(sourceExists, false);
 
     // Verify destination exists
     const destExists = await pathExists(join(workspace, 'completed', 'two-sum'));
-    assertEquals(destExists, true);
+    deepStrictEqual(destExists, true);
 
     // Verify files were moved
     const solutionExists = await pathExists(join(workspace, 'completed', 'two-sum', 'solution.ts'));
-    assertEquals(solutionExists, true);
+    deepStrictEqual(solutionExists, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('archiveProblem - handles collision with timestamp suffix by default', async () => {
+test('archiveProblem - handles collision with timestamp suffix by default', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum');
@@ -130,32 +134,32 @@ Deno.test('archiveProblem - handles collision with timestamp suffix by default',
 
     const result = await archiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, true);
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, true);
 
     // Verify source no longer exists
     const sourceExists = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(sourceExists, false);
+    deepStrictEqual(sourceExists, false);
 
     // Verify original archived version still exists
     const originalExists = await pathExists(join(workspace, 'completed', 'two-sum'));
-    assertEquals(originalExists, true);
+    deepStrictEqual(originalExists, true);
 
     // Verify new version exists with timestamp suffix
     const archivedPath = result.archivedTo;
     const archivedExists = await pathExists(archivedPath);
-    assertEquals(archivedExists, true);
+    deepStrictEqual(archivedExists, true);
 
     // Verify timestamp pattern in archived path
     const timestampPattern = /two-sum-\d{8}-\d{6}$/;
-    assertEquals(timestampPattern.test(archivedPath), true);
+    deepStrictEqual(timestampPattern.test(archivedPath), true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('archiveProblem - overwrites when collision strategy is overwrite', async () => {
+test('archiveProblem - overwrites when collision strategy is overwrite', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum');
@@ -170,26 +174,26 @@ Deno.test('archiveProblem - overwrites when collision strategy is overwrite', as
 
     const result = await archiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, false);
-    assertEquals(result.archivedTo, join(workspace, 'completed', 'two-sum'));
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, false);
+    deepStrictEqual(result.archivedTo, join(workspace, 'completed', 'two-sum'));
 
     // Verify only one version exists
     const entries: string[] = [];
-    for await (const entry of Deno.readDir(join(workspace, 'completed'))) {
-      if (entry.isDirectory && entry.name.startsWith('two-sum')) {
+    for (const entry of await readdir(join(workspace, 'completed'), { withFileTypes: true })) {
+      if (entry.isDirectory() && entry.name.startsWith('two-sum')) {
         entries.push(entry.name);
       }
     }
-    assertEquals(entries.length, 1);
-    assertEquals(entries[0], 'two-sum');
+    deepStrictEqual(entries.length, 1);
+    deepStrictEqual(entries[0], 'two-sum');
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('archiveProblem - throws error when collision strategy is error', async () => {
+test('archiveProblem - throws error when collision strategy is error', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum');
@@ -202,7 +206,7 @@ Deno.test('archiveProblem - throws error when collision strategy is error', asyn
       onCollision: 'error',
     };
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => await archiveProblem(options),
       WorkspaceError,
       'Archived problem already exists',
@@ -210,13 +214,13 @@ Deno.test('archiveProblem - throws error when collision strategy is error', asyn
 
     // Verify source still exists (move didn't happen)
     const sourceExists = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(sourceExists, true);
+    deepStrictEqual(sourceExists, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('archiveProblem - throws error if problem does not exist', async () => {
+test('archiveProblem - throws error if problem does not exist', async () => {
   const workspace = await createTestWorkspace();
   try {
     const options: ArchiveProblemOptions = {
@@ -225,7 +229,7 @@ Deno.test('archiveProblem - throws error if problem does not exist', async () =>
       language: 'typescript',
     };
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => await archiveProblem(options),
       WorkspaceError,
       'Problem not found in active directory',
@@ -239,7 +243,7 @@ Deno.test('archiveProblem - throws error if problem does not exist', async () =>
 // unarchiveProblem tests
 // =============================================================================
 
-Deno.test('unarchiveProblem - moves problem from completed to problems', async () => {
+test('unarchiveProblem - moves problem from completed to problems', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum', true); // In completed
@@ -252,29 +256,29 @@ Deno.test('unarchiveProblem - moves problem from completed to problems', async (
 
     const result = await unarchiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, false);
-    assertEquals(result.from, join(workspace, 'completed', 'two-sum'));
-    assertEquals(result.restoredTo, join(workspace, 'problems', 'two-sum'));
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, false);
+    deepStrictEqual(result.from, join(workspace, 'completed', 'two-sum'));
+    deepStrictEqual(result.restoredTo, join(workspace, 'problems', 'two-sum'));
 
     // Verify source no longer exists
     const sourceExists = await pathExists(join(workspace, 'completed', 'two-sum'));
-    assertEquals(sourceExists, false);
+    deepStrictEqual(sourceExists, false);
 
     // Verify destination exists
     const destExists = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(destExists, true);
+    deepStrictEqual(destExists, true);
 
     // Verify files were moved
     const solutionExists = await pathExists(join(workspace, 'problems', 'two-sum', 'solution.ts'));
-    assertEquals(solutionExists, true);
+    deepStrictEqual(solutionExists, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('unarchiveProblem - handles collision with timestamp suffix by default', async () => {
+test('unarchiveProblem - handles collision with timestamp suffix by default', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum'); // Already in problems
@@ -288,32 +292,32 @@ Deno.test('unarchiveProblem - handles collision with timestamp suffix by default
 
     const result = await unarchiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, true);
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, true);
 
     // Verify source no longer exists
     const sourceExists = await pathExists(join(workspace, 'completed', 'two-sum'));
-    assertEquals(sourceExists, false);
+    deepStrictEqual(sourceExists, false);
 
     // Verify original active version still exists
     const originalExists = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(originalExists, true);
+    deepStrictEqual(originalExists, true);
 
     // Verify new version exists with timestamp suffix
     const restoredPath = result.restoredTo;
     const restoredExists = await pathExists(restoredPath);
-    assertEquals(restoredExists, true);
+    deepStrictEqual(restoredExists, true);
 
     // Verify timestamp pattern in restored path
     const timestampPattern = /two-sum-\d{8}-\d{6}$/;
-    assertEquals(timestampPattern.test(restoredPath), true);
+    deepStrictEqual(timestampPattern.test(restoredPath), true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('unarchiveProblem - overwrites when collision strategy is overwrite', async () => {
+test('unarchiveProblem - overwrites when collision strategy is overwrite', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum'); // Already in problems
@@ -328,26 +332,26 @@ Deno.test('unarchiveProblem - overwrites when collision strategy is overwrite', 
 
     const result = await unarchiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, false);
-    assertEquals(result.restoredTo, join(workspace, 'problems', 'two-sum'));
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, false);
+    deepStrictEqual(result.restoredTo, join(workspace, 'problems', 'two-sum'));
 
     // Verify only one version exists
     const entries: string[] = [];
-    for await (const entry of Deno.readDir(join(workspace, 'problems'))) {
-      if (entry.isDirectory && entry.name.startsWith('two-sum')) {
+    for (const entry of await readdir(join(workspace, 'problems'), { withFileTypes: true })) {
+      if (entry.isDirectory() && entry.name.startsWith('two-sum')) {
         entries.push(entry.name);
       }
     }
-    assertEquals(entries.length, 1);
-    assertEquals(entries[0], 'two-sum');
+    deepStrictEqual(entries.length, 1);
+    deepStrictEqual(entries[0], 'two-sum');
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('unarchiveProblem - throws error when collision strategy is error', async () => {
+test('unarchiveProblem - throws error when collision strategy is error', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum'); // Already in problems
@@ -360,7 +364,7 @@ Deno.test('unarchiveProblem - throws error when collision strategy is error', as
       onCollision: 'error',
     };
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => await unarchiveProblem(options),
       WorkspaceError,
       'Active problem already exists',
@@ -368,13 +372,13 @@ Deno.test('unarchiveProblem - throws error when collision strategy is error', as
 
     // Verify source still exists (move didn't happen)
     const sourceExists = await pathExists(join(workspace, 'completed', 'two-sum'));
-    assertEquals(sourceExists, true);
+    deepStrictEqual(sourceExists, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('unarchiveProblem - throws error if archived problem does not exist', async () => {
+test('unarchiveProblem - throws error if archived problem does not exist', async () => {
   const workspace = await createTestWorkspace();
   try {
     const options: UnarchiveProblemOptions = {
@@ -383,7 +387,7 @@ Deno.test('unarchiveProblem - throws error if archived problem does not exist', 
       language: 'typescript',
     };
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => await unarchiveProblem(options),
       WorkspaceError,
       'Archived problem not found',
@@ -393,7 +397,7 @@ Deno.test('unarchiveProblem - throws error if archived problem does not exist', 
   }
 });
 
-Deno.test('unarchiveProblem - handles timestamped slugs correctly', async () => {
+test('unarchiveProblem - handles timestamped slugs correctly', async () => {
   const workspace = await createTestWorkspace();
   try {
     // Create an archived problem with timestamp suffix
@@ -408,16 +412,16 @@ Deno.test('unarchiveProblem - handles timestamped slugs correctly', async () => 
 
     const result = await unarchiveProblem(options);
 
-    assertExists(result);
-    assertEquals(result.success, true);
-    assertEquals(result.collisionHandled, false);
-    assertEquals(result.from, join(workspace, 'completed', slugWithTimestamp));
+    ok(result != null);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.collisionHandled, false);
+    deepStrictEqual(result.from, join(workspace, 'completed', slugWithTimestamp));
     // Should restore to base slug without timestamp
-    assertEquals(result.restoredTo, join(workspace, 'problems', 'two-sum'));
+    deepStrictEqual(result.restoredTo, join(workspace, 'problems', 'two-sum'));
 
     // Verify restored with correct name (without timestamp)
     const destExists = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(destExists, true);
+    deepStrictEqual(destExists, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
@@ -427,35 +431,35 @@ Deno.test('unarchiveProblem - handles timestamped slugs correctly', async () => 
 // isArchived tests
 // =============================================================================
 
-Deno.test('isArchived - returns true for archived problem', async () => {
+test('isArchived - returns true for archived problem', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum', true);
 
     const result = await isArchived(workspace, 'two-sum', 'typescript');
-    assertEquals(result, true);
+    deepStrictEqual(result, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('isArchived - returns false for non-archived problem', async () => {
+test('isArchived - returns false for non-archived problem', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum', false); // In problems, not completed
 
     const result = await isArchived(workspace, 'two-sum', 'typescript');
-    assertEquals(result, false);
+    deepStrictEqual(result, false);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('isArchived - returns false for nonexistent problem', async () => {
+test('isArchived - returns false for nonexistent problem', async () => {
   const workspace = await createTestWorkspace();
   try {
     const result = await isArchived(workspace, 'nonexistent', 'typescript');
-    assertEquals(result, false);
+    deepStrictEqual(result, false);
   } finally {
     await cleanupWorkspace(workspace);
   }
@@ -465,17 +469,17 @@ Deno.test('isArchived - returns false for nonexistent problem', async () => {
 // listArchivedProblems tests
 // =============================================================================
 
-Deno.test('listArchivedProblems - returns empty array when no archived problems', async () => {
+test('listArchivedProblems - returns empty array when no archived problems', async () => {
   const workspace = await createTestWorkspace();
   try {
     const result = await listArchivedProblems(workspace);
-    assertEquals(result, []);
+    deepStrictEqual(result, []);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('listArchivedProblems - returns list of archived problems', async () => {
+test('listArchivedProblems - returns list of archived problems', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum', true);
@@ -483,28 +487,28 @@ Deno.test('listArchivedProblems - returns list of archived problems', async () =
     await createTestProblem(workspace, 'longest-substring', true);
 
     const result = await listArchivedProblems(workspace);
-    assertEquals(result.length, 3);
-    assertEquals(result.includes('two-sum'), true);
-    assertEquals(result.includes('add-two-numbers'), true);
-    assertEquals(result.includes('longest-substring'), true);
+    deepStrictEqual(result.length, 3);
+    deepStrictEqual(result.includes('two-sum'), true);
+    deepStrictEqual(result.includes('add-two-numbers'), true);
+    deepStrictEqual(result.includes('longest-substring'), true);
 
     // Should be sorted
-    assertEquals(result, result.slice().sort());
+    deepStrictEqual(result, result.slice().sort());
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('listArchivedProblems - includes timestamped problems', async () => {
+test('listArchivedProblems - includes timestamped problems', async () => {
   const workspace = await createTestWorkspace();
   try {
     await createTestProblem(workspace, 'two-sum', true);
     await createTestProblem(workspace, 'two-sum-20260114-143045', true);
 
     const result = await listArchivedProblems(workspace);
-    assertEquals(result.length, 2);
-    assertEquals(result.includes('two-sum'), true);
-    assertEquals(result.includes('two-sum-20260114-143045'), true);
+    deepStrictEqual(result.length, 2);
+    deepStrictEqual(result.includes('two-sum'), true);
+    deepStrictEqual(result.includes('two-sum-20260114-143045'), true);
   } finally {
     await cleanupWorkspace(workspace);
   }
@@ -514,7 +518,7 @@ Deno.test('listArchivedProblems - includes timestamped problems', async () => {
 // Integration tests
 // =============================================================================
 
-Deno.test('archive and unarchive - round trip preserves data', async () => {
+test('archive and unarchive - round trip preserves data', async () => {
   const workspace = await createTestWorkspace();
   try {
     // Create initial problem
@@ -526,11 +530,11 @@ Deno.test('archive and unarchive - round trip preserves data', async () => {
       slug: 'two-sum',
       language: 'typescript',
     });
-    assertEquals(archiveResult.success, true);
+    deepStrictEqual(archiveResult.success, true);
 
     // Verify it's archived
     const isArch = await isArchived(workspace, 'two-sum', 'typescript');
-    assertEquals(isArch, true);
+    deepStrictEqual(isArch, true);
 
     // Unarchive it
     const unarchiveResult = await unarchiveProblem({
@@ -538,21 +542,21 @@ Deno.test('archive and unarchive - round trip preserves data', async () => {
       slug: 'two-sum',
       language: 'typescript',
     });
-    assertEquals(unarchiveResult.success, true);
+    deepStrictEqual(unarchiveResult.success, true);
 
     // Verify it's back in problems directory
     const backInProblems = await pathExists(join(workspace, 'problems', 'two-sum'));
-    assertEquals(backInProblems, true);
+    deepStrictEqual(backInProblems, true);
 
     // Verify files still exist
     const solutionExists = await pathExists(join(workspace, 'problems', 'two-sum', 'solution.ts'));
-    assertEquals(solutionExists, true);
+    deepStrictEqual(solutionExists, true);
   } finally {
     await cleanupWorkspace(workspace);
   }
 });
 
-Deno.test('multiple archive operations with timestamp collision handling', async () => {
+test('multiple archive operations with timestamp collision handling', async () => {
   const workspace = await createTestWorkspace();
   try {
     // Create and archive three versions of the same problem
@@ -563,13 +567,13 @@ Deno.test('multiple archive operations with timestamp collision handling', async
         slug: 'two-sum',
         language: 'typescript',
       });
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // First archive shouldn't have collision, others should
       if (i === 0) {
-        assertEquals(result.collisionHandled, false);
+        deepStrictEqual(result.collisionHandled, false);
       } else {
-        assertEquals(result.collisionHandled, true);
+        deepStrictEqual(result.collisionHandled, true);
       }
 
       // Delay to ensure different timestamps (1100ms to guarantee different seconds)
@@ -578,13 +582,13 @@ Deno.test('multiple archive operations with timestamp collision handling', async
 
     // List archived problems
     const archived = await listArchivedProblems(workspace);
-    assertEquals(archived.length, 3);
+    deepStrictEqual(archived.length, 3);
 
     // All should start with 'two-sum'
     for (const slug of archived) {
-      assertEquals(slug.startsWith('two-sum'), true);
+      deepStrictEqual(slug.startsWith('two-sum'), true);
     }
   } finally {
     await cleanupWorkspace(workspace);
   }
-});
+}, 15000);

@@ -4,8 +4,11 @@
  * @module test/core/workspace/generation
  */
 
-import { assertEquals, assertExists, assertRejects, assertStringIncludes } from '@std/assert';
-import { join } from '@std/path';
+import { test } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { getFileExtension, getProblemPaths } from '../../../src/core/workspace/files.ts';
 import {
   type GenerateProblemFilesOptions,
@@ -17,6 +20,7 @@ import {
 import type { Problem, SupportedLanguage } from '../../../src/types/global.ts';
 import { WorkspaceError } from '../../../src/utils/errors.ts';
 import { pathExists } from '../../../src/utils/fs.ts';
+import { assertRejectsWith } from '../../helpers/assert.ts';
 
 // Test fixtures
 const mockProblem: Problem = {
@@ -63,7 +67,7 @@ function hasMixedSeparators(path: string): boolean {
  * Create a temporary workspace directory for testing
  */
 async function createTempWorkspace(): Promise<string> {
-  const tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-test-' });
+  const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-test-'));
   return tempDir;
 }
 
@@ -72,13 +76,13 @@ async function createTempWorkspace(): Promise<string> {
  */
 async function cleanupTempWorkspace(path: string): Promise<void> {
   try {
-    await Deno.remove(path, { recursive: true });
+    await rm(path, { recursive: true, force: true });
   } catch {
     // Ignore cleanup errors
   }
 }
 
-Deno.test('generateProblemFiles - generates all files successfully', async () => {
+test('generateProblemFiles - generates all files successfully', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -92,23 +96,23 @@ Deno.test('generateProblemFiles - generates all files successfully', async () =>
 
     const result = await generateProblemFiles(options);
 
-    assertEquals(result.success, true);
-    assertEquals(result.filesCreated.length, 4); // solution, test, readme, metadata
-    assertEquals(result.filesSkipped.length, 0);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.filesCreated.length, 4); // solution, test, readme, metadata
+    deepStrictEqual(result.filesSkipped.length, 0);
 
     // Verify files exist
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
-    assertEquals(await pathExists(paths.solutionFile), true);
-    assertEquals(await pathExists(paths.testFile), true);
-    assertEquals(await pathExists(paths.readmeFile), true);
-    assertEquals(await pathExists(paths.metadataFile), true);
+    deepStrictEqual(await pathExists(paths.solutionFile), true);
+    deepStrictEqual(await pathExists(paths.testFile), true);
+    deepStrictEqual(await pathExists(paths.readmeFile), true);
+    deepStrictEqual(await pathExists(paths.metadataFile), true);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - solution file contains problem title', async () => {
+test('generateProblemFiles - solution file contains problem title', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -122,15 +126,15 @@ Deno.test('generateProblemFiles - solution file contains problem title', async (
     await generateProblemFiles(options);
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
-    const solutionContent = await Deno.readTextFile(paths.solutionFile);
+    const solutionContent = await readFile(paths.solutionFile, 'utf8');
 
-    assertStringIncludes(solutionContent, 'Two Sum');
+    ok(solutionContent.includes('Two Sum'));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - test file contains problem examples', async () => {
+test('generateProblemFiles - test file contains problem examples', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -144,16 +148,16 @@ Deno.test('generateProblemFiles - test file contains problem examples', async ()
     await generateProblemFiles(options);
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
-    const testContent = await Deno.readTextFile(paths.testFile);
+    const testContent = await readFile(paths.testFile, 'utf8');
 
     // Should contain example data
-    assertStringIncludes(testContent, 'Two Sum');
+    ok(testContent.includes('Two Sum'));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - README contains problem description', async () => {
+test('generateProblemFiles - README contains problem description', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -167,16 +171,16 @@ Deno.test('generateProblemFiles - README contains problem description', async ()
     await generateProblemFiles(options);
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
-    const readmeContent = await Deno.readTextFile(paths.readmeFile);
+    const readmeContent = await readFile(paths.readmeFile, 'utf8');
 
-    assertStringIncludes(readmeContent, 'Two Sum');
-    assertStringIncludes(readmeContent, mockProblem.description);
+    ok(readmeContent.includes('Two Sum'));
+    ok(readmeContent.includes(mockProblem.description));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - metadata file contains correct data', async () => {
+test('generateProblemFiles - metadata file contains correct data', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -190,21 +194,21 @@ Deno.test('generateProblemFiles - metadata file contains correct data', async ()
     await generateProblemFiles(options);
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
-    const metadataContent = await Deno.readTextFile(paths.metadataFile);
+    const metadataContent = await readFile(paths.metadataFile, 'utf8');
     const metadata: ProblemWorkspaceMetadata = JSON.parse(metadataContent);
 
-    assertEquals(metadata.problemId, mockProblem.id);
-    assertEquals(metadata.slug, mockProblem.slug);
-    assertEquals(metadata.language, 'typescript');
-    assertEquals(metadata.templateStyle, 'documented');
-    assertExists(metadata.generatedAt);
-    assertExists(metadata.lastModified);
+    deepStrictEqual(metadata.problemId, mockProblem.id);
+    deepStrictEqual(metadata.slug, mockProblem.slug);
+    deepStrictEqual(metadata.language, 'typescript');
+    deepStrictEqual(metadata.templateStyle, 'documented');
+    ok(metadata.generatedAt != null);
+    ok(metadata.lastModified != null);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - overwritePolicy skip skips existing files', async () => {
+test('generateProblemFiles - overwritePolicy skip skips existing files', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -218,19 +222,19 @@ Deno.test('generateProblemFiles - overwritePolicy skip skips existing files', as
 
     // Generate files first time
     const result1 = await generateProblemFiles(options);
-    assertEquals(result1.filesCreated.length, 4);
-    assertEquals(result1.filesSkipped.length, 0);
+    deepStrictEqual(result1.filesCreated.length, 4);
+    deepStrictEqual(result1.filesSkipped.length, 0);
 
     // Generate files second time - should skip
     const result2 = await generateProblemFiles(options);
-    assertEquals(result2.filesCreated.length, 0);
-    assertEquals(result2.filesSkipped.length, 4);
+    deepStrictEqual(result2.filesCreated.length, 0);
+    deepStrictEqual(result2.filesSkipped.length, 4);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - overwritePolicy overwrite replaces files', async () => {
+test('generateProblemFiles - overwritePolicy overwrite replaces files', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -244,26 +248,26 @@ Deno.test('generateProblemFiles - overwritePolicy overwrite replaces files', asy
 
     // Generate files first time
     const result1 = await generateProblemFiles(options);
-    assertEquals(result1.filesCreated.length, 4);
+    deepStrictEqual(result1.filesCreated.length, 4);
 
     // Modify a file
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
-    await Deno.writeTextFile(paths.solutionFile, '// Modified content');
+    await writeFile(paths.solutionFile, '// Modified content');
 
     // Generate files second time - should overwrite
     const result2 = await generateProblemFiles(options);
-    assertEquals(result2.filesCreated.length, 4);
-    assertEquals(result2.filesSkipped.length, 0);
+    deepStrictEqual(result2.filesCreated.length, 4);
+    deepStrictEqual(result2.filesSkipped.length, 0);
 
     // Verify file was overwritten
-    const content = await Deno.readTextFile(paths.solutionFile);
-    assertEquals(content.includes('// Modified content'), false);
+    const content = await readFile(paths.solutionFile, 'utf8');
+    deepStrictEqual(content.includes('// Modified content'), false);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - overwritePolicy error throws on existing files', async () => {
+test('generateProblemFiles - overwritePolicy error throws on existing files', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -284,7 +288,7 @@ Deno.test('generateProblemFiles - overwritePolicy error throws on existing files
       overwritePolicy: 'error',
     };
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await generateProblemFiles(optionsWithError);
       },
@@ -296,7 +300,7 @@ Deno.test('generateProblemFiles - overwritePolicy error throws on existing files
   }
 });
 
-Deno.test('generateProblemFiles - works for multiple languages', async () => {
+test('generateProblemFiles - works for multiple languages', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -319,14 +323,14 @@ Deno.test('generateProblemFiles - works for multiple languages', async () => {
       };
 
       const result = await generateProblemFiles(options);
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       // Expected file count varies per language scaffolding spec.
       // cpp emits: solution, README, metadata, CMakeLists.txt, input.txt,
       //            expected.txt, leetcode.hpp.
       // Other languages emit: solution, test, README, metadata.
       const expectedCount = language === 'cpp' ? 7 : 4;
-      assertEquals(
+      deepStrictEqual(
         result.filesCreated.length,
         expectedCount,
         `${language}: expected ${expectedCount} files, got ${result.filesCreated.length}`,
@@ -337,7 +341,7 @@ Deno.test('generateProblemFiles - works for multiple languages', async () => {
   }
 });
 
-Deno.test('generateProblemFiles - handles different template styles', async () => {
+test('generateProblemFiles - handles different template styles', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -352,20 +356,20 @@ Deno.test('generateProblemFiles - handles different template styles', async () =
       };
 
       const result = await generateProblemFiles(options);
-      assertEquals(result.success, true);
-      assertEquals(result.filesCreated.length, 4);
+      deepStrictEqual(result.success, true);
+      deepStrictEqual(result.filesCreated.length, 4);
 
       // Verify metadata has correct style
       const metadata = await getProblemMetadata(workspaceRoot, `two-sum-${style}`, 'typescript');
-      assertExists(metadata);
-      assertEquals(metadata?.templateStyle, style);
+      ok(metadata != null);
+      deepStrictEqual(metadata?.templateStyle, style);
     }
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('problemExists - returns true when problem exists', async () => {
+test('problemExists - returns true when problem exists', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -379,24 +383,24 @@ Deno.test('problemExists - returns true when problem exists', async () => {
     await generateProblemFiles(options);
 
     const exists = await problemExists(workspaceRoot, 'two-sum', 'typescript');
-    assertEquals(exists, true);
+    deepStrictEqual(exists, true);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('problemExists - returns false when problem does not exist', async () => {
+test('problemExists - returns false when problem does not exist', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
     const exists = await problemExists(workspaceRoot, 'non-existent', 'typescript');
-    assertEquals(exists, false);
+    deepStrictEqual(exists, false);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('getProblemMetadata - returns metadata for existing problem', async () => {
+test('getProblemMetadata - returns metadata for existing problem', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -411,29 +415,29 @@ Deno.test('getProblemMetadata - returns metadata for existing problem', async ()
 
     const metadata = await getProblemMetadata(workspaceRoot, 'two-sum', 'typescript');
 
-    assertExists(metadata);
-    assertEquals(metadata?.problemId, mockProblem.id);
-    assertEquals(metadata?.slug, mockProblem.slug);
-    assertEquals(metadata?.language, 'typescript');
-    assertEquals(metadata?.templateStyle, 'documented');
+    ok(metadata != null);
+    deepStrictEqual(metadata?.problemId, mockProblem.id);
+    deepStrictEqual(metadata?.slug, mockProblem.slug);
+    deepStrictEqual(metadata?.language, 'typescript');
+    deepStrictEqual(metadata?.templateStyle, 'documented');
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('getProblemMetadata - returns null for non-existent problem', async () => {
+test('getProblemMetadata - returns null for non-existent problem', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
     const metadata = await getProblemMetadata(workspaceRoot, 'non-existent', 'typescript');
 
-    assertEquals(metadata, null);
+    deepStrictEqual(metadata, null);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - creates problem directory structure', async () => {
+test('generateProblemFiles - creates problem directory structure', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -448,17 +452,17 @@ Deno.test('generateProblemFiles - creates problem directory structure', async ()
 
     // Check problem directory exists
     const problemDir = result.problemDir;
-    assertExists(problemDir);
-    assertEquals(await pathExists(problemDir), true);
+    ok(problemDir != null);
+    deepStrictEqual(await pathExists(problemDir), true);
 
     // Check it's under the problems subdirectory (use OS-independent path)
-    assertStringIncludes(problemDir, join('problems', 'two-sum'));
+    ok(problemDir.includes(join('problems', 'two-sum')));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - handles problem with minimal data', async () => {
+test('generateProblemFiles - handles problem with minimal data', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -488,8 +492,8 @@ Deno.test('generateProblemFiles - handles problem with minimal data', async () =
 
     const result = await generateProblemFiles(options);
 
-    assertEquals(result.success, true);
-    assertEquals(result.filesCreated.length, 4);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.filesCreated.length, 4);
 
     // Verify files were created and are not empty
     const paths = getProblemPaths(
@@ -497,24 +501,24 @@ Deno.test('generateProblemFiles - handles problem with minimal data', async () =
       'minimal-problem',
     );
 
-    const solutionContent = await Deno.readTextFile(paths.solutionFile);
-    const testContent = await Deno.readTextFile(paths.testFile);
-    const readmeContent = await Deno.readTextFile(paths.readmeFile);
+    const solutionContent = await readFile(paths.solutionFile, 'utf8');
+    const testContent = await readFile(paths.testFile, 'utf8');
+    const readmeContent = await readFile(paths.readmeFile, 'utf8');
 
     // All files should have some content
-    assertEquals(solutionContent.length > 0, true);
-    assertEquals(testContent.length > 0, true);
-    assertEquals(readmeContent.length > 0, true);
+    deepStrictEqual(solutionContent.length > 0, true);
+    deepStrictEqual(testContent.length > 0, true);
+    deepStrictEqual(readmeContent.length > 0, true);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - handles special characters in workspace path', async () => {
+test('generateProblemFiles - handles special characters in workspace path', async () => {
   // Create a workspace with spaces in the path
-  const tempBase = await Deno.makeTempDir({ prefix: 'algo-trainer test-' });
+  const tempBase = await mkdtemp(join(tmpdir(), 'algo-trainer test-'));
   const workspaceRoot = join(tempBase, 'workspace with spaces');
-  await Deno.mkdir(workspaceRoot, { recursive: true });
+  await mkdir(workspaceRoot, { recursive: true });
 
   try {
     const options: GenerateProblemFilesOptions = {
@@ -526,22 +530,22 @@ Deno.test('generateProblemFiles - handles special characters in workspace path',
 
     const result = await generateProblemFiles(options);
 
-    assertEquals(result.success, true);
-    assertEquals(result.filesCreated.length, 4);
+    deepStrictEqual(result.success, true);
+    deepStrictEqual(result.filesCreated.length, 4);
 
     // Verify files exist in the path with spaces
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
-    assertEquals(await pathExists(paths.solutionFile), true);
-    assertEquals(await pathExists(paths.testFile), true);
-    assertEquals(await pathExists(paths.readmeFile), true);
-    assertEquals(await pathExists(paths.metadataFile), true);
+    deepStrictEqual(await pathExists(paths.solutionFile), true);
+    deepStrictEqual(await pathExists(paths.testFile), true);
+    deepStrictEqual(await pathExists(paths.readmeFile), true);
+    deepStrictEqual(await pathExists(paths.metadataFile), true);
   } finally {
     await cleanupTempWorkspace(tempBase);
   }
 });
 
-Deno.test('generateProblemFiles - uses platform-specific path separators', async () => {
+test('generateProblemFiles - uses platform-specific path separators', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -558,19 +562,19 @@ Deno.test('generateProblemFiles - uses platform-specific path separators', async
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'typescript' }, 'two-sum');
 
     // All paths should be under the workspace root
-    assertEquals(paths.dir.startsWith(workspaceRoot), true);
-    assertEquals(paths.solutionFile.startsWith(workspaceRoot), true);
-    assertEquals(paths.testFile.startsWith(workspaceRoot), true);
-    assertEquals(paths.readmeFile.startsWith(workspaceRoot), true);
+    deepStrictEqual(paths.dir.startsWith(workspaceRoot), true);
+    deepStrictEqual(paths.solutionFile.startsWith(workspaceRoot), true);
+    deepStrictEqual(paths.testFile.startsWith(workspaceRoot), true);
+    deepStrictEqual(paths.readmeFile.startsWith(workspaceRoot), true);
 
     // Paths should not contain mixed separators
-    assertEquals(hasMixedSeparators(result.problemDir), false);
+    deepStrictEqual(hasMixedSeparators(result.problemDir), false);
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - file extensions match language', async () => {
+test('generateProblemFiles - file extensions match language', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -593,20 +597,20 @@ Deno.test('generateProblemFiles - file extensions match language', async () => {
       };
 
       const result = await generateProblemFiles(options);
-      assertEquals(result.success, true);
+      deepStrictEqual(result.success, true);
 
       const paths = getProblemPaths({ rootDir: workspaceRoot, language }, `test-${language}`);
 
       // Verify solution file has correct extension using the same logic as the implementation
       const expectedExt = getFileExtension(language);
-      assertEquals(paths.solutionFile.endsWith(expectedExt), true);
+      deepStrictEqual(paths.solutionFile.endsWith(expectedExt), true);
     }
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - cpp scaffolds harness, CMakeLists, input.txt and skips test file', async () => {
+test('generateProblemFiles - cpp scaffolds harness, CMakeLists, input.txt and skips test file', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -623,64 +627,64 @@ Deno.test('generateProblemFiles - cpp scaffolds harness, CMakeLists, input.txt a
       templateStyle: 'documented',
     });
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'cpp' }, 'two-sum');
 
     // Standard files for cpp scaffolding
-    assertEquals(await pathExists(paths.solutionFile), true);
-    assertEquals(await pathExists(paths.readmeFile), true);
-    assertEquals(await pathExists(paths.metadataFile), true);
+    deepStrictEqual(await pathExists(paths.solutionFile), true);
+    deepStrictEqual(await pathExists(paths.readmeFile), true);
+    deepStrictEqual(await pathExists(paths.metadataFile), true);
 
     // The standalone test file is intentionally NOT scaffolded for cpp
-    assertEquals(await pathExists(paths.testFile), false);
+    deepStrictEqual(await pathExists(paths.testFile), false);
 
     // Per-problem build + run kit
     const cmakelistsPath = join(paths.dir, 'CMakeLists.txt');
     const inputPath = join(paths.dir, 'input.txt');
     const expectedPath = join(paths.dir, 'expected.txt');
     const harnessPath = join(paths.dir, 'leetcode.hpp');
-    assertEquals(await pathExists(cmakelistsPath), true);
-    assertEquals(await pathExists(inputPath), true);
-    assertEquals(await pathExists(expectedPath), true);
-    assertEquals(await pathExists(harnessPath), true);
+    deepStrictEqual(await pathExists(cmakelistsPath), true);
+    deepStrictEqual(await pathExists(inputPath), true);
+    deepStrictEqual(await pathExists(expectedPath), true);
+    deepStrictEqual(await pathExists(harnessPath), true);
 
     // Solution uses the curated signature, the LC_LOCAL guards, and the
     // harness dispatch.
-    const solution = await Deno.readTextFile(paths.solutionFile);
-    assertStringIncludes(solution, 'vector<int> twoSum(vector<int>& nums, int target)');
-    assertStringIncludes(solution, 'using namespace std;');
-    assertStringIncludes(solution, '#ifdef LC_LOCAL');
-    assertStringIncludes(solution, '#include "leetcode.hpp"');
-    assertStringIncludes(solution, 'run(&Solution::twoSum, argc, argv);');
+    const solution = await readFile(paths.solutionFile, 'utf8');
+    ok(solution.includes('vector<int> twoSum(vector<int>& nums, int target)'));
+    ok(solution.includes('using namespace std;'));
+    ok(solution.includes('#ifdef LC_LOCAL'));
+    ok(solution.includes('#include "leetcode.hpp"'));
+    ok(solution.includes('run(&Solution::twoSum, argc, argv);'));
 
     // CMakeLists names the target after the slug.
-    const cmakelists = await Deno.readTextFile(cmakelistsPath);
-    assertStringIncludes(cmakelists, 'project(two-sum');
-    assertStringIncludes(cmakelists, 'CMAKE_CXX_STANDARD 23');
-    assertStringIncludes(cmakelists, 'LC_LOCAL');
+    const cmakelists = await readFile(cmakelistsPath, 'utf8');
+    ok(cmakelists.includes('project(two-sum'));
+    ok(cmakelists.includes('CMAKE_CXX_STANDARD 23'));
+    ok(cmakelists.includes('LC_LOCAL'));
 
     // input.txt is in LeetCode wire format, one example per line.
-    const input = await Deno.readTextFile(inputPath);
-    assertStringIncludes(input, '[2,7,11,15] 9');
-    assertStringIncludes(input, '[3,2,4] 6');
+    const input = await readFile(inputPath, 'utf8');
+    ok(input.includes('[2,7,11,15] 9'));
+    ok(input.includes('[3,2,4] 6'));
 
     // expected.txt mirrors what the harness prints when each output is
     // returned in order, separated by `---` lines.
-    const expected = await Deno.readTextFile(expectedPath);
-    assertEquals(expected, '[0,1]\n---\n[1,2]\n');
+    const expected = await readFile(expectedPath, 'utf8');
+    deepStrictEqual(expected, '[0,1]\n---\n[1,2]\n');
 
     // Harness is the vendored leetcode-driver header.
-    const harness = await Deno.readTextFile(harnessPath);
-    assertStringIncludes(harness, 'struct TreeNode');
-    assertStringIncludes(harness, 'struct ListNode');
-    assertStringIncludes(harness, 'void run(R (Solution::*fn)(Ts...)');
+    const harness = await readFile(harnessPath, 'utf8');
+    ok(harness.includes('struct TreeNode'));
+    ok(harness.includes('struct ListNode'));
+    ok(harness.includes('void run(R (Solution::*fn)(Ts...)'));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }
 });
 
-Deno.test('generateProblemFiles - cpp falls back to a TODO signature when problem.signatures.cpp is absent', async () => {
+test('generateProblemFiles - cpp falls back to a TODO signature when problem.signatures.cpp is absent', async () => {
   const workspaceRoot = await createTempWorkspace();
 
   try {
@@ -691,12 +695,12 @@ Deno.test('generateProblemFiles - cpp falls back to a TODO signature when proble
       templateStyle: 'minimal',
     });
 
-    assertEquals(result.success, true);
+    deepStrictEqual(result.success, true);
 
     const paths = getProblemPaths({ rootDir: workspaceRoot, language: 'cpp' }, 'two-sum-no-sig');
-    const solution = await Deno.readTextFile(paths.solutionFile);
-    assertStringIncludes(solution, 'auto twoSumNoSig');
-    assertStringIncludes(solution, 'TODO: declare params');
+    const solution = await readFile(paths.solutionFile, 'utf8');
+    ok(solution.includes('auto twoSumNoSig'));
+    ok(solution.includes('TODO: declare params'));
   } finally {
     await cleanupTempWorkspace(workspaceRoot);
   }

@@ -7,7 +7,8 @@
  * @module test/core/problem/templates.integration
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from '@std/assert';
+import { test } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
 import {
   renderAllTemplates,
   renderTemplate,
@@ -38,17 +39,17 @@ const testProblem: Problem = {
   leetcodeUrl: 'https://leetcode.com/problems/two-sum/',
 };
 
-Deno.test('resolveTemplatePath - resolves existing TypeScript minimal template', async () => {
+test('resolveTemplatePath - resolves existing TypeScript minimal template', async () => {
   const path = await resolveTemplatePath('typescript', 'minimal', 'solution');
-  assertStringIncludes(path, 'typescript/minimal/solution.tpl');
+  ok(path.includes('typescript/minimal/solution.tpl'));
 });
 
-Deno.test('resolveTemplatePath - resolves existing Python documented template', async () => {
+test('resolveTemplatePath - resolves existing Python documented template', async () => {
   const path = await resolveTemplatePath('python', 'documented', 'readme');
-  assertStringIncludes(path, 'python/documented/readme.tpl');
+  ok(path.includes('python/documented/readme.tpl'));
 });
 
-Deno.test('renderTemplate - renders TypeScript minimal solution template', async () => {
+test('renderTemplate - renders TypeScript minimal solution template', async () => {
   const context: TemplateContext = {
     problem: testProblem,
     config: {
@@ -63,13 +64,13 @@ Deno.test('renderTemplate - renders TypeScript minimal solution template', async
   const rendered = await renderTemplate(context, 'solution');
 
   // Verify placeholder replacement
-  assertStringIncludes(rendered, 'Two Sum');
-  assertStringIncludes(rendered, 'twoSum');
-  assertEquals(rendered.includes('{{PROBLEM_TITLE}}'), false);
-  assertEquals(rendered.includes('{{FUNCTION_NAME}}'), false);
+  ok(rendered.includes('Two Sum'));
+  ok(rendered.includes('twoSum'));
+  deepStrictEqual(rendered.includes('{{PROBLEM_TITLE}}'), false);
+  deepStrictEqual(rendered.includes('{{FUNCTION_NAME}}'), false);
 });
 
-Deno.test('renderTemplate - renders TypeScript minimal readme template', async () => {
+test('renderTemplate - renders TypeScript minimal readme template', async () => {
   const context: TemplateContext = {
     problem: testProblem,
     config: {
@@ -84,16 +85,16 @@ Deno.test('renderTemplate - renders TypeScript minimal readme template', async (
   const rendered = await renderTemplate(context, 'readme');
 
   // Verify placeholder replacement
-  assertStringIncludes(rendered, '# Two Sum');
-  assertStringIncludes(rendered, 'Given an array of integers');
-  assertStringIncludes(rendered, 'Example 1:');
-  assertStringIncludes(rendered, 'nums = [2,7,11,15]');
-  assertStringIncludes(rendered, '- 2 <= nums.length <= 10^4');
-  assertEquals(rendered.includes('{{PROBLEM_TITLE}}'), false);
-  assertEquals(rendered.includes('{{EXAMPLES}}'), false);
+  ok(rendered.includes('# Two Sum'));
+  ok(rendered.includes('Given an array of integers'));
+  ok(rendered.includes('Example 1:'));
+  ok(rendered.includes('nums = [2,7,11,15]'));
+  ok(rendered.includes('- 2 <= nums.length <= 10^4'));
+  deepStrictEqual(rendered.includes('{{PROBLEM_TITLE}}'), false);
+  deepStrictEqual(rendered.includes('{{EXAMPLES}}'), false);
 });
 
-Deno.test('renderTemplate - renders Python comprehensive solution template', async () => {
+test('renderTemplate - renders Python comprehensive solution template', async () => {
   const context: TemplateContext = {
     problem: testProblem,
     config: {
@@ -108,13 +109,13 @@ Deno.test('renderTemplate - renders Python comprehensive solution template', asy
   const rendered = await renderTemplate(context, 'solution');
 
   // Verify placeholder replacement and Python-specific formatting
-  assertStringIncludes(rendered, 'Two Sum');
-  assertStringIncludes(rendered, 'easy'); // difficulty in lowercase
-  assertEquals(rendered.includes('{{PROBLEM_TITLE}}'), false);
-  assertEquals(rendered.includes('{{PROBLEM_DIFFICULTY}}'), false);
+  ok(rendered.includes('Two Sum'));
+  ok(rendered.includes('easy')); // difficulty in lowercase
+  deepStrictEqual(rendered.includes('{{PROBLEM_TITLE}}'), false);
+  deepStrictEqual(rendered.includes('{{PROBLEM_DIFFICULTY}}'), false);
 });
 
-Deno.test('renderAllTemplates - renders all TypeScript minimal templates', async () => {
+test('renderAllTemplates - renders all TypeScript minimal templates', async () => {
   const context: TemplateContext = {
     problem: testProblem,
     config: {
@@ -129,18 +130,18 @@ Deno.test('renderAllTemplates - renders all TypeScript minimal templates', async
   const { solution, test, readme } = await renderAllTemplates(context);
 
   // Verify all three templates were rendered (typescript scaffolding includes test)
-  assertStringIncludes(solution, 'twoSum');
-  assertExists(test);
-  assertStringIncludes(test, 'Two Sum');
-  assertStringIncludes(readme, '# Two Sum');
+  ok(solution.includes('twoSum'));
+  ok(test != null);
+  ok(test.includes('Two Sum'));
+  ok(readme.includes('# Two Sum'));
 
   // Verify no unresolved placeholders in any template
-  assertEquals(solution.includes('{{'), false);
-  assertEquals(test.includes('{{'), false);
-  assertEquals(readme.includes('{{'), false);
+  deepStrictEqual(solution.includes('{{'), false);
+  deepStrictEqual(test.includes('{{'), false);
+  deepStrictEqual(readme.includes('{{'), false);
 });
 
-Deno.test('renderTemplate - handles problem without optional fields', async () => {
+test('renderTemplate - handles problem without optional fields', async () => {
   const minimalProblem: Problem = {
     id: 'min-001',
     slug: 'minimal-test',
@@ -167,13 +168,13 @@ Deno.test('renderTemplate - handles problem without optional fields', async () =
   const rendered = await renderTemplate(context, 'readme');
 
   // Should handle missing data gracefully
-  assertStringIncludes(rendered, '# Minimal Test');
-  assertStringIncludes(rendered, 'A minimal problem');
-  assertStringIncludes(rendered, 'No examples provided');
-  assertStringIncludes(rendered, 'No constraints specified');
+  ok(rendered.includes('# Minimal Test'));
+  ok(rendered.includes('A minimal problem'));
+  ok(rendered.includes('No examples provided'));
+  ok(rendered.includes('No constraints specified'));
 });
 
-Deno.test('renderTemplate - uses custom placeholders when provided', async () => {
+test('renderTemplate - uses custom placeholders when provided', async () => {
   const context: TemplateContext = {
     problem: testProblem,
     config: {
@@ -191,10 +192,10 @@ Deno.test('renderTemplate - uses custom placeholders when provided', async () =>
   const rendered = await renderTemplate(context, 'solution');
 
   // Custom placeholder should override default
-  assertStringIncludes(rendered, '2025-01-14');
+  ok(rendered.includes('2025-01-14'));
 });
 
-Deno.test('renderAllTemplates - works for all supported languages (minimal style)', async () => {
+test('renderAllTemplates - works for all supported languages (minimal style)', async () => {
   const languages = ['typescript', 'javascript', 'python', 'java', 'cpp', 'rust', 'go'];
 
   for (const language of languages) {
@@ -212,16 +213,16 @@ Deno.test('renderAllTemplates - works for all supported languages (minimal style
     const { solution, test, readme } = await renderAllTemplates(context);
 
     // Verify required templates rendered without errors
-    assertEquals(typeof solution, 'string');
-    assertEquals(typeof readme, 'string');
+    deepStrictEqual(typeof solution, 'string');
+    deepStrictEqual(typeof readme, 'string');
 
     // cpp scaffolding skips the standalone test file (replaced by harness +
     // input.txt + CMakeLists). All other languages still emit one.
     if (language === 'cpp') {
-      assertEquals(test, undefined);
+      deepStrictEqual(test, undefined);
     } else {
-      assertExists(test);
-      assertEquals(
+      ok(test != null);
+      deepStrictEqual(
         test.includes('{{PROBLEM_'),
         false,
         `${language} test has unresolved placeholders`,
@@ -229,12 +230,12 @@ Deno.test('renderAllTemplates - works for all supported languages (minimal style
     }
 
     // Verify no unresolved placeholders in solution and readme
-    assertEquals(
+    deepStrictEqual(
       solution.includes('{{PROBLEM_'),
       false,
       `${language} solution has unresolved placeholders`,
     );
-    assertEquals(
+    deepStrictEqual(
       readme.includes('{{PROBLEM_'),
       false,
       `${language} readme has unresolved placeholders`,

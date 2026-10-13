@@ -7,8 +7,10 @@
  * @module test/core/problem/templates.golden
  */
 
-import { assertEquals } from '@std/assert';
-import { join } from '@std/path';
+import { test } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { renderTemplate, type TemplateContext } from '../../../src/core/problem/templates.ts';
 import type { Problem } from '../../../src/types/global.ts';
 
@@ -42,10 +44,10 @@ const fixturesDir = join(new URL('.', import.meta.url).pathname, '../../fixtures
  */
 async function loadGoldenFile(filename: string): Promise<string> {
   const path = join(fixturesDir, filename);
-  return await Deno.readTextFile(path);
+  return await readFile(path, 'utf8');
 }
 
-Deno.test('golden output - TypeScript minimal solution template', async () => {
+test('golden output - TypeScript minimal solution template', async () => {
   const context: TemplateContext = {
     problem: goldenTestProblem,
     config: {
@@ -63,10 +65,10 @@ Deno.test('golden output - TypeScript minimal solution template', async () => {
   const rendered = await renderTemplate(context, 'solution');
   const golden = await loadGoldenFile('solution.golden.txt');
 
-  assertEquals(rendered, golden, 'Rendered solution template should match golden output');
+  deepStrictEqual(rendered, golden, 'Rendered solution template should match golden output');
 });
 
-Deno.test('golden output - TypeScript minimal test template', async () => {
+test('golden output - TypeScript minimal test template', async () => {
   const context: TemplateContext = {
     problem: goldenTestProblem,
     config: {
@@ -84,10 +86,10 @@ Deno.test('golden output - TypeScript minimal test template', async () => {
   const rendered = await renderTemplate(context, 'test');
   const golden = await loadGoldenFile('test.golden.txt');
 
-  assertEquals(rendered, golden, 'Rendered test template should match golden output');
+  deepStrictEqual(rendered, golden, 'Rendered test template should match golden output');
 });
 
-Deno.test('golden output - TypeScript minimal readme template', async () => {
+test('golden output - TypeScript minimal readme template', async () => {
   const context: TemplateContext = {
     problem: goldenTestProblem,
     config: {
@@ -105,5 +107,5 @@ Deno.test('golden output - TypeScript minimal readme template', async () => {
   const rendered = await renderTemplate(context, 'readme');
   const golden = await loadGoldenFile('readme.golden.txt');
 
-  assertEquals(rendered, golden, 'Rendered readme template should match golden output');
+  deepStrictEqual(rendered, golden, 'Rendered readme template should match golden output');
 });

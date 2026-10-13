@@ -4,7 +4,8 @@
  * @module test/core/problem/templates
  */
 
-import { assertEquals, assertRejects, assertStringIncludes } from '@std/assert';
+import { test } from 'bun:test';
+import { deepStrictEqual, ok, rejects } from 'node:assert/strict';
 import {
   formatCompanies,
   formatConstraints,
@@ -27,6 +28,7 @@ import {
 } from '../../../src/core/problem/templates.ts';
 import type { Problem, SupportedLanguage } from '../../../src/types/global.ts';
 import { TemplateError } from '../../../src/utils/errors.ts';
+import { assertRejectsWith } from '../../helpers/assert.ts';
 
 // Test fixtures
 const mockProblem: Problem = {
@@ -69,49 +71,49 @@ const mockTemplateConfig = {
   includeExample: false,
 };
 
-Deno.test('slugToFunctionName - converts kebab-case to camelCase', () => {
-  assertEquals(slugToFunctionName('two-sum'), 'twoSum');
-  assertEquals(slugToFunctionName('longest-substring'), 'longestSubstring');
-  assertEquals(slugToFunctionName('reverse-linked-list'), 'reverseLinkedList');
+test('slugToFunctionName - converts kebab-case to camelCase', () => {
+  deepStrictEqual(slugToFunctionName('two-sum'), 'twoSum');
+  deepStrictEqual(slugToFunctionName('longest-substring'), 'longestSubstring');
+  deepStrictEqual(slugToFunctionName('reverse-linked-list'), 'reverseLinkedList');
 });
 
-Deno.test('slugToFunctionName - handles single word', () => {
-  assertEquals(slugToFunctionName('reverse'), 'reverse');
-  assertEquals(slugToFunctionName('palindrome'), 'palindrome');
+test('slugToFunctionName - handles single word', () => {
+  deepStrictEqual(slugToFunctionName('reverse'), 'reverse');
+  deepStrictEqual(slugToFunctionName('palindrome'), 'palindrome');
 });
 
-Deno.test('slugToFunctionName - handles numbers in slug', () => {
-  assertEquals(slugToFunctionName('3sum'), 'threeSum');
-  assertEquals(slugToFunctionName('4sum-ii'), 'fourSumIi');
-  assertEquals(slugToFunctionName('number-1-problem'), 'numberOneProblem');
+test('slugToFunctionName - handles numbers in slug', () => {
+  deepStrictEqual(slugToFunctionName('3sum'), 'threeSum');
+  deepStrictEqual(slugToFunctionName('4sum-ii'), 'fourSumIi');
+  deepStrictEqual(slugToFunctionName('number-1-problem'), 'numberOneProblem');
 });
 
-Deno.test('slugToClassName - converts kebab-case to PascalCase', () => {
-  assertEquals(slugToClassName('two-sum'), 'TwoSum');
-  assertEquals(slugToClassName('longest-substring'), 'LongestSubstring');
-  assertEquals(slugToClassName('reverse-linked-list'), 'ReverseLinkedList');
+test('slugToClassName - converts kebab-case to PascalCase', () => {
+  deepStrictEqual(slugToClassName('two-sum'), 'TwoSum');
+  deepStrictEqual(slugToClassName('longest-substring'), 'LongestSubstring');
+  deepStrictEqual(slugToClassName('reverse-linked-list'), 'ReverseLinkedList');
 });
 
-Deno.test('slugToClassName - handles single word', () => {
-  assertEquals(slugToClassName('reverse'), 'Reverse');
-  assertEquals(slugToClassName('palindrome'), 'Palindrome');
+test('slugToClassName - handles single word', () => {
+  deepStrictEqual(slugToClassName('reverse'), 'Reverse');
+  deepStrictEqual(slugToClassName('palindrome'), 'Palindrome');
 });
 
-Deno.test('slugToClassName - handles numbers in slug', () => {
-  assertEquals(slugToClassName('3sum'), 'ThreeSum');
-  assertEquals(slugToClassName('4sum-ii'), 'FourSumIi');
-  assertEquals(slugToClassName('number-1-problem'), 'NumberOneProblem');
+test('slugToClassName - handles numbers in slug', () => {
+  deepStrictEqual(slugToClassName('3sum'), 'ThreeSum');
+  deepStrictEqual(slugToClassName('4sum-ii'), 'FourSumIi');
+  deepStrictEqual(slugToClassName('number-1-problem'), 'NumberOneProblem');
 });
 
-Deno.test('slugToClassName - handles complex edge cases', () => {
+test('slugToClassName - handles complex edge cases', () => {
   // Edge cases for class name generation
-  assertEquals(slugToClassName('a'), 'A');
-  assertEquals(slugToClassName('a-b-c-d-e'), 'ABCDE');
-  assertEquals(slugToClassName('123-test'), 'OneTwoThreeTest');
-  assertEquals(slugToClassName('test-123'), 'TestOneTwoThree');
+  deepStrictEqual(slugToClassName('a'), 'A');
+  deepStrictEqual(slugToClassName('a-b-c-d-e'), 'ABCDE');
+  deepStrictEqual(slugToClassName('123-test'), 'OneTwoThreeTest');
+  deepStrictEqual(slugToClassName('test-123'), 'TestOneTwoThree');
 });
 
-Deno.test('formatExamples - formats single example correctly', () => {
+test('formatExamples - formats single example correctly', () => {
   const problem: Problem = {
     ...mockProblem,
     examples: [
@@ -124,21 +126,21 @@ Deno.test('formatExamples - formats single example correctly', () => {
   };
 
   const formatted = formatExamples(problem);
-  assertStringIncludes(formatted, 'Example 1:');
-  assertStringIncludes(formatted, 'Input: nums = [2,7], target = 9');
-  assertStringIncludes(formatted, 'Output: [0,1]');
-  assertStringIncludes(formatted, 'Explanation: Test explanation');
+  ok(formatted.includes('Example 1:'));
+  ok(formatted.includes('Input: nums = [2,7], target = 9'));
+  ok(formatted.includes('Output: [0,1]'));
+  ok(formatted.includes('Explanation: Test explanation'));
 });
 
-Deno.test('formatExamples - formats multiple examples', () => {
+test('formatExamples - formats multiple examples', () => {
   const formatted = formatExamples(mockProblem);
-  assertStringIncludes(formatted, 'Example 1:');
-  assertStringIncludes(formatted, 'Example 2:');
-  assertStringIncludes(formatted, '[2,7,11,15]');
-  assertStringIncludes(formatted, '[3,2,4]');
+  ok(formatted.includes('Example 1:'));
+  ok(formatted.includes('Example 2:'));
+  ok(formatted.includes('[2,7,11,15]'));
+  ok(formatted.includes('[3,2,4]'));
 });
 
-Deno.test('formatExamples - handles example without explanation', () => {
+test('formatExamples - handles example without explanation', () => {
   const problem: Problem = {
     ...mockProblem,
     examples: [
@@ -150,71 +152,71 @@ Deno.test('formatExamples - handles example without explanation', () => {
   };
 
   const formatted = formatExamples(problem);
-  assertStringIncludes(formatted, 'Example 1:');
-  assertStringIncludes(formatted, 'Input: x = 5');
-  assertStringIncludes(formatted, 'Output: 10');
-  assertEquals(formatted.includes('Explanation:'), false);
+  ok(formatted.includes('Example 1:'));
+  ok(formatted.includes('Input: x = 5'));
+  ok(formatted.includes('Output: 10'));
+  deepStrictEqual(formatted.includes('Explanation:'), false);
 });
 
-Deno.test('formatExamples - handles empty examples array', () => {
+test('formatExamples - handles empty examples array', () => {
   const problem: Problem = {
     ...mockProblem,
     examples: [],
   };
 
   const formatted = formatExamples(problem);
-  assertEquals(formatted, 'No examples provided.');
+  deepStrictEqual(formatted, 'No examples provided.');
 });
 
-Deno.test('formatConstraints - formats constraints as bulleted list', () => {
+test('formatConstraints - formats constraints as bulleted list', () => {
   const formatted = formatConstraints(mockProblem.constraints);
-  assertStringIncludes(formatted, '- 2 <= nums.length <= 10^4');
-  assertStringIncludes(formatted, '- -10^9 <= nums[i] <= 10^9');
-  assertStringIncludes(formatted, '- Only one valid answer exists.');
+  ok(formatted.includes('- 2 <= nums.length <= 10^4'));
+  ok(formatted.includes('- -10^9 <= nums[i] <= 10^9'));
+  ok(formatted.includes('- Only one valid answer exists.'));
 });
 
-Deno.test('formatConstraints - handles empty constraints', () => {
+test('formatConstraints - handles empty constraints', () => {
   const formatted = formatConstraints([]);
-  assertEquals(formatted, 'No constraints specified.');
+  deepStrictEqual(formatted, 'No constraints specified.');
 });
 
-Deno.test('formatHints - formats hints as numbered list', () => {
+test('formatHints - formats hints as numbered list', () => {
   const formatted = formatHints(mockProblem.hints);
-  assertStringIncludes(formatted, '1. Use a hash map');
-  assertStringIncludes(formatted, '2. For each element');
+  ok(formatted.includes('1. Use a hash map'));
+  ok(formatted.includes('2. For each element'));
 });
 
-Deno.test('formatHints - handles empty hints', () => {
+test('formatHints - handles empty hints', () => {
   const formatted = formatHints([]);
-  assertEquals(formatted, 'No hints available.');
+  deepStrictEqual(formatted, 'No hints available.');
 });
 
-Deno.test('formatTags - formats tags as comma-separated list', () => {
+test('formatTags - formats tags as comma-separated list', () => {
   const formatted = formatTags(['array', 'hash-table', 'two-pointers']);
-  assertEquals(formatted, 'array, hash-table, two-pointers');
+  deepStrictEqual(formatted, 'array, hash-table, two-pointers');
 });
 
-Deno.test('formatTags - handles empty tags', () => {
+test('formatTags - handles empty tags', () => {
   const formatted = formatTags([]);
-  assertEquals(formatted, 'None');
+  deepStrictEqual(formatted, 'None');
 });
 
-Deno.test('formatCompanies - formats companies as comma-separated list', () => {
+test('formatCompanies - formats companies as comma-separated list', () => {
   const formatted = formatCompanies(['Amazon', 'Google', 'Microsoft']);
-  assertEquals(formatted, 'Amazon, Google, Microsoft');
+  deepStrictEqual(formatted, 'Amazon, Google, Microsoft');
 });
 
-Deno.test('formatCompanies - handles undefined companies', () => {
+test('formatCompanies - handles undefined companies', () => {
   const formatted = formatCompanies(undefined);
-  assertEquals(formatted, 'None');
+  deepStrictEqual(formatted, 'None');
 });
 
-Deno.test('formatCompanies - handles empty companies array', () => {
+test('formatCompanies - handles empty companies array', () => {
   const formatted = formatCompanies([]);
-  assertEquals(formatted, 'None');
+  deepStrictEqual(formatted, 'None');
 });
 
-Deno.test('replacePlaceholders - replaces all placeholders', () => {
+test('replacePlaceholders - replaces all placeholders', () => {
   const content = 'Title: {{TITLE}}, Author: {{AUTHOR}}';
   const values = {
     TITLE: 'Test Title',
@@ -222,48 +224,48 @@ Deno.test('replacePlaceholders - replaces all placeholders', () => {
   };
 
   const result = replacePlaceholders(content, values);
-  assertEquals(result, 'Title: Test Title, Author: Test Author');
+  deepStrictEqual(result, 'Title: Test Title, Author: Test Author');
 });
 
-Deno.test('replacePlaceholders - handles multiple occurrences', () => {
+test('replacePlaceholders - handles multiple occurrences', () => {
   const content = '{{NAME}} is {{NAME}}';
   const values = { NAME: 'Test' };
 
   const result = replacePlaceholders(content, values);
-  assertEquals(result, 'Test is Test');
+  deepStrictEqual(result, 'Test is Test');
 });
 
-Deno.test('replacePlaceholders - throws on unknown placeholder by default', () => {
+test('replacePlaceholders - throws on unknown placeholder by default', () => {
   const content = 'Title: {{UNKNOWN}}';
   const values = { TITLE: 'Test' };
 
   try {
     replacePlaceholders(content, values);
   } catch (e) {
-    assertEquals(e instanceof TemplateError, true);
-    assertStringIncludes((e as TemplateError).message, 'Unknown placeholders');
-    assertStringIncludes((e as TemplateError).message, 'UNKNOWN');
+    deepStrictEqual(e instanceof TemplateError, true);
+    ok((e as TemplateError).message.includes('Unknown placeholders'));
+    ok((e as TemplateError).message.includes('UNKNOWN'));
   }
 });
 
-Deno.test('replacePlaceholders - allows unknown placeholders when specified', () => {
+test('replacePlaceholders - allows unknown placeholders when specified', () => {
   const content = 'Title: {{TITLE}}, Unknown: {{UNKNOWN}}';
   const values = { TITLE: 'Test' };
 
   const result = replacePlaceholders(content, values, true);
-  assertEquals(result, 'Title: Test, Unknown: {{UNKNOWN}}');
+  deepStrictEqual(result, 'Title: Test, Unknown: {{UNKNOWN}}');
 });
 
-Deno.test('replacePlaceholders - handles no placeholders', () => {
+test('replacePlaceholders - handles no placeholders', () => {
   const content = 'Plain text with no placeholders';
   const values = { TITLE: 'Test' };
 
   const result = replacePlaceholders(content, values);
-  assertEquals(result, content);
+  deepStrictEqual(result, content);
 });
 
-Deno.test('resolveTemplatePath - throws error for non-existent template', async () => {
-  await assertRejects(
+test('resolveTemplatePath - throws error for non-existent template', async () => {
+  await assertRejectsWith(
     async () => {
       await resolveTemplatePath('typescript', 'minimal', 'nonexistent' as TemplateKind);
     },
@@ -272,7 +274,7 @@ Deno.test('resolveTemplatePath - throws error for non-existent template', async 
   );
 });
 
-Deno.test('renderTemplate - renders template with problem data', async () => {
+test('renderTemplate - renders template with problem data', async () => {
   // This test requires actual template files in the correct location
   // We'll test the integration with real templates in the actual environment
   // For now, we verify the function signature and error handling
@@ -287,11 +289,11 @@ Deno.test('renderTemplate - renders template with problem data', async () => {
     await renderTemplate(context, 'solution');
   } catch (error) {
     // Expected to fail if template files aren't in place
-    assertEquals(error instanceof TemplateError, true);
+    deepStrictEqual(error instanceof TemplateError, true);
   }
 });
 
-Deno.test('renderAllTemplates - renders all template types', async () => {
+test('renderAllTemplates - renders all template types', async () => {
   const context: TemplateContext = {
     problem: mockProblem,
     config: mockTemplateConfig,
@@ -302,11 +304,11 @@ Deno.test('renderAllTemplates - renders all template types', async () => {
     await renderAllTemplates(context);
   } catch (error) {
     // Expected to fail if template files aren't in place
-    assertEquals(error instanceof TemplateError, true);
+    deepStrictEqual(error instanceof TemplateError, true);
   }
 });
 
-Deno.test('renderTemplate - handles rendering errors gracefully', async () => {
+test('renderTemplate - handles rendering errors gracefully', async () => {
   const context: TemplateContext = {
     problem: mockProblem,
     config: {
@@ -318,12 +320,12 @@ Deno.test('renderTemplate - handles rendering errors gracefully', async () => {
     },
   };
 
-  await assertRejects(async () => {
+  await rejects(async () => {
     await renderTemplate(context, 'solution');
   }, TemplateError);
 });
 
-Deno.test('placeholder values - builds correct placeholder values', () => {
+test('placeholder values - builds correct placeholder values', () => {
   // Test that placeholder values are built correctly
   // This is implicitly tested through the formatting functions above
   // But we can add explicit tests for edge cases
@@ -340,48 +342,51 @@ Deno.test('placeholder values - builds correct placeholder values', () => {
     tags: [],
   };
 
-  assertEquals(formatExamples(problemWithMinimalData), 'No examples provided.');
-  assertEquals(formatConstraints(problemWithMinimalData.constraints), 'No constraints specified.');
-  assertEquals(formatHints(problemWithMinimalData.hints), 'No hints available.');
-  assertEquals(formatTags(problemWithMinimalData.tags), 'None');
-  assertEquals(formatCompanies(problemWithMinimalData.companies), 'None');
+  deepStrictEqual(formatExamples(problemWithMinimalData), 'No examples provided.');
+  deepStrictEqual(
+    formatConstraints(problemWithMinimalData.constraints),
+    'No constraints specified.',
+  );
+  deepStrictEqual(formatHints(problemWithMinimalData.hints), 'No hints available.');
+  deepStrictEqual(formatTags(problemWithMinimalData.tags), 'None');
+  deepStrictEqual(formatCompanies(problemWithMinimalData.companies), 'None');
 });
 
-Deno.test('slugToFunctionName - handles complex edge cases', () => {
+test('slugToFunctionName - handles complex edge cases', () => {
   // Edge cases for function name generation
-  assertEquals(slugToFunctionName('a'), 'a');
-  assertEquals(slugToFunctionName('a-b-c-d-e'), 'aBCDE');
-  assertEquals(slugToFunctionName('123-test'), 'oneTwoThreeTest');
-  assertEquals(slugToFunctionName('test-123'), 'testOneTwoThree');
+  deepStrictEqual(slugToFunctionName('a'), 'a');
+  deepStrictEqual(slugToFunctionName('a-b-c-d-e'), 'aBCDE');
+  deepStrictEqual(slugToFunctionName('123-test'), 'oneTwoThreeTest');
+  deepStrictEqual(slugToFunctionName('test-123'), 'testOneTwoThree');
 });
 
-Deno.test('formatLCValue - encodes primitives in LeetCode wire format', () => {
-  assertEquals(formatLCValue(42), '42');
-  assertEquals(formatLCValue(-1), '-1');
-  assertEquals(formatLCValue(0), '0');
-  assertEquals(formatLCValue(true), 'true');
-  assertEquals(formatLCValue(false), 'false');
-  assertEquals(formatLCValue('hello'), '"hello"');
-  assertEquals(formatLCValue(''), '""');
-  assertEquals(formatLCValue(null), 'null');
+test('formatLCValue - encodes primitives in LeetCode wire format', () => {
+  deepStrictEqual(formatLCValue(42), '42');
+  deepStrictEqual(formatLCValue(-1), '-1');
+  deepStrictEqual(formatLCValue(0), '0');
+  deepStrictEqual(formatLCValue(true), 'true');
+  deepStrictEqual(formatLCValue(false), 'false');
+  deepStrictEqual(formatLCValue('hello'), '"hello"');
+  deepStrictEqual(formatLCValue(''), '""');
+  deepStrictEqual(formatLCValue(null), 'null');
 });
 
-Deno.test('formatLCValue - encodes arrays without spaces and recurses', () => {
-  assertEquals(formatLCValue([]), '[]');
-  assertEquals(formatLCValue([1, 2, 3]), '[1,2,3]');
-  assertEquals(
+test('formatLCValue - encodes arrays without spaces and recurses', () => {
+  deepStrictEqual(formatLCValue([]), '[]');
+  deepStrictEqual(formatLCValue([1, 2, 3]), '[1,2,3]');
+  deepStrictEqual(
     formatLCValue([
       [1, 2],
       [3, 4],
     ]),
     '[[1,2],[3,4]]',
   );
-  assertEquals(formatLCValue(['a', 'b']), '["a","b"]');
+  deepStrictEqual(formatLCValue(['a', 'b']), '["a","b"]');
   // null entries are used in TreeNode array literals
-  assertEquals(formatLCValue([1, null, 2, 3]), '[1,null,2,3]');
+  deepStrictEqual(formatLCValue([1, null, 2, 3]), '[1,null,2,3]');
 });
 
-Deno.test('formatLCValue - throws for unsupported types', () => {
+test('formatLCValue - throws for unsupported types', () => {
   // Bare objects are not valid wire-format input.
   let threw = false;
   try {
@@ -389,30 +394,30 @@ Deno.test('formatLCValue - throws for unsupported types', () => {
   } catch {
     threw = true;
   }
-  assertEquals(threw, true);
+  deepStrictEqual(threw, true);
 });
 
-Deno.test('formatExamplesAsLCInput - one whitespace-separated line per example', () => {
+test('formatExamplesAsLCInput - one whitespace-separated line per example', () => {
   const out = formatExamplesAsLCInput(mockProblem);
-  assertEquals(out.split('\n').length, 2);
-  assertStringIncludes(out, '[2,7,11,15] 9');
-  assertStringIncludes(out, '[3,2,4] 6');
+  deepStrictEqual(out.split('\n').length, 2);
+  ok(out.includes('[2,7,11,15] 9'));
+  ok(out.includes('[3,2,4] 6'));
 });
 
-Deno.test('formatExamplesAsLCInput - returns empty string when there are no examples', () => {
+test('formatExamplesAsLCInput - returns empty string when there are no examples', () => {
   const empty: Problem = {
     ...mockProblem,
     examples: [],
   };
-  assertEquals(formatExamplesAsLCInput(empty), '');
+  deepStrictEqual(formatExamplesAsLCInput(empty), '');
 });
 
-Deno.test('formatExamplesAsLCOutput - joins outputs with `---` separator and matches harness format', () => {
+test('formatExamplesAsLCOutput - joins outputs with `---` separator and matches harness format', () => {
   // mockProblem has two examples with outputs [0,1] and [1,2].
-  assertEquals(formatExamplesAsLCOutput(mockProblem), '[0,1]\n---\n[1,2]');
+  deepStrictEqual(formatExamplesAsLCOutput(mockProblem), '[0,1]\n---\n[1,2]');
 });
 
-Deno.test('formatExamplesAsLCOutput - encodes scalar outputs in LC wire format', () => {
+test('formatExamplesAsLCOutput - encodes scalar outputs in LC wire format', () => {
   const scalarOutputs: Problem = {
     ...mockProblem,
     examples: [
@@ -421,53 +426,53 @@ Deno.test('formatExamplesAsLCOutput - encodes scalar outputs in LC wire format',
       { input: { x: 3 }, output: 'hi' },
     ],
   };
-  assertEquals(formatExamplesAsLCOutput(scalarOutputs), '42\n---\ntrue\n---\n"hi"');
+  deepStrictEqual(formatExamplesAsLCOutput(scalarOutputs), '42\n---\ntrue\n---\n"hi"');
 });
 
-Deno.test('formatExamplesAsLCOutput - returns empty string for problems without examples', () => {
+test('formatExamplesAsLCOutput - returns empty string for problems without examples', () => {
   const empty: Problem = { ...mockProblem, examples: [] };
-  assertEquals(formatExamplesAsLCOutput(empty), '');
+  deepStrictEqual(formatExamplesAsLCOutput(empty), '');
 });
 
-Deno.test('resolveSignature - uses curated per-language signature when present', () => {
+test('resolveSignature - uses curated per-language signature when present', () => {
   const problem: Problem = {
     ...mockProblem,
     signatures: { cpp: 'vector<int> twoSum(vector<int>& nums, int target)' },
   };
-  assertEquals(
+  deepStrictEqual(
     resolveSignature(problem, 'cpp'),
     'vector<int> twoSum(vector<int>& nums, int target)',
   );
 });
 
-Deno.test('resolveSignature - falls back to a TODO declaration when missing', () => {
+test('resolveSignature - falls back to a TODO declaration when missing', () => {
   // Other languages do not have a signature for this problem; the fallback
   // uses the camelCase function name with a TODO param list.
   const fallback = resolveSignature(mockProblem, 'cpp');
-  assertStringIncludes(fallback, 'auto twoSum');
-  assertStringIncludes(fallback, 'TODO');
+  ok(fallback.includes('auto twoSum'));
+  ok(fallback.includes('TODO'));
 });
 
-Deno.test('resolveSignature - treats whitespace-only signature as missing', () => {
+test('resolveSignature - treats whitespace-only signature as missing', () => {
   const problem: Problem = {
     ...mockProblem,
     signatures: { cpp: '   ' },
   };
-  assertStringIncludes(resolveSignature(problem, 'cpp'), 'auto twoSum');
+  ok(resolveSignature(problem, 'cpp').includes('auto twoSum'));
 });
 
-Deno.test('getLanguageScaffolding - cpp uses harness scaffolding', () => {
+test('getLanguageScaffolding - cpp uses harness scaffolding', () => {
   const cpp = getLanguageScaffolding('cpp');
-  assertEquals(cpp.templates, ['solution', 'readme']);
-  assertEquals(cpp.extras, ['cmakelists', 'input', 'expected']);
-  assertEquals(cpp.sharedAssets, ['harness']);
+  deepStrictEqual(cpp.templates, ['solution', 'readme']);
+  deepStrictEqual(cpp.extras, ['cmakelists', 'input', 'expected']);
+  deepStrictEqual(cpp.sharedAssets, ['harness']);
 });
 
-Deno.test('getLanguageScaffolding - other languages keep the default test scaffolding', () => {
+test('getLanguageScaffolding - other languages keep the default test scaffolding', () => {
   for (const lang of ['typescript', 'javascript', 'python', 'java', 'rust', 'go'] as const) {
     const spec = getLanguageScaffolding(lang);
-    assertEquals(spec.templates, ['solution', 'test', 'readme']);
-    assertEquals(spec.extras, []);
-    assertEquals(spec.sharedAssets, []);
+    deepStrictEqual(spec.templates, ['solution', 'test', 'readme']);
+    deepStrictEqual(spec.extras, []);
+    deepStrictEqual(spec.sharedAssets, []);
   }
 });
