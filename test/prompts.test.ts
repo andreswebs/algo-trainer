@@ -4,8 +4,8 @@
  * @module test/prompts
  */
 
-import { assertEquals } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
+import { describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
 import {
   isInteractive,
   promptConfirm,
@@ -18,7 +18,7 @@ import {
 describe('isInteractive', () => {
   it('should return boolean indicating if terminal is interactive', () => {
     const result = isInteractive();
-    assertEquals(typeof result, 'boolean');
+    deepStrictEqual(typeof result, 'boolean');
   });
 });
 
@@ -31,7 +31,7 @@ describe('promptText', () => {
 
     // In non-interactive mode, should return default value
     if (!isInteractive()) {
-      assertEquals(result, 'test-default');
+      deepStrictEqual(result, 'test-default');
     }
   });
 
@@ -39,7 +39,7 @@ describe('promptText', () => {
     const result = await promptText('Test prompt');
 
     if (!isInteractive()) {
-      assertEquals(result, null);
+      deepStrictEqual(result, null);
     }
   });
 });
@@ -52,7 +52,7 @@ describe('promptSelect', () => {
     });
 
     if (!isInteractive()) {
-      assertEquals(result, 'option2');
+      deepStrictEqual(result, 'option2');
     }
   });
 
@@ -61,7 +61,7 @@ describe('promptSelect', () => {
     const result = await promptSelect('Choose:', options);
 
     if (!isInteractive()) {
-      assertEquals(result, null);
+      deepStrictEqual(result, null);
     }
   });
 
@@ -72,7 +72,7 @@ describe('promptSelect', () => {
     });
 
     if (!isInteractive()) {
-      assertEquals(result, 'medium');
+      deepStrictEqual(result, 'medium');
     }
   });
 });
@@ -83,8 +83,8 @@ describe('promptConfirm', () => {
     const resultFalse = await promptConfirm('Confirm?', false);
 
     if (!isInteractive()) {
-      assertEquals(resultTrue, true);
-      assertEquals(resultFalse, false);
+      deepStrictEqual(resultTrue, true);
+      deepStrictEqual(resultFalse, false);
     }
   });
 
@@ -92,7 +92,7 @@ describe('promptConfirm', () => {
     const result = await promptConfirm('Confirm?');
 
     if (!isInteractive()) {
-      assertEquals(result, false);
+      deepStrictEqual(result, false);
     }
   });
 });
@@ -102,7 +102,7 @@ describe('promptDifficulty', () => {
     const result = await promptDifficulty('medium');
 
     if (!isInteractive()) {
-      assertEquals(result, 'medium');
+      deepStrictEqual(result, 'medium');
     }
   });
 
@@ -110,7 +110,7 @@ describe('promptDifficulty', () => {
     const result = await promptDifficulty();
 
     if (!isInteractive()) {
-      assertEquals(result, null);
+      deepStrictEqual(result, null);
     }
   });
 
@@ -120,9 +120,9 @@ describe('promptDifficulty', () => {
     const hardResult = await promptDifficulty('hard');
 
     if (!isInteractive()) {
-      assertEquals(easyResult, 'easy');
-      assertEquals(mediumResult, 'medium');
-      assertEquals(hardResult, 'hard');
+      deepStrictEqual(easyResult, 'easy');
+      deepStrictEqual(mediumResult, 'medium');
+      deepStrictEqual(hardResult, 'hard');
     }
   });
 });
@@ -132,7 +132,7 @@ describe('promptLanguage', () => {
     const result = await promptLanguage('typescript');
 
     if (!isInteractive()) {
-      assertEquals(result, 'typescript');
+      deepStrictEqual(result, 'typescript');
     }
   });
 
@@ -140,7 +140,7 @@ describe('promptLanguage', () => {
     const result = await promptLanguage();
 
     if (!isInteractive()) {
-      assertEquals(result, null);
+      deepStrictEqual(result, null);
     }
   });
 
@@ -150,9 +150,9 @@ describe('promptLanguage', () => {
     const javaResult = await promptLanguage('java');
 
     if (!isInteractive()) {
-      assertEquals(tsResult, 'typescript');
-      assertEquals(pyResult, 'python');
-      assertEquals(javaResult, 'java');
+      deepStrictEqual(tsResult, 'typescript');
+      deepStrictEqual(pyResult, 'python');
+      deepStrictEqual(javaResult, 'java');
     }
   });
 });

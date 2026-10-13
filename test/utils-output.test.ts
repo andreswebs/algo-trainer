@@ -4,8 +4,8 @@
  * @module test/utils-output.test
  */
 
-import { assertEquals, assertExists, assertMatch, assertStringIncludes } from '@std/assert';
-import { afterEach, beforeEach, describe, it } from '@std/testing/bdd';
+import { afterEach, beforeEach, describe, it } from 'bun:test';
+import { deepStrictEqual, match, ok } from 'node:assert/strict';
 import { Logger, logger, resetOutputOptions, setOutputOptions } from '../src/utils/output.ts';
 
 // Helper to capture console.error output
@@ -55,38 +55,38 @@ describe('Logger class', () => {
     it('should log success messages with emoji', () => {
       setOutputOptions({ useEmoji: true, useColors: false });
       logger.success('Test success');
-      assertStringIncludes(capture.getOutput(), '✅');
-      assertStringIncludes(capture.getOutput(), 'Test success');
+      ok(capture.getOutput().includes('✅'));
+      ok(capture.getOutput().includes('Test success'));
     });
 
     it('should log success messages without emoji', () => {
       setOutputOptions({ useEmoji: false, useColors: false });
       logger.success('Test success');
-      assertStringIncludes(capture.getOutput(), 'SUCCESS:');
-      assertStringIncludes(capture.getOutput(), 'Test success');
+      ok(capture.getOutput().includes('SUCCESS:'));
+      ok(capture.getOutput().includes('Test success'));
     });
 
     it('should log error messages', () => {
       setOutputOptions({ useEmoji: true, useColors: false });
       logger.error('Test error');
-      assertStringIncludes(capture.getOutput(), '❌');
-      assertStringIncludes(capture.getOutput(), 'Test error');
+      ok(capture.getOutput().includes('❌'));
+      ok(capture.getOutput().includes('Test error'));
     });
 
     it('should log error messages with details', () => {
       setOutputOptions({ useEmoji: true, useColors: false });
       logger.error('Test error', 'Error details');
       const output = capture.getOutput();
-      assertStringIncludes(output, '❌');
-      assertStringIncludes(output, 'Test error');
-      assertStringIncludes(output, 'Error details');
+      ok(output.includes('❌'));
+      ok(output.includes('Test error'));
+      ok(output.includes('Error details'));
     });
 
     it('should log error objects', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'normal' });
       const error = new Error('Test error object');
       logger.errorObject(error);
-      assertStringIncludes(capture.getOutput(), 'Test error object');
+      ok(capture.getOutput().includes('Test error object'));
     });
 
     it('should include stack trace in verbose mode', () => {
@@ -94,8 +94,8 @@ describe('Logger class', () => {
       const error = new Error('Test error with stack');
       logger.errorObject(error);
       const output = capture.getOutput();
-      assertStringIncludes(output, 'Test error with stack');
-      assertStringIncludes(output, 'at '); // Stack trace line
+      ok(output.includes('Test error with stack'));
+      ok(output.includes('at ')); // Stack trace line
     });
 
     it('should not include stack trace in normal mode', () => {
@@ -103,60 +103,60 @@ describe('Logger class', () => {
       const error = new Error('Test error without stack');
       logger.errorObject(error);
       const output = capture.getOutput();
-      assertStringIncludes(output, 'Test error without stack');
-      assertEquals(output.includes('at '), false);
+      ok(output.includes('Test error without stack'));
+      deepStrictEqual(output.includes('at '), false);
     });
 
     it('should log warning messages', () => {
       setOutputOptions({ useEmoji: true, useColors: false });
       logger.warn('Test warning');
-      assertStringIncludes(capture.getOutput(), '⚠️');
-      assertStringIncludes(capture.getOutput(), 'Test warning');
+      ok(capture.getOutput().includes('⚠️'));
+      ok(capture.getOutput().includes('Test warning'));
     });
 
     it('should log info messages in normal mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'normal' });
       logger.info('Test info');
-      assertStringIncludes(capture.getOutput(), 'ℹ️');
-      assertStringIncludes(capture.getOutput(), 'Test info');
+      ok(capture.getOutput().includes('ℹ️'));
+      ok(capture.getOutput().includes('Test info'));
     });
 
     it('should suppress info messages in quiet mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'quiet' });
       logger.info('Test info');
-      assertEquals(capture.getOutput(), '');
+      deepStrictEqual(capture.getOutput(), '');
     });
 
     it('should log debug messages in verbose mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'verbose' });
       logger.debug('Test debug');
-      assertStringIncludes(capture.getOutput(), '🐛');
-      assertStringIncludes(capture.getOutput(), 'Test debug');
+      ok(capture.getOutput().includes('🐛'));
+      ok(capture.getOutput().includes('Test debug'));
     });
 
     it('should suppress debug messages in normal mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'normal' });
       logger.debug('Test debug');
-      assertEquals(capture.getOutput(), '');
+      deepStrictEqual(capture.getOutput(), '');
     });
 
     it('should suppress debug messages in quiet mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'quiet' });
       logger.debug('Test debug');
-      assertEquals(capture.getOutput(), '');
+      deepStrictEqual(capture.getOutput(), '');
     });
 
     it('should log progress messages in normal mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'normal' });
       logger.progress('Test progress');
-      assertStringIncludes(capture.getOutput(), '🔄');
-      assertStringIncludes(capture.getOutput(), 'Test progress');
+      ok(capture.getOutput().includes('🔄'));
+      ok(capture.getOutput().includes('Test progress'));
     });
 
     it('should suppress progress messages in quiet mode', () => {
       setOutputOptions({ useEmoji: true, useColors: false, verbosity: 'quiet' });
       logger.progress('Test progress');
-      assertEquals(capture.getOutput(), '');
+      deepStrictEqual(capture.getOutput(), '');
     });
   });
 
@@ -164,20 +164,20 @@ describe('Logger class', () => {
     it('should log plain messages', () => {
       setOutputOptions({ useColors: false });
       logger.log('Plain message');
-      assertEquals(capture.getOutput(), 'Plain message');
+      deepStrictEqual(capture.getOutput(), 'Plain message');
     });
 
     it('should log multiple arguments', () => {
       setOutputOptions({ useColors: false });
       logger.log('Message', 123, true);
-      assertEquals(capture.getOutput(), 'Message 123 true');
+      deepStrictEqual(capture.getOutput(), 'Message 123 true');
     });
 
     it('should log objects as JSON', () => {
       setOutputOptions({ useColors: false });
       logger.log({ key: 'value' });
-      assertStringIncludes(capture.getOutput(), '"key"');
-      assertStringIncludes(capture.getOutput(), '"value"');
+      ok(capture.getOutput().includes('"key"'));
+      ok(capture.getOutput().includes('"value"'));
     });
 
     it('should output newlines', () => {
@@ -186,10 +186,10 @@ describe('Logger class', () => {
       logger.newline();
       logger.log('Line 2');
       const lines = capture.getLines();
-      assertEquals(lines.length, 3);
-      assertEquals(lines[0], 'Line 1');
-      assertEquals(lines[1], '');
-      assertEquals(lines[2], 'Line 2');
+      deepStrictEqual(lines.length, 3);
+      deepStrictEqual(lines[0], 'Line 1');
+      deepStrictEqual(lines[1], '');
+      deepStrictEqual(lines[2], 'Line 2');
     });
   });
 
@@ -201,51 +201,51 @@ describe('Logger class', () => {
     it('should format key-value pairs with default width', () => {
       logger.keyValue('language', 'typescript');
       const output = capture.getOutput();
-      assertStringIncludes(output, 'language:');
-      assertStringIncludes(output, 'typescript');
+      ok(output.includes('language:'));
+      ok(output.includes('typescript'));
     });
 
     it('should format key-value pairs with custom width', () => {
       logger.keyValue('lang', 'ts', 10);
       const output = capture.getOutput();
-      assertStringIncludes(output, 'lang:');
-      assertStringIncludes(output, 'ts');
+      ok(output.includes('lang:'));
+      ok(output.includes('ts'));
     });
 
     it('should format non-string values', () => {
       logger.keyValue('count', 42);
       const output = capture.getOutput();
-      assertStringIncludes(output, 'count:');
-      assertStringIncludes(output, '42');
+      ok(output.includes('count:'));
+      ok(output.includes('42'));
     });
 
     it('should output section headers', () => {
       logger.section('Test Section');
-      assertEquals(capture.getOutput(), 'Test Section:');
+      deepStrictEqual(capture.getOutput(), 'Test Section:');
     });
 
     it('should output section headers with indent', () => {
       logger.section('Indented', 2);
-      assertEquals(capture.getOutput(), '  Indented:');
+      deepStrictEqual(capture.getOutput(), '  Indented:');
     });
 
     it('should output separator lines', () => {
       logger.separator(10);
-      assertEquals(capture.getOutput(), '──────────');
+      deepStrictEqual(capture.getOutput(), '──────────');
     });
 
     it('should output separator lines with custom character', () => {
       logger.separator(5, '=');
-      assertEquals(capture.getOutput(), '=====');
+      deepStrictEqual(capture.getOutput(), '=====');
     });
 
     it('should output titled boxes', () => {
       logger.box('Title', 'Content line 1\nContent line 2');
       const lines = capture.getLines();
-      assertEquals(lines.length >= 5, true); // At least: sep, title, sep, content1, content2, sep
-      assertStringIncludes(lines.join('\n'), 'TITLE');
-      assertStringIncludes(lines.join('\n'), 'Content line 1');
-      assertStringIncludes(lines.join('\n'), 'Content line 2');
+      deepStrictEqual(lines.length >= 5, true); // At least: sep, title, sep, content1, content2, sep
+      ok(lines.join('\n').includes('TITLE'));
+      ok(lines.join('\n').includes('Content line 1'));
+      ok(lines.join('\n').includes('Content line 2'));
     });
 
     it('should output tables with basic columns', () => {
@@ -260,19 +260,19 @@ describe('Logger class', () => {
         ],
       });
       const output = capture.getOutput();
-      assertStringIncludes(output, 'Name');
-      assertStringIncludes(output, 'Age');
-      assertStringIncludes(output, 'Alice');
-      assertStringIncludes(output, 'Bob');
-      assertStringIncludes(output, '30');
-      assertStringIncludes(output, '25');
+      ok(output.includes('Name'));
+      ok(output.includes('Age'));
+      ok(output.includes('Alice'));
+      ok(output.includes('Bob'));
+      ok(output.includes('30'));
+      ok(output.includes('25'));
     });
 
     it('should output empty tables gracefully', () => {
       logger.table([], {
         columns: [{ key: 'name', label: 'Name' }],
       });
-      assertEquals(capture.getOutput(), '');
+      deepStrictEqual(capture.getOutput(), '');
     });
 
     it('should align table columns to the right', () => {
@@ -282,8 +282,8 @@ describe('Logger class', () => {
       });
       const lines = capture.getLines();
       const dataLine = lines.find((line) => line.includes('1'));
-      assertExists(dataLine);
-      assertMatch(dataLine, /\s+1/); // Should have leading spaces
+      ok(dataLine != null);
+      match(dataLine, /\s+1/); // Should have leading spaces
     });
   });
 
@@ -300,10 +300,10 @@ describe('Logger class', () => {
       logger.log('After');
 
       const lines = capture.getLines();
-      assertEquals(lines[0], 'Before');
-      assertEquals(lines[1], 'Group');
-      assertEquals(lines[2], '  Inside'); // Indented
-      assertEquals(lines[3], 'After');
+      deepStrictEqual(lines[0], 'Before');
+      deepStrictEqual(lines[1], 'Group');
+      deepStrictEqual(lines[2], '  Inside'); // Indented
+      deepStrictEqual(lines[3], 'After');
     });
 
     it('should support nested groups', () => {
@@ -316,11 +316,11 @@ describe('Logger class', () => {
       logger.groupEnd();
 
       const lines = capture.getLines();
-      assertEquals(lines[0], 'Outer');
-      assertEquals(lines[1], '  Level 1');
-      assertEquals(lines[2], '  Inner');
-      assertEquals(lines[3], '    Level 2'); // Double indented
-      assertEquals(lines[4], '  Back to level 1');
+      deepStrictEqual(lines[0], 'Outer');
+      deepStrictEqual(lines[1], '  Level 1');
+      deepStrictEqual(lines[2], '  Inner');
+      deepStrictEqual(lines[3], '    Level 2'); // Double indented
+      deepStrictEqual(lines[4], '  Back to level 1');
     });
 
     it('should support groups without labels', () => {
@@ -331,9 +331,9 @@ describe('Logger class', () => {
       logger.log('After');
 
       const lines = capture.getLines();
-      assertEquals(lines[0], 'Before');
-      assertEquals(lines[1], '  Indented');
-      assertEquals(lines[2], 'After');
+      deepStrictEqual(lines[0], 'Before');
+      deepStrictEqual(lines[1], '  Indented');
+      deepStrictEqual(lines[2], 'After');
     });
 
     it('should handle extra groupEnd calls gracefully', () => {
@@ -344,14 +344,14 @@ describe('Logger class', () => {
       logger.log('After');
 
       const lines = capture.getLines();
-      assertEquals(lines[0], '  Inside');
-      assertEquals(lines[1], 'After');
+      deepStrictEqual(lines[0], '  Inside');
+      deepStrictEqual(lines[1], 'After');
     });
   });
 
   describe('singleton logger instance', () => {
     it('should export a singleton logger instance', () => {
-      assertEquals(logger instanceof Logger, true);
+      deepStrictEqual(logger instanceof Logger, true);
     });
 
     it('should use the same instance across calls', () => {
@@ -361,7 +361,7 @@ describe('Logger class', () => {
       logger.groupEnd();
 
       const lines = capture.getLines();
-      assertEquals(lines[0], '  Test'); // Should be indented from group call
+      deepStrictEqual(lines[0], '  Test'); // Should be indented from group call
     });
   });
 });

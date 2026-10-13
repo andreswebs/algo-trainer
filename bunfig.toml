@@ -18,11 +18,6 @@ pathIgnorePatterns = [
   "test/cli-teach.test.ts",
   "test/cli-teaching-integration.test.ts",
   "test/cli/e2e_test.ts",
-  "test/config.test.ts",
-  "test/env-integration.test.ts",
-  "test/env.test.ts",
   "test/list.test.ts",
   "test/phase3-integration.test.ts",
-  "test/prompts.test.ts",
-  "test/utils-output.test.ts",
 ]

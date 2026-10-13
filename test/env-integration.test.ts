@@ -4,10 +4,11 @@
  * @module test/env-integration.test
  */
 
-import { assertEquals } from '@std/assert';
-import { ensureDir } from '@std/fs';
-import { join } from '@std/path';
-import { describe, it } from '@std/testing/bdd';
+import { describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { ENV_VARS } from '../src/cli/env.ts';
 import { ConfigManager } from '../src/config/manager.ts';
 import { writeJsonFile } from '../src/utils/fs.ts';
@@ -16,13 +17,13 @@ describe('Environment Variable Integration', () => {
   const withTempConfig = async (
     fn: (configPath: string) => void | Promise<void>,
   ): Promise<void> => {
-    const tempDir = await Deno.makeTempDir();
+    const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
     const configPath = join(tempDir, 'config.json');
 
     try {
       await fn(configPath);
     } finally {
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     }
   };
 
@@ -36,11 +37,11 @@ describe('Environment Variable Integration', () => {
     const original: Record<string, string | undefined> = {};
 
     for (const key of managedKeys) {
-      original[key] = Deno.env.get(key);
-      Deno.env.delete(key);
+      original[key] = process.env[key];
+      delete process.env[key];
     }
     for (const [key, value] of Object.entries(vars)) {
-      Deno.env.set(key, value);
+      process.env[key] = value;
     }
 
     try {
@@ -49,9 +50,9 @@ describe('Environment Variable Integration', () => {
       for (const key of managedKeys) {
         const originalValue = original[key];
         if (originalValue === undefined) {
-          Deno.env.delete(key);
+          delete process.env[key];
         } else {
-          Deno.env.set(key, originalValue);
+          process.env[key] = originalValue;
         }
       }
     }
@@ -64,9 +65,9 @@ describe('Environment Variable Integration', () => {
           const manager = new ConfigManager();
           const config = await manager.load();
 
-          assertEquals(config.language, 'cpp'); // Default
-          assertEquals(config.workspace, ''); // Default
-          assertEquals(config.preferences.verbosity, 'normal'); // Default
+          deepStrictEqual(config.language, 'cpp'); // Default
+          deepStrictEqual(config.workspace, ''); // Default
+          deepStrictEqual(config.preferences.verbosity, 'normal'); // Default
         });
       });
     });
@@ -74,7 +75,7 @@ describe('Environment Variable Integration', () => {
     it('should prefer config file over defaults', async () => {
       await withTempConfig(async (configPath) => {
         const tempDir = join(configPath, '..');
-        await ensureDir(tempDir);
+        await mkdir(tempDir, { recursive: true });
 
         // Write config file
         await writeJsonFile(configPath, {
@@ -97,9 +98,9 @@ describe('Environment Variable Integration', () => {
           const manager = new ConfigManager();
           const config = await manager.load();
 
-          assertEquals(config.language, 'python'); // From config file
-          assertEquals(config.workspace, '/custom/workspace'); // From config file
-          assertEquals(config.preferences.verbosity, 'verbose'); // From config file
+          deepStrictEqual(config.language, 'python'); // From config file
+          deepStrictEqual(config.workspace, '/custom/workspace'); // From config file
+          deepStrictEqual(config.preferences.verbosity, 'verbose'); // From config file
         });
       });
     });
@@ -107,7 +108,7 @@ describe('Environment Variable Integration', () => {
     it('should prefer environment variables over config file', async () => {
       await withTempConfig(async (configPath) => {
         const tempDir = join(configPath, '..');
-        await ensureDir(tempDir);
+        await mkdir(tempDir, { recursive: true });
 
         // Write config file
         await writeJsonFile(configPath, {
@@ -139,14 +140,14 @@ describe('Environment Variable Integration', () => {
             const config = await manager.load();
 
             // Environment variables override config file
-            assertEquals(config.language, 'typescript'); // From env
-            assertEquals(config.workspace, '/env/workspace'); // From env
-            assertEquals(config.preferences.verbosity, 'quiet'); // From env
-            assertEquals(config.preferences.templateStyle, 'documented'); // From env
+            deepStrictEqual(config.language, 'typescript'); // From env
+            deepStrictEqual(config.workspace, '/env/workspace'); // From env
+            deepStrictEqual(config.preferences.verbosity, 'quiet'); // From env
+            deepStrictEqual(config.preferences.templateStyle, 'documented'); // From env
 
             // Values not in env use config file
-            assertEquals(config.preferences.theme, 'dark'); // From config file
-            assertEquals(config.preferences.autoSave, true); // From config file
+            deepStrictEqual(config.preferences.theme, 'dark'); // From config file
+            deepStrictEqual(config.preferences.autoSave, true); // From config file
           },
         );
       });
@@ -155,7 +156,7 @@ describe('Environment Variable Integration', () => {
     it('should handle partial environment variable overrides', async () => {
       await withTempConfig(async (configPath) => {
         const tempDir = join(configPath, '..');
-        await ensureDir(tempDir);
+        await mkdir(tempDir, { recursive: true });
 
         // Write config file
         await writeJsonFile(configPath, {
@@ -184,10 +185,10 @@ describe('Environment Variable Integration', () => {
             const config = await manager.load();
 
             // Only language is overridden
-            assertEquals(config.language, 'rust'); // From env
-            assertEquals(config.workspace, '/custom/workspace'); // From config file
-            assertEquals(config.preferences.verbosity, 'verbose'); // From config file
-            assertEquals(config.preferences.templateStyle, 'minimal'); // From config file
+            deepStrictEqual(config.language, 'rust'); // From env
+            deepStrictEqual(config.workspace, '/custom/workspace'); // From config file
+            deepStrictEqual(config.preferences.verbosity, 'verbose'); // From config file
+            deepStrictEqual(config.preferences.templateStyle, 'minimal'); // From config file
           },
         );
       });
@@ -207,10 +208,10 @@ describe('Environment Variable Integration', () => {
             const manager = new ConfigManager();
             const config = await manager.load();
 
-            assertEquals(config.preferences.verbosity, 'verbose');
-            assertEquals(config.preferences.useColors, false);
-            assertEquals(config.preferences.useEmoji, false);
-            assertEquals(config.preferences.templateStyle, 'comprehensive');
+            deepStrictEqual(config.preferences.verbosity, 'verbose');
+            deepStrictEqual(config.preferences.useColors, false);
+            deepStrictEqual(config.preferences.useEmoji, false);
+            deepStrictEqual(config.preferences.templateStyle, 'comprehensive');
           },
         );
       });
@@ -219,11 +220,11 @@ describe('Environment Variable Integration', () => {
 
   describe('Custom Config Path', () => {
     it('should load config from AT_CONFIG_PATH environment variable', async () => {
-      const tempDir = await Deno.makeTempDir();
+      const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
       const customConfigPath = join(tempDir, 'custom-config.json');
 
       try {
-        await ensureDir(tempDir);
+        await mkdir(tempDir, { recursive: true });
 
         // Write config to custom path
         await writeJsonFile(customConfigPath, {
@@ -246,13 +247,13 @@ describe('Environment Variable Integration', () => {
           const manager = new ConfigManager();
           const config = await manager.load();
 
-          assertEquals(config.language, 'java');
-          assertEquals(config.workspace, '/java/workspace');
-          assertEquals(config.aiEnabled, false);
-          assertEquals(config.companies, ['Google']);
+          deepStrictEqual(config.language, 'java');
+          deepStrictEqual(config.workspace, '/java/workspace');
+          deepStrictEqual(config.aiEnabled, false);
+          deepStrictEqual(config.companies, ['Google']);
         });
       } finally {
-        await Deno.remove(tempDir, { recursive: true });
+        await rm(tempDir, { recursive: true, force: true });
       }
     });
   });

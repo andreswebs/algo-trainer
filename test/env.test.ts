@@ -4,8 +4,8 @@
  * @module test/env.test
  */
 
-import { assertEquals, assertExists } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
+import { describe, it } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
 import { ENV_VARS, getEnvVarDocumentation, loadEnvConfig } from '../src/cli/env.ts';
 
 describe('Environment Variable Configuration', () => {
@@ -19,11 +19,11 @@ describe('Environment Variable Configuration', () => {
     const original: Record<string, string | undefined> = {};
 
     for (const key of managedKeys) {
-      original[key] = Deno.env.get(key);
-      Deno.env.delete(key);
+      original[key] = process.env[key];
+      delete process.env[key];
     }
     for (const [key, value] of Object.entries(vars)) {
-      Deno.env.set(key, value);
+      process.env[key] = value;
     }
 
     try {
@@ -32,9 +32,9 @@ describe('Environment Variable Configuration', () => {
       for (const key of managedKeys) {
         const originalValue = original[key];
         if (originalValue === undefined) {
-          Deno.env.delete(key);
+          delete process.env[key];
         } else {
-          Deno.env.set(key, originalValue);
+          process.env[key] = originalValue;
         }
       }
     }
@@ -44,35 +44,35 @@ describe('Environment Variable Configuration', () => {
     it('should return empty config when no env vars are set', async () => {
       await withEnv({}, () => {
         const config = loadEnvConfig();
-        assertEquals(config, {});
+        deepStrictEqual(config, {});
       });
     });
 
     it('should load workspace from AT_WORKSPACE', async () => {
       await withEnv({ [ENV_VARS.WORKSPACE]: '/home/user/workspace' }, () => {
         const config = loadEnvConfig();
-        assertEquals(config.workspace, '/home/user/workspace');
+        deepStrictEqual(config.workspace, '/home/user/workspace');
       });
     });
 
     it('should trim workspace path', async () => {
       await withEnv({ [ENV_VARS.WORKSPACE]: '  /home/user/workspace  ' }, () => {
         const config = loadEnvConfig();
-        assertEquals(config.workspace, '/home/user/workspace');
+        deepStrictEqual(config.workspace, '/home/user/workspace');
       });
     });
 
     it('should load language from AT_LANGUAGE', async () => {
       await withEnv({ [ENV_VARS.LANGUAGE]: 'python' }, () => {
         const config = loadEnvConfig();
-        assertEquals(config.language, 'python');
+        deepStrictEqual(config.language, 'python');
       });
     });
 
     it('should validate language and ignore invalid values', async () => {
       await withEnv({ [ENV_VARS.LANGUAGE]: 'invalid-language' }, () => {
         const config = loadEnvConfig();
-        assertEquals(config.language, undefined);
+        deepStrictEqual(config.language, undefined);
       });
     });
 
@@ -82,7 +82,7 @@ describe('Environment Variable Configuration', () => {
       for (const lang of languages) {
         await withEnv({ [ENV_VARS.LANGUAGE]: lang }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.language, lang);
+          deepStrictEqual(config.language, lang);
         });
       }
     });
@@ -90,14 +90,14 @@ describe('Environment Variable Configuration', () => {
     it('should load template style from AT_TEMPLATE_STYLE', async () => {
       await withEnv({ [ENV_VARS.TEMPLATE_STYLE]: 'minimal' }, () => {
         const config = loadEnvConfig();
-        assertEquals(config.preferences?.templateStyle, 'minimal');
+        deepStrictEqual(config.preferences?.templateStyle, 'minimal');
       });
     });
 
     it('should validate template style and ignore invalid values', async () => {
       await withEnv({ [ENV_VARS.TEMPLATE_STYLE]: 'invalid-style' }, () => {
         const config = loadEnvConfig();
-        assertEquals(config.preferences?.templateStyle, undefined);
+        deepStrictEqual(config.preferences?.templateStyle, undefined);
       });
     });
 
@@ -107,7 +107,7 @@ describe('Environment Variable Configuration', () => {
       for (const style of styles) {
         await withEnv({ [ENV_VARS.TEMPLATE_STYLE]: style }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.templateStyle, style);
+          deepStrictEqual(config.preferences?.templateStyle, style);
         });
       }
     });
@@ -116,70 +116,70 @@ describe('Environment Variable Configuration', () => {
       it('should parse AT_VERBOSE as boolean', async () => {
         await withEnv({ [ENV_VARS.VERBOSE]: '1' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'verbose');
+          deepStrictEqual(config.preferences?.verbosity, 'verbose');
         });
 
         await withEnv({ [ENV_VARS.VERBOSE]: 'true' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'verbose');
+          deepStrictEqual(config.preferences?.verbosity, 'verbose');
         });
 
         await withEnv({ [ENV_VARS.VERBOSE]: 'yes' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'verbose');
+          deepStrictEqual(config.preferences?.verbosity, 'verbose');
         });
 
         await withEnv({ [ENV_VARS.VERBOSE]: 'on' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'verbose');
+          deepStrictEqual(config.preferences?.verbosity, 'verbose');
         });
       });
 
       it('should parse AT_QUIET as boolean', async () => {
         await withEnv({ [ENV_VARS.QUIET]: '1' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'quiet');
+          deepStrictEqual(config.preferences?.verbosity, 'quiet');
         });
 
         await withEnv({ [ENV_VARS.QUIET]: 'false' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'normal');
+          deepStrictEqual(config.preferences?.verbosity, 'normal');
         });
       });
 
       it('should parse AT_NO_COLOR as boolean', async () => {
         await withEnv({ [ENV_VARS.NO_COLOR]: '1' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.useColors, false);
+          deepStrictEqual(config.preferences?.useColors, false);
         });
 
         await withEnv({ [ENV_VARS.NO_COLOR]: '0' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.useColors, true);
+          deepStrictEqual(config.preferences?.useColors, true);
         });
       });
 
       it('should parse AT_NO_EMOJI as boolean', async () => {
         await withEnv({ [ENV_VARS.NO_EMOJI]: 'true' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.useEmoji, false);
+          deepStrictEqual(config.preferences?.useEmoji, false);
         });
 
         await withEnv({ [ENV_VARS.NO_EMOJI]: 'false' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.useEmoji, true);
+          deepStrictEqual(config.preferences?.useEmoji, true);
         });
       });
 
       it('should be case-insensitive for boolean values', async () => {
         await withEnv({ [ENV_VARS.VERBOSE]: 'TRUE' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, 'verbose');
+          deepStrictEqual(config.preferences?.verbosity, 'verbose');
         });
 
         await withEnv({ [ENV_VARS.NO_COLOR]: 'YES' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.useColors, false);
+          deepStrictEqual(config.preferences?.useColors, false);
         });
       });
     });
@@ -196,11 +196,11 @@ describe('Environment Variable Configuration', () => {
           },
           () => {
             const config = loadEnvConfig();
-            assertEquals(config.workspace, '/home/workspace');
-            assertEquals(config.language, 'typescript');
-            assertEquals(config.preferences?.templateStyle, 'documented');
-            assertEquals(config.preferences?.verbosity, 'verbose');
-            assertEquals(config.preferences?.useColors, true);
+            deepStrictEqual(config.workspace, '/home/workspace');
+            deepStrictEqual(config.language, 'typescript');
+            deepStrictEqual(config.preferences?.templateStyle, 'documented');
+            deepStrictEqual(config.preferences?.verbosity, 'verbose');
+            deepStrictEqual(config.preferences?.useColors, true);
           },
         );
       });
@@ -213,7 +213,7 @@ describe('Environment Variable Configuration', () => {
           },
           () => {
             const config = loadEnvConfig();
-            assertEquals(config.preferences?.verbosity, 'verbose');
+            deepStrictEqual(config.preferences?.verbosity, 'verbose');
           },
         );
       });
@@ -223,21 +223,21 @@ describe('Environment Variable Configuration', () => {
       it('should handle empty string values', async () => {
         await withEnv({ [ENV_VARS.WORKSPACE]: '' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.workspace, undefined);
+          deepStrictEqual(config.workspace, undefined);
         });
       });
 
       it('should handle whitespace-only values', async () => {
         await withEnv({ [ENV_VARS.WORKSPACE]: '   ' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.workspace, undefined);
+          deepStrictEqual(config.workspace, undefined);
         });
       });
 
       it('should ignore invalid boolean values', async () => {
         await withEnv({ [ENV_VARS.VERBOSE]: 'invalid' }, () => {
           const config = loadEnvConfig();
-          assertEquals(config.preferences?.verbosity, undefined);
+          deepStrictEqual(config.preferences?.verbosity, undefined);
         });
       });
     });
@@ -246,31 +246,31 @@ describe('Environment Variable Configuration', () => {
   describe('getEnvVarDocumentation', () => {
     it('should return documentation string', () => {
       const doc = getEnvVarDocumentation();
-      assertExists(doc);
-      assertEquals(typeof doc, 'string');
+      ok(doc != null);
+      deepStrictEqual(typeof doc, 'string');
 
       // Check that all env vars are documented
       for (const varName of Object.values(ENV_VARS)) {
-        assertEquals(doc.includes(varName), true, `Documentation should include ${varName}`);
+        deepStrictEqual(doc.includes(varName), true, `Documentation should include ${varName}`);
       }
     });
 
     it('should mention supported languages', () => {
       const doc = getEnvVarDocumentation();
-      assertEquals(doc.includes('typescript'), true);
-      assertEquals(doc.includes('python'), true);
+      deepStrictEqual(doc.includes('typescript'), true);
+      deepStrictEqual(doc.includes('python'), true);
     });
 
     it('should mention template styles', () => {
       const doc = getEnvVarDocumentation();
-      assertEquals(doc.includes('minimal'), true);
-      assertEquals(doc.includes('documented'), true);
-      assertEquals(doc.includes('comprehensive'), true);
+      deepStrictEqual(doc.includes('minimal'), true);
+      deepStrictEqual(doc.includes('documented'), true);
+      deepStrictEqual(doc.includes('comprehensive'), true);
     });
 
     it('should mention precedence', () => {
       const doc = getEnvVarDocumentation();
-      assertEquals(doc.includes('precedence'), true);
+      deepStrictEqual(doc.includes('precedence'), true);
     });
   });
 });

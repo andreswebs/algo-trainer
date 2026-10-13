@@ -4,7 +4,11 @@
  * @module tests/config
  */
 
-import { assertEquals, assertExists } from '@std/assert';
+import { test } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { ENV_VARS } from '../src/cli/env.ts';
 import { ConfigManager } from '../src/config/manager.ts';
 
@@ -14,21 +18,21 @@ interface TestEnv {
 }
 
 async function setupTestEnv(): Promise<TestEnv> {
-  const tempDir = await Deno.makeTempDir({ prefix: 'algo-trainer-test-' });
+  const tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-test-'));
 
   const xdgKeys = ['XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'XDG_CACHE_HOME', 'XDG_STATE_HOME'];
   // Clear AT_* vars so the user's shell exports don't override the loaded config.
   const managedKeys = [...xdgKeys, ...Object.values(ENV_VARS)];
   const original: Record<string, string | undefined> = {};
   for (const key of managedKeys) {
-    original[key] = Deno.env.get(key);
-    Deno.env.delete(key);
+    original[key] = process.env[key];
+    delete process.env[key];
   }
 
-  Deno.env.set('XDG_CONFIG_HOME', `${tempDir}/config`);
-  Deno.env.set('XDG_DATA_HOME', `${tempDir}/data`);
-  Deno.env.set('XDG_CACHE_HOME', `${tempDir}/cache`);
-  Deno.env.set('XDG_STATE_HOME', `${tempDir}/state`);
+  process.env['XDG_CONFIG_HOME'] = `${tempDir}/config`;
+  process.env['XDG_DATA_HOME'] = `${tempDir}/data`;
+  process.env['XDG_CACHE_HOME'] = `${tempDir}/cache`;
+  process.env['XDG_STATE_HOME'] = `${tempDir}/state`;
 
   return {
     tempDir,
@@ -36,79 +40,79 @@ async function setupTestEnv(): Promise<TestEnv> {
       for (const key of managedKeys) {
         const value = original[key];
         if (value === undefined) {
-          Deno.env.delete(key);
+          delete process.env[key];
         } else {
-          Deno.env.set(key, value);
+          process.env[key] = value;
         }
       }
-      await Deno.remove(tempDir, { recursive: true });
+      await rm(tempDir, { recursive: true, force: true });
     },
   };
 }
 
-Deno.test('ConfigManager - should create default config when none exists', async () => {
+test('ConfigManager - should create default config when none exists', async () => {
   const { cleanup } = await setupTestEnv();
   try {
     const manager = new ConfigManager();
     const config = await manager.load();
 
-    assertEquals(config.language, 'cpp');
-    assertEquals(config.aiEnabled, true);
-    assertExists(config.version);
+    deepStrictEqual(config.language, 'cpp');
+    deepStrictEqual(config.aiEnabled, true);
+    ok(config.version != null);
   } finally {
     await cleanup();
   }
 });
 
-Deno.test('ConfigManager - should not persist env overrides on update', async () => {
+test('ConfigManager - should not persist env overrides on update', async () => {
   const { tempDir, cleanup } = await setupTestEnv();
   try {
     const manager = new ConfigManager();
     await manager.load();
 
-    Deno.env.set(ENV_VARS.WORKSPACE, '/env/workspace');
-    Deno.env.set(ENV_VARS.LANGUAGE, 'rust');
-    Deno.env.set(ENV_VARS.TEMPLATE_STYLE, 'minimal');
+    process.env[ENV_VARS.WORKSPACE] = '/env/workspace';
+    process.env[ENV_VARS.LANGUAGE] = 'rust';
+    process.env[ENV_VARS.TEMPLATE_STYLE] = 'minimal';
     await manager.load();
 
     await manager.updateConfig({ aiEnabled: false });
     await manager.updatePreferences({ theme: 'dark' });
 
-    const saved = JSON.parse(await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`));
-    assertEquals(saved.workspace, '');
-    assertEquals(saved.language, 'cpp');
-    assertEquals(saved.preferences.templateStyle, 'documented');
-    assertEquals(saved.aiEnabled, false);
-    assertEquals(saved.preferences.theme, 'dark');
+    const saved = JSON.parse(await readFile(`${tempDir}/config/algo-trainer/config.json`, 'utf8'));
+    deepStrictEqual(saved.workspace, '');
+    deepStrictEqual(saved.language, 'cpp');
+    deepStrictEqual(saved.preferences.templateStyle, 'documented');
+    deepStrictEqual(saved.aiEnabled, false);
+    deepStrictEqual(saved.preferences.theme, 'dark');
 
     const effective = manager.getConfig();
-    assertEquals(effective.workspace, '/env/workspace');
-    assertEquals(effective.language, 'rust');
-    assertEquals(effective.preferences.templateStyle, 'minimal');
-    assertEquals(effective.aiEnabled, false);
+    deepStrictEqual(effective.workspace, '/env/workspace');
+    deepStrictEqual(effective.language, 'rust');
+    deepStrictEqual(effective.preferences.templateStyle, 'minimal');
+    deepStrictEqual(effective.aiEnabled, false);
   } finally {
     await cleanup();
   }
 });
 
-Deno.test('ConfigManager - should keep env override effective after setting same key', async () => {
+test('ConfigManager - should keep env override effective after setting same key', async () => {
   const { tempDir, cleanup } = await setupTestEnv();
   try {
-    Deno.env.set(ENV_VARS.LANGUAGE, 'cpp');
+    process.env[ENV_VARS.LANGUAGE] = 'cpp';
     const manager = new ConfigManager();
     await manager.load();
 
     await manager.setLanguage('python');
 
-    const saved = JSON.parse(await Deno.readTextFile(`${tempDir}/config/algo-trainer/config.json`));
-    assertEquals(saved.language, 'python');
-    assertEquals(manager.getConfig().language, 'cpp');
+    const saved = JSON.parse(await readFile(`${tempDir}/config/algo-trainer/config.json`, 'utf8'));
+    deepStrictEqual(saved.language, 'python');
+    deepStrictEqual(manager.getConfig().language, 'cpp');
   } finally {
     await cleanup();
   }
 });
 
-Deno.test('ConfigManager - should update configuration', async () => {
+test('ConfigManager - should update configuration', async () => {
   const { cleanup } = await setupTestEnv();
   try {
     const manager = new ConfigManager();
@@ -117,13 +121,13 @@ Deno.test('ConfigManager - should update configuration', async () => {
     await manager.setLanguage('python');
 
     const config = manager.getConfig();
-    assertEquals(config.language, 'python');
+    deepStrictEqual(config.language, 'python');
   } finally {
     await cleanup();
   }
 });
 
-Deno.test('Output utilities - setOutputOptions should update options', async () => {
+test('Output utilities - setOutputOptions should update options', async () => {
   const { setOutputOptions, getOutputOptions, resetOutputOptions } = await import(
     '../src/utils/output.ts'
   );
@@ -136,15 +140,15 @@ Deno.test('Output utilities - setOutputOptions should update options', async () 
     });
 
     const options = getOutputOptions();
-    assertEquals(options.useColors, false);
-    assertEquals(options.useEmoji, false);
-    assertEquals(options.verbosity, 'quiet');
+    deepStrictEqual(options.useColors, false);
+    deepStrictEqual(options.useEmoji, false);
+    deepStrictEqual(options.verbosity, 'quiet');
   } finally {
     resetOutputOptions();
   }
 });
 
-Deno.test('Output utilities - log functions should not throw', async () => {
+test('Output utilities - log functions should not throw', async () => {
   const {
     logSuccess,
     logError,
