@@ -246,6 +246,9 @@ Deno.test('evaluateTrigger - prevents code injection attempts', () => {
     'code.constructor("return process")()',
     '__proto__',
     'constructor.constructor',
+    'constructor',
+    'toString',
+    'hasOwnProperty',
   ];
 
   for (const input of maliciousInputs) {

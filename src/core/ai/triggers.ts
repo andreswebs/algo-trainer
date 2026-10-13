@@ -204,7 +204,7 @@ function evaluateValue(expr: string, context: TriggerContext): string | number |
   }
 
   // Handle context variables
-  if (expr in context) {
+  if (Object.hasOwn(context, expr)) {
     return context[expr as keyof TriggerContext];
   }
 
@@ -226,7 +226,7 @@ function evaluateMethodCall(expr: string, context: TriggerContext): string | num
   const rest = expr.slice(dotIndex + 1);
 
   // Get the variable value
-  if (!(varName in context)) {
+  if (!Object.hasOwn(context, varName)) {
     throw new TriggerError(`Unknown variable: ${varName}`);
   }
   const value = context[varName as keyof TriggerContext];
