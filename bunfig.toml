@@ -1,5 +1,4 @@
 [test]
 preload = ["./test/setup.ts"]
 pathIgnorePatterns = [
-  "test/ai/parser.test.ts",
 ]

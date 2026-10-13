@@ -4,8 +4,11 @@
  * @module tests/ai/parser
  */
 
-import { assertEquals, assertRejects, assertThrows } from '@std/assert';
-import { join } from '@std/path';
+import { afterAll, beforeAll, describe, test } from 'bun:test';
+import { deepStrictEqual, rejects } from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   findScriptPath,
   loadAndValidateScript,
@@ -13,6 +16,7 @@ import {
   parseTeachingScript,
 } from '../../src/core/ai/parser.ts';
 import { ScriptError } from '../../src/utils/errors.ts';
+import { assertRejectsWith, assertThrowsWith } from '../helpers/assert.ts';
 
 /**
  * Valid teaching script YAML
@@ -91,50 +95,53 @@ id: broken
 title: [unclosed
 `;
 
-Deno.test('parseTeachingScript', async (t) => {
-  await t.step('should parse valid YAML with all fields', () => {
+describe('parseTeachingScript', () => {
+  test('should parse valid YAML with all fields', () => {
     const script = parseTeachingScript(VALID_SCRIPT_YAML);
 
-    assertEquals(script.id, 'two-sum');
-    assertEquals(script.title, 'Two Sum');
-    assertEquals(script.difficulty, 'easy');
-    assertEquals(script.tags, ['array', 'hash-table']);
-    assertEquals(script.language, 'typescript');
-    assertEquals(script.steps.length, 6);
+    deepStrictEqual(script.id, 'two-sum');
+    deepStrictEqual(script.title, 'Two Sum');
+    deepStrictEqual(script.difficulty, 'easy');
+    deepStrictEqual(script.tags, ['array', 'hash-table']);
+    deepStrictEqual(script.language, 'typescript');
+    deepStrictEqual(script.steps.length, 6);
 
     // Verify step types
-    assertEquals(script.steps[0].type, 'intro');
-    assertEquals(script.steps[1].type, 'pre_prompt');
-    assertEquals(script.steps[2].type, 'on_run');
-    assertEquals(script.steps[3].type, 'hint');
-    assertEquals(script.steps[4].type, 'after_success');
-    assertEquals(script.steps[5].type, 'on_request');
+    deepStrictEqual(script.steps[0].type, 'intro');
+    deepStrictEqual(script.steps[1].type, 'pre_prompt');
+    deepStrictEqual(script.steps[2].type, 'on_run');
+    deepStrictEqual(script.steps[3].type, 'hint');
+    deepStrictEqual(script.steps[4].type, 'after_success');
+    deepStrictEqual(script.steps[5].type, 'on_request');
 
     // Verify step content
-    assertEquals(script.steps[0].content.trim(), 'Welcome to Two Sum! This is a classic problem.');
+    deepStrictEqual(
+      script.steps[0].content.trim(),
+      'Welcome to Two Sum! This is a classic problem.',
+    );
 
     // Verify optional fields
-    assertEquals(script.steps[2].trigger, 'passed === false && attempts > 1');
-    assertEquals(script.steps[3].trigger, "code.includes('for') && !code.includes('Map')");
-    assertEquals(script.steps[5].keywords, ['optimization', 'faster', 'improve']);
+    deepStrictEqual(script.steps[2].trigger, 'passed === false && attempts > 1');
+    deepStrictEqual(script.steps[3].trigger, "code.includes('for') && !code.includes('Map')");
+    deepStrictEqual(script.steps[5].keywords, ['optimization', 'faster', 'improve']);
   });
 
-  await t.step('should parse minimal valid YAML', () => {
+  test('should parse minimal valid YAML', () => {
     const script = parseTeachingScript(MINIMAL_SCRIPT_YAML);
 
-    assertEquals(script.id, 'minimal');
-    assertEquals(script.title, 'Minimal Problem');
-    assertEquals(script.difficulty, 'medium');
-    assertEquals(script.tags, []); // Should default to empty array
-    assertEquals(script.language, 'python');
-    assertEquals(script.steps.length, 1);
-    assertEquals(script.steps[0].type, 'intro');
-    assertEquals(script.steps[0].content, 'Hello world');
-    assertEquals(script.steps[0].trigger, undefined);
-    assertEquals(script.steps[0].keywords, undefined);
+    deepStrictEqual(script.id, 'minimal');
+    deepStrictEqual(script.title, 'Minimal Problem');
+    deepStrictEqual(script.difficulty, 'medium');
+    deepStrictEqual(script.tags, []); // Should default to empty array
+    deepStrictEqual(script.language, 'python');
+    deepStrictEqual(script.steps.length, 1);
+    deepStrictEqual(script.steps[0].type, 'intro');
+    deepStrictEqual(script.steps[0].content, 'Hello world');
+    deepStrictEqual(script.steps[0].trigger, undefined);
+    deepStrictEqual(script.steps[0].keywords, undefined);
   });
 
-  await t.step('should normalize tags array', () => {
+  test('should normalize tags array', () => {
     const yamlWithMixedTags = `
 id: test
 title: Test
@@ -150,10 +157,10 @@ steps:
 `;
     const script = parseTeachingScript(yamlWithMixedTags);
     // Non-string tags should be filtered out
-    assertEquals(script.tags, ['valid-tag', 'another-tag']);
+    deepStrictEqual(script.tags, ['valid-tag', 'another-tag']);
   });
 
-  await t.step('should handle missing tags gracefully', () => {
+  test('should handle missing tags gracefully', () => {
     const yamlWithoutTags = `
 id: test
 title: Test
@@ -164,10 +171,10 @@ steps:
     content: Test
 `;
     const script = parseTeachingScript(yamlWithoutTags);
-    assertEquals(script.tags, []);
+    deepStrictEqual(script.tags, []);
   });
 
-  await t.step('should handle steps with optional fields', () => {
+  test('should handle steps with optional fields', () => {
     const yamlWithOptionalFields = `
 id: test
 title: Test
@@ -186,16 +193,16 @@ steps:
       - hint
 `;
     const script = parseTeachingScript(yamlWithOptionalFields);
-    assertEquals(script.steps[0].trigger, undefined);
-    assertEquals(script.steps[0].keywords, undefined);
-    assertEquals(script.steps[1].trigger, 'attempts > 2');
-    assertEquals(script.steps[1].keywords, undefined);
-    assertEquals(script.steps[2].trigger, undefined);
-    assertEquals(script.steps[2].keywords, ['help', 'hint']);
+    deepStrictEqual(script.steps[0].trigger, undefined);
+    deepStrictEqual(script.steps[0].keywords, undefined);
+    deepStrictEqual(script.steps[1].trigger, 'attempts > 2');
+    deepStrictEqual(script.steps[1].keywords, undefined);
+    deepStrictEqual(script.steps[2].trigger, undefined);
+    deepStrictEqual(script.steps[2].keywords, ['help', 'hint']);
   });
 
-  await t.step('should throw ScriptError on missing required field (id)', () => {
-    assertThrows(
+  test('should throw ScriptError on missing required field (id)', () => {
+    assertThrowsWith(
       () => {
         parseTeachingScript(MISSING_ID_YAML);
       },
@@ -204,8 +211,8 @@ steps:
     );
   });
 
-  await t.step('should throw ScriptError on invalid YAML', () => {
-    assertThrows(
+  test('should throw ScriptError on invalid YAML', () => {
+    assertThrowsWith(
       () => {
         parseTeachingScript(INVALID_YAML);
       },
@@ -214,8 +221,8 @@ steps:
     );
   });
 
-  await t.step('should throw ScriptError on invalid steps type', () => {
-    assertThrows(
+  test('should throw ScriptError on invalid steps type', () => {
+    assertThrowsWith(
       () => {
         parseTeachingScript(INVALID_STEPS_YAML);
       },
@@ -224,7 +231,7 @@ steps:
     );
   });
 
-  await t.step('should throw ScriptError on invalid step object', () => {
+  test('should throw ScriptError on invalid step object', () => {
     const yamlWithInvalidStep = `
 id: test
 title: Test
@@ -233,7 +240,7 @@ language: typescript
 steps:
   - not_an_object
 `;
-    assertThrows(
+    assertThrowsWith(
       () => {
         parseTeachingScript(yamlWithInvalidStep);
       },
@@ -242,7 +249,7 @@ steps:
     );
   });
 
-  await t.step('should throw ScriptError on missing step type', () => {
+  test('should throw ScriptError on missing step type', () => {
     const yamlWithMissingType = `
 id: test
 title: Test
@@ -251,7 +258,7 @@ language: typescript
 steps:
   - content: Test
 `;
-    assertThrows(
+    assertThrowsWith(
       () => {
         parseTeachingScript(yamlWithMissingType);
       },
@@ -260,7 +267,7 @@ steps:
     );
   });
 
-  await t.step('should throw ScriptError on missing step content', () => {
+  test('should throw ScriptError on missing step content', () => {
     const yamlWithMissingContent = `
 id: test
 title: Test
@@ -269,7 +276,7 @@ language: typescript
 steps:
   - type: intro
 `;
-    assertThrows(
+    assertThrowsWith(
       () => {
         parseTeachingScript(yamlWithMissingContent);
       },
@@ -279,33 +286,41 @@ steps:
   });
 });
 
-Deno.test('loadTeachingScript', async (t) => {
-  const tempDir = await Deno.makeTempDir();
+describe('loadTeachingScript', () => {
+  let tempDir: string;
 
-  await t.step('should load and parse valid YAML file', async () => {
+  beforeAll(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
+  });
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  test('should load and parse valid YAML file', async () => {
     const filePath = join(tempDir, 'valid.yaml');
-    await Deno.writeTextFile(filePath, VALID_SCRIPT_YAML);
+    await writeFile(filePath, VALID_SCRIPT_YAML);
 
     const script = await loadTeachingScript(filePath);
 
-    assertEquals(script !== null, true);
-    assertEquals(script?.id, 'two-sum');
-    assertEquals(script?.title, 'Two Sum');
-    assertEquals(script?.difficulty, 'easy');
+    deepStrictEqual(script !== null, true);
+    deepStrictEqual(script?.id, 'two-sum');
+    deepStrictEqual(script?.title, 'Two Sum');
+    deepStrictEqual(script?.difficulty, 'easy');
   });
 
-  await t.step('should return null for non-existent file', async () => {
+  test('should return null for non-existent file', async () => {
     const filePath = join(tempDir, 'does-not-exist.yaml');
     const script = await loadTeachingScript(filePath);
 
-    assertEquals(script, null);
+    deepStrictEqual(script, null);
   });
 
-  await t.step('should throw ScriptError on invalid YAML file', async () => {
+  test('should throw ScriptError on invalid YAML file', async () => {
     const filePath = join(tempDir, 'invalid.yaml');
-    await Deno.writeTextFile(filePath, INVALID_YAML);
+    await writeFile(filePath, INVALID_YAML);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadTeachingScript(filePath);
       },
@@ -314,11 +329,11 @@ Deno.test('loadTeachingScript', async (t) => {
     );
   });
 
-  await t.step('should throw ScriptError on file with missing required fields', async () => {
+  test('should throw ScriptError on file with missing required fields', async () => {
     const filePath = join(tempDir, 'missing-fields.yaml');
-    await Deno.writeTextFile(filePath, MISSING_ID_YAML);
+    await writeFile(filePath, MISSING_ID_YAML);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadTeachingScript(filePath);
       },
@@ -327,50 +342,55 @@ Deno.test('loadTeachingScript', async (t) => {
     );
   });
 
-  await t.step('should include file path in error context', async () => {
+  test('should include file path in error context', async () => {
     const filePath = join(tempDir, 'error-context.yaml');
-    await Deno.writeTextFile(filePath, INVALID_YAML);
+    await writeFile(filePath, INVALID_YAML);
 
     try {
       await loadTeachingScript(filePath);
     } catch (error) {
       if (error instanceof ScriptError) {
-        assertEquals(typeof error.context?.filePath, 'string');
+        deepStrictEqual(typeof error.context?.filePath, 'string');
       }
     }
   });
-
-  // Cleanup
-  await Deno.remove(tempDir, { recursive: true });
 });
 
-Deno.test('loadAndValidateScript', async (t) => {
-  const tempDir = await Deno.makeTempDir();
+describe('loadAndValidateScript', () => {
+  let tempDir: string;
 
-  await t.step('should load and validate valid script', async () => {
+  beforeAll(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
+  });
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  test('should load and validate valid script', async () => {
     const filePath = join(tempDir, 'valid.yaml');
-    await Deno.writeTextFile(filePath, VALID_SCRIPT_YAML);
+    await writeFile(filePath, VALID_SCRIPT_YAML);
 
     const script = await loadAndValidateScript(filePath);
 
-    assertEquals(script !== null, true);
-    assertEquals(script?.id, 'two-sum');
-    assertEquals(script?.title, 'Two Sum');
-    assertEquals(script?.difficulty, 'easy');
+    deepStrictEqual(script !== null, true);
+    deepStrictEqual(script?.id, 'two-sum');
+    deepStrictEqual(script?.title, 'Two Sum');
+    deepStrictEqual(script?.difficulty, 'easy');
   });
 
-  await t.step('should return null for non-existent file', async () => {
+  test('should return null for non-existent file', async () => {
     const filePath = join(tempDir, 'does-not-exist.yaml');
     const script = await loadAndValidateScript(filePath);
 
-    assertEquals(script, null);
+    deepStrictEqual(script, null);
   });
 
-  await t.step('should throw ScriptError on invalid YAML', async () => {
+  test('should throw ScriptError on invalid YAML', async () => {
     const filePath = join(tempDir, 'invalid.yaml');
-    await Deno.writeTextFile(filePath, INVALID_YAML);
+    await writeFile(filePath, INVALID_YAML);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadAndValidateScript(filePath);
       },
@@ -379,7 +399,7 @@ Deno.test('loadAndValidateScript', async (t) => {
     );
   });
 
-  await t.step('should throw ScriptError on validation failure', async () => {
+  test('should throw ScriptError on validation failure', async () => {
     // Script with invalid difficulty
     const invalidScript = `
 id: test
@@ -392,9 +412,9 @@ steps:
     content: Test
 `;
     const filePath = join(tempDir, 'invalid-difficulty.yaml');
-    await Deno.writeTextFile(filePath, invalidScript);
+    await writeFile(filePath, invalidScript);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadAndValidateScript(filePath);
       },
@@ -403,7 +423,7 @@ steps:
     );
   });
 
-  await t.step('should throw ScriptError on step constraint violation', async () => {
+  test('should throw ScriptError on step constraint violation', async () => {
     // intro step should not have triggers
     const invalidScript = `
 id: test
@@ -417,9 +437,9 @@ steps:
     trigger: passed === true
 `;
     const filePath = join(tempDir, 'invalid-constraint.yaml');
-    await Deno.writeTextFile(filePath, invalidScript);
+    await writeFile(filePath, invalidScript);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadAndValidateScript(filePath);
       },
@@ -428,7 +448,7 @@ steps:
     );
   });
 
-  await t.step('should include validation errors in error context', async () => {
+  test('should include validation errors in error context', async () => {
     const invalidScript = `
 id: test
 title: Test
@@ -440,19 +460,19 @@ steps:
     content: Test
 `;
     const filePath = join(tempDir, 'validation-context.yaml');
-    await Deno.writeTextFile(filePath, invalidScript);
+    await writeFile(filePath, invalidScript);
 
     try {
       await loadAndValidateScript(filePath);
     } catch (error) {
       if (error instanceof ScriptError) {
-        assertEquals(typeof error.context?.errors, 'object');
-        assertEquals(Array.isArray(error.context?.errors), true);
+        deepStrictEqual(typeof error.context?.errors, 'object');
+        deepStrictEqual(Array.isArray(error.context?.errors), true);
       }
     }
   });
 
-  await t.step('should validate hint steps require triggers', async () => {
+  test('should validate hint steps require triggers', async () => {
     const invalidScript = `
 id: test
 title: Test
@@ -464,9 +484,9 @@ steps:
     content: Test hint without trigger
 `;
     const filePath = join(tempDir, 'hint-without-trigger.yaml');
-    await Deno.writeTextFile(filePath, invalidScript);
+    await writeFile(filePath, invalidScript);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadAndValidateScript(filePath);
       },
@@ -475,7 +495,7 @@ steps:
     );
   });
 
-  await t.step('should validate on_request steps require keywords', async () => {
+  test('should validate on_request steps require keywords', async () => {
     const invalidScript = `
 id: test
 title: Test
@@ -487,9 +507,9 @@ steps:
     content: Test request without keywords
 `;
     const filePath = join(tempDir, 'request-without-keywords.yaml');
-    await Deno.writeTextFile(filePath, invalidScript);
+    await writeFile(filePath, invalidScript);
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await loadAndValidateScript(filePath);
       },
@@ -497,104 +517,111 @@ steps:
       'Teaching script validation failed',
     );
   });
-
-  // Cleanup
-  await Deno.remove(tempDir, { recursive: true });
 });
 
-Deno.test('findScriptPath', async (t) => {
-  const tempDir = await Deno.makeTempDir();
+describe('findScriptPath', () => {
+  let tempDir: string;
 
-  await t.step('should find trainer.yaml in problem directory', async () => {
+  beforeAll(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
+  });
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  test('should find trainer.yaml in problem directory', async () => {
     const problemDir = join(tempDir, 'two-sum');
-    await Deno.mkdir(problemDir);
+    await mkdir(problemDir);
     const trainerPath = join(problemDir, 'trainer.yaml');
-    await Deno.writeTextFile(trainerPath, VALID_SCRIPT_YAML);
+    await writeFile(trainerPath, VALID_SCRIPT_YAML);
 
     const foundPath = await findScriptPath(problemDir);
 
-    assertEquals(foundPath, trainerPath);
+    deepStrictEqual(foundPath, trainerPath);
   });
 
-  await t.step('should return null if trainer.yaml does not exist', async () => {
+  test('should return null if trainer.yaml does not exist', async () => {
     const problemDir = join(tempDir, 'no-trainer');
-    await Deno.mkdir(problemDir);
+    await mkdir(problemDir);
 
     const foundPath = await findScriptPath(problemDir);
 
-    assertEquals(foundPath, null);
+    deepStrictEqual(foundPath, null);
   });
 
-  await t.step('should return null for non-existent directory', async () => {
+  test('should return null for non-existent directory', async () => {
     const problemDir = join(tempDir, 'does-not-exist');
 
     const foundPath = await findScriptPath(problemDir);
 
-    assertEquals(foundPath, null);
+    deepStrictEqual(foundPath, null);
   });
 
-  await t.step('should work with relative paths', async () => {
+  test('should work with relative paths', async () => {
     const problemDir = join(tempDir, 'relative-test');
-    await Deno.mkdir(problemDir);
+    await mkdir(problemDir);
     const trainerPath = join(problemDir, 'trainer.yaml');
-    await Deno.writeTextFile(trainerPath, VALID_SCRIPT_YAML);
+    await writeFile(trainerPath, VALID_SCRIPT_YAML);
 
     const foundPath = await findScriptPath(problemDir);
 
-    assertEquals(foundPath !== null, true);
-    assertEquals(foundPath?.endsWith('trainer.yaml'), true);
+    deepStrictEqual(foundPath !== null, true);
+    deepStrictEqual(foundPath?.endsWith('trainer.yaml'), true);
   });
-
-  // Cleanup
-  await Deno.remove(tempDir, { recursive: true });
 });
 
-Deno.test('Integration: findScriptPath + loadAndValidateScript', async (t) => {
-  const tempDir = await Deno.makeTempDir();
+describe('Integration: findScriptPath + loadAndValidateScript', () => {
+  let tempDir: string;
 
-  await t.step('should discover and load valid teaching script', async () => {
+  beforeAll(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'algo-trainer-'));
+  });
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  test('should discover and load valid teaching script', async () => {
     const problemDir = join(tempDir, 'two-sum');
-    await Deno.mkdir(problemDir);
+    await mkdir(problemDir);
     const trainerPath = join(problemDir, 'trainer.yaml');
-    await Deno.writeTextFile(trainerPath, VALID_SCRIPT_YAML);
+    await writeFile(trainerPath, VALID_SCRIPT_YAML);
 
     const scriptPath = await findScriptPath(problemDir);
-    assertEquals(scriptPath !== null, true);
+    deepStrictEqual(scriptPath !== null, true);
 
     const script = scriptPath ? await loadAndValidateScript(scriptPath) : null;
 
-    assertEquals(script !== null, true);
-    assertEquals(script?.id, 'two-sum');
-    assertEquals(script?.title, 'Two Sum');
+    deepStrictEqual(script !== null, true);
+    deepStrictEqual(script?.id, 'two-sum');
+    deepStrictEqual(script?.title, 'Two Sum');
   });
 
-  await t.step('should return null for problem without trainer.yaml', async () => {
+  test('should return null for problem without trainer.yaml', async () => {
     const problemDir = join(tempDir, 'no-trainer');
-    await Deno.mkdir(problemDir);
+    await mkdir(problemDir);
 
     const scriptPath = await findScriptPath(problemDir);
-    assertEquals(scriptPath, null);
+    deepStrictEqual(scriptPath, null);
 
     const script = scriptPath ? await loadAndValidateScript(scriptPath) : null;
-    assertEquals(script, null);
+    deepStrictEqual(script, null);
   });
 
-  await t.step('should reject invalid script even if found', async () => {
+  test('should reject invalid script even if found', async () => {
     const problemDir = join(tempDir, 'invalid-problem');
-    await Deno.mkdir(problemDir);
+    await mkdir(problemDir);
     const trainerPath = join(problemDir, 'trainer.yaml');
-    await Deno.writeTextFile(trainerPath, INVALID_YAML);
+    await writeFile(trainerPath, INVALID_YAML);
 
     const scriptPath = await findScriptPath(problemDir);
-    assertEquals(scriptPath !== null, true);
+    deepStrictEqual(scriptPath !== null, true);
 
-    await assertRejects(async () => {
+    await rejects(async () => {
       if (scriptPath) {
         await loadAndValidateScript(scriptPath);
       }
     }, ScriptError);
   });
-
-  // Cleanup
-  await Deno.remove(tempDir, { recursive: true });
 });
