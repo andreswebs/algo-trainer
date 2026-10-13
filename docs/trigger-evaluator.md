@@ -194,5 +194,5 @@ interface TriggerContext {
 ## See Also
 
 - [AI Teaching System Overview](../src/core/ai/mod.ts)
-- [Teaching Script DSL Specification](../.specs/deno-rewrite/ai-teaching-system/tasks.md)
+- [Teaching Script DSL Specification](specs/done/deno-rewrite/ai-teaching-system/tasks.md)
 - [Validator Documentation](../src/core/ai/validator.ts)

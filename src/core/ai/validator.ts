@@ -2,7 +2,7 @@
  * Teaching Script Validator
  *
  * Validates teaching scripts against the DSL specification defined in
- * .specs/deno-rewrite/ai-teaching-system/tasks.md (ATS-002).
+ * docs/specs/done/deno-rewrite/ai-teaching-system/tasks.md (ATS-002).
  *
  * The validator ensures that:
  * - All required metadata fields are present and valid
