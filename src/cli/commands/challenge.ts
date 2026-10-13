@@ -9,7 +9,7 @@
 import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
 import { configManager } from '../../config/manager.ts';
-import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
+import { TeachingEngine } from '../../core/ai/mod.ts';
 import {
   generateProblemFiles,
   initWorkspace,
@@ -288,8 +288,7 @@ async function loadTeachingGuidance(
   if (!config.aiEnabled) return;
 
   try {
-    const session = new TeachingSession(problem.slug);
-    const engine = new TeachingEngine(session);
+    const engine = new TeachingEngine(problem.slug);
     const problemDir = join(workspaceRoot, 'problems', problem.slug);
     const loaded = await engine.loadScript(problemDir);
 
@@ -315,7 +314,7 @@ async function loadTeachingGuidance(
     }
 
     if (intro || prePrompt) {
-      logger.info("💬 Use 'algo-trainer hint' for contextual hints during coding");
+      logger.info("💬 Use 'algo-trainer hint' for progressive hints if you get stuck");
     }
   } catch (error) {
     logger.warn(

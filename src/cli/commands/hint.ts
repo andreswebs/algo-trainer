@@ -6,16 +6,14 @@
  * @module cli/commands/hint
  */
 
-import { join } from 'node:path';
 import type { Args } from '@std/cli/parse-args';
 import { configManager } from '../../config/manager.ts';
-import { TeachingEngine, TeachingSession } from '../../core/ai/mod.ts';
 import {
   getProblemMetadata,
   problemExists,
   updateProblemMetadata,
 } from '../../core/workspace/generation.ts';
-import type { CommandResult, Config, Problem, SupportedLanguage } from '../../types/global.ts';
+import type { CommandResult, SupportedLanguage } from '../../types/global.ts';
 import { logger } from '../../utils/output.ts';
 import { ExitCode, getExitCodeForError } from '../exit-codes.ts';
 import { showCommandHelp } from './help.ts';
@@ -215,47 +213,6 @@ export async function updateHintTracking(
   }
 }
 
-/**
- * Try to emit an AI contextual hint. Returns true if a hint was shown.
- */
-async function tryEmitAiHint(
-  config: Config,
-  problem: Problem,
-  options: HintOptions,
-  exists: boolean,
-): Promise<boolean> {
-  if (!config.aiEnabled || !exists || options.all || options.level !== undefined) {
-    return false;
-  }
-  try {
-    const session = new TeachingSession(problem.slug);
-    const engine = new TeachingEngine(session);
-    const problemDir = join(config.workspace, 'problems', problem.slug);
-    const loaded = await engine.loadScript(problemDir);
-    if (!loaded) {
-      return false;
-    }
-    const aiHint = engine.getHint('');
-    if (!aiHint) {
-      return false;
-    }
-    logger.newline();
-    logger.log('🤖 AI Teaching Assistant');
-    logger.newline();
-    logger.separator(50);
-    logger.log(aiHint);
-    logger.separator(50);
-    logger.newline();
-    logger.log('💬 For more structured hints, use --all or --level flags');
-    logger.newline();
-    return true;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    logger.warn(`Note: Could not load AI hints: ${errorMsg}`);
-    return false;
-  }
-}
-
 export async function hintCommand(args: Args): Promise<CommandResult> {
   if (args.help || args.h) {
     showHelp();
@@ -304,19 +261,15 @@ export async function hintCommand(args: Args): Promise<CommandResult> {
     logger.newline();
     logger.log(`📝 ${problem.title} [${problem.difficulty.toUpperCase()}]`);
 
-    const aiHintShown = await tryEmitAiHint(config, problem, options, exists);
-
-    if (!aiHintShown) {
-      const updatedHintsUsed = displayHints(problem.hints, hintsUsed, options.level, options.all);
-      await updateHintTracking(
-        config.workspace,
-        problem.slug,
-        config.language,
-        exists,
-        updatedHintsUsed,
-        hintsUsed,
-      );
-    }
+    const updatedHintsUsed = displayHints(problem.hints, hintsUsed, options.level, options.all);
+    await updateHintTracking(
+      config.workspace,
+      problem.slug,
+      config.language,
+      exists,
+      updatedHintsUsed,
+      hintsUsed,
+    );
 
     logger.newline();
 

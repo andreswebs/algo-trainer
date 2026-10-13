@@ -21,7 +21,6 @@ describe('validateTeachingScript', () => {
         title: 'Two Sum',
         difficulty: 'easy',
         tags: ['array', 'hash-table'],
-        language: 'typescript',
         steps: [
           {
             type: 'intro',
@@ -41,7 +40,6 @@ describe('validateTeachingScript', () => {
         title: 'Two Sum',
         difficulty: 'easy',
         tags: ['array', 'hash-table'],
-        language: 'typescript',
         steps: [
           {
             type: 'intro',
@@ -51,69 +49,12 @@ describe('validateTeachingScript', () => {
             type: 'pre_prompt',
             content: 'Think about using a hash map.',
           },
-          {
-            type: 'on_run',
-            content: 'Your solution is slow.',
-            trigger: 'passed === false && attempts > 2',
-          },
-          {
-            type: 'hint',
-            content: 'Try using a Map for O(1) lookups.',
-            trigger: 'code.includes("for") && !code.includes("Map")',
-          },
-          {
-            type: 'on_request',
-            content: 'Here is how to optimize...',
-            keywords: ['optimization', 'faster', 'time complexity'],
-          },
-          {
-            type: 'after_success',
-            content: 'Great job!',
-          },
         ],
       };
 
       const result = validateTeachingScript(script);
       deepStrictEqual(result.valid, true);
       deepStrictEqual(result.errors.length, 0);
-    });
-
-    it('should accept on_run steps without triggers', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'on_run',
-            content: 'Generic feedback after run.',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, true);
-      deepStrictEqual(result.errors.length, 0);
-    });
-
-    it('should accept all supported languages', () => {
-      const languages = ['typescript', 'javascript', 'python', 'java', 'cpp', 'rust', 'go'];
-
-      for (const language of languages) {
-        const script = {
-          id: 'test',
-          title: 'Test',
-          difficulty: 'easy',
-          tags: ['test'],
-          language,
-          steps: [{ type: 'intro', content: 'Test' }],
-        };
-
-        const result = validateTeachingScript(script);
-        deepStrictEqual(result.valid, true, `Language ${language} should be valid`);
-      }
     });
 
     it('should accept all difficulty levels', () => {
@@ -125,7 +66,6 @@ describe('validateTeachingScript', () => {
           title: 'Test',
           difficulty,
           tags: ['test'],
-          language: 'typescript',
           steps: [{ type: 'intro', content: 'Test' }],
         };
 
@@ -135,27 +75,14 @@ describe('validateTeachingScript', () => {
     });
 
     it('should accept all valid step types', () => {
-      const stepTypes = ['intro', 'pre_prompt', 'on_run', 'after_success', 'on_request', 'hint'];
-
-      for (const type of stepTypes) {
-        const step: Record<string, unknown> = {
-          type,
-          content: 'Test content',
-        };
-
-        // Add required fields based on type
-        if (type === 'hint') {
-          step.trigger = 'code.includes("test")';
-        } else if (type === 'on_request') {
-          step.keywords = ['test'];
-        }
+      for (const type of ['intro', 'pre_prompt']) {
+        const step = { type, content: 'Test content' };
 
         const script = {
           id: 'test',
           title: 'Test',
           difficulty: 'easy',
           tags: ['test'],
-          language: 'typescript',
           steps: [step],
         };
 
@@ -171,7 +98,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -189,7 +115,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -206,7 +131,6 @@ describe('validateTeachingScript', () => {
         id: 'test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -224,7 +148,6 @@ describe('validateTeachingScript', () => {
         title: '',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -241,7 +164,6 @@ describe('validateTeachingScript', () => {
         id: 'test',
         title: 'Test',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -259,7 +181,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'super-hard',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -276,7 +197,6 @@ describe('validateTeachingScript', () => {
         id: 'test',
         title: 'Test',
         difficulty: 'easy',
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -294,7 +214,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: 'array',
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -312,7 +231,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['array', ''],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -320,41 +238,6 @@ describe('validateTeachingScript', () => {
       deepStrictEqual(result.valid, false);
       deepStrictEqual(
         result.errors.some((e) => e.includes('tag')),
-        true,
-      );
-    });
-
-    it('should reject scripts without language', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        steps: [{ type: 'intro', content: 'Test' }],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('language')),
-        true,
-      );
-    });
-
-    it('should reject scripts with invalid language', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'haskell',
-        steps: [{ type: 'intro', content: 'Test' }],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('language')),
         true,
       );
     });
@@ -367,7 +250,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
       };
 
       const result = validateTeachingScript(script);
@@ -384,7 +266,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: 'not an array',
       };
 
@@ -402,7 +283,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [],
       };
 
@@ -420,7 +300,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ content: 'Test' }],
       };
 
@@ -438,7 +317,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'invalid', content: 'Test' }],
       };
 
@@ -456,7 +334,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro' }],
       };
 
@@ -474,7 +351,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: '' }],
       };
 
@@ -487,222 +363,6 @@ describe('validateTeachingScript', () => {
     });
   });
 
-  describe('step type constraints', () => {
-    it('should reject intro steps with triggers', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'intro',
-            content: 'Test',
-            trigger: 'passed === true',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('intro') && e.includes('trigger')),
-        true,
-      );
-    });
-
-    it('should reject pre_prompt steps with triggers', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'pre_prompt',
-            content: 'Test',
-            trigger: 'attempts > 1',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('pre_prompt') && e.includes('trigger')),
-        true,
-      );
-    });
-
-    it('should reject after_success steps with triggers', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'after_success',
-            content: 'Test',
-            trigger: 'passed === true',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('after_success') && e.includes('trigger')),
-        true,
-      );
-    });
-
-    it('should reject hint steps without triggers', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'hint',
-            content: 'Test',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('hint') && e.includes('trigger')),
-        true,
-      );
-    });
-
-    it('should reject on_request steps without keywords', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'on_request',
-            content: 'Test',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('on_request') && e.includes('keywords')),
-        true,
-      );
-    });
-
-    it('should reject non-on_request steps with keywords', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'intro',
-            content: 'Test',
-            keywords: ['test'],
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('keywords')),
-        true,
-      );
-    });
-
-    it('should reject on_request steps with non-array keywords', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'on_request',
-            content: 'Test',
-            keywords: 'not-an-array',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('keywords')),
-        true,
-      );
-    });
-
-    it('should reject on_request steps with empty keyword strings', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'on_request',
-            content: 'Test',
-            keywords: ['valid', ''],
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('keyword')),
-        true,
-      );
-    });
-
-    it('should reject steps with empty trigger strings', () => {
-      const script = {
-        id: 'test',
-        title: 'Test',
-        difficulty: 'easy',
-        tags: ['test'],
-        language: 'typescript',
-        steps: [
-          {
-            type: 'on_run',
-            content: 'Test',
-            trigger: '',
-          },
-        ],
-      };
-
-      const result = validateTeachingScript(script);
-      deepStrictEqual(result.valid, false);
-      deepStrictEqual(
-        result.errors.some((e) => e.includes('trigger')),
-        true,
-      );
-    });
-  });
-
   describe('error aggregation', () => {
     it('should return all validation errors at once', () => {
       const script = {
@@ -710,15 +370,14 @@ describe('validateTeachingScript', () => {
         // missing title
         difficulty: 'invalid',
         tags: 'not-an-array',
-        // missing language
         steps: [
           {
             // missing type
             content: '',
           },
           {
-            type: 'hint',
-            // missing content and trigger
+            type: 'pre_prompt',
+            // missing content
           },
         ],
       };
@@ -735,30 +394,16 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [
-          {
-            type: 'intro',
-            content: 'Test',
-            trigger: 'should-not-have',
-          },
-          {
-            type: 'hint',
-            content: 'Test',
-            // missing trigger
-          },
-          {
-            type: 'on_request',
-            content: 'Test',
-            // missing keywords
-          },
+          { type: 'outro', content: 'Test' },
+          { type: 'intro' },
+          { type: 'pre_prompt', content: '' },
         ],
       };
 
       const result = validateTeachingScript(script);
       deepStrictEqual(result.valid, false);
-      // Should have errors for all three steps
-      deepStrictEqual(result.errors.length >= 3, true);
+      deepStrictEqual(result.errors.length, 3);
     });
   });
 
@@ -805,7 +450,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: ['not an object'],
       };
 
@@ -825,7 +469,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -847,7 +490,6 @@ describe('validateTeachingScript', () => {
         title: 'Test',
         difficulty: 'easy',
         tags: ['test'],
-        language: 'typescript',
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
@@ -857,5 +499,45 @@ describe('validateTeachingScript', () => {
         deepStrictEqual(typeof id, 'string');
       }
     });
+  });
+});
+
+describe('retired DSL features', () => {
+  const base = { id: 'two-sum', title: 'Two Sum', difficulty: 'easy', tags: ['array'] };
+
+  it('accepts retired step types and fields with a warning for each', () => {
+    const result = validateTeachingScript({
+      ...base,
+      steps: [
+        { type: 'intro', content: 'Welcome.', trigger: 'attempts > 1' },
+        { type: 'hint', content: 'Use a map.', trigger: "code.includes('for')" },
+        { type: 'on_request', content: 'Help.', keywords: ['help'] },
+      ],
+    });
+
+    deepStrictEqual(result.valid, true);
+    deepStrictEqual(result.errors, []);
+    deepStrictEqual(result.warnings, [
+      'steps[0].trigger is no longer supported and is ignored',
+      "steps[1]: 'hint' steps are no longer supported and are ignored",
+      "steps[2]: 'on_request' steps are no longer supported and are ignored",
+    ]);
+  });
+
+  it('still rejects unknown step types', () => {
+    const result = validateTeachingScript({
+      ...base,
+      steps: [{ type: 'outro', content: 'Bye.' }],
+    });
+
+    deepStrictEqual(result.valid, false);
+    deepStrictEqual(result.errors, ['steps[0].type must be one of: intro, pre_prompt']);
+  });
+
+  it('does not require a language', () => {
+    const result = validateTeachingScript({ ...base, steps: [{ type: 'intro', content: 'Hi.' }] });
+
+    deepStrictEqual(result.valid, true);
+    deepStrictEqual(result.warnings, []);
   });
 });

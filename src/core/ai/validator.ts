@@ -7,7 +7,8 @@
  * The validator ensures that:
  * - All required metadata fields are present and valid
  * - Steps array is non-empty with valid step objects
- * - Step type constraints are enforced (triggers, keywords)
+ * - Step types are `intro` or `pre_prompt`; retired step types and the
+ *   `trigger` and `keywords` fields produce warnings, not errors
  * - All validation errors are aggregated for helpful feedback
  *
  * @module core/ai/validator
@@ -20,31 +21,16 @@ import {
   validateArray,
   validateDifficulty,
   validateString,
-  validateSupportedLanguage,
 } from '../../utils/validation.ts';
-import type { TeachingScript, TeachingStepType } from './types.ts';
+import { RETIRED_STEP_TYPES, TEACHING_STEP_TYPES, type TeachingScript } from './types.ts';
 
 /**
- * Valid teaching step types
+ * Result of validating a teaching script. Warnings name retired DSL features
+ * that are skipped when the script loads.
  */
-const VALID_STEP_TYPES: TeachingStepType[] = [
-  'intro',
-  'pre_prompt',
-  'on_run',
-  'after_success',
-  'on_request',
-  'hint',
-];
-
-/**
- * Step types that should not have triggers
- */
-const NO_TRIGGER_TYPES: TeachingStepType[] = ['intro', 'pre_prompt', 'after_success'];
-
-/**
- * Step types that require triggers
- */
-const REQUIRES_TRIGGER_TYPES: TeachingStepType[] = ['hint'];
+export interface TeachingScriptValidationResult extends ValidationResult {
+  warnings: string[];
+}
 
 /**
  * Validate teaching script metadata fields
@@ -86,43 +72,33 @@ function validateScriptMetadata(script: Record<string, unknown>): ValidationResu
     if (!tagsResult.valid) errors.push(...tagsResult.errors);
   }
 
-  // Validate language: valid SupportedLanguage enum value
-  if (!('language' in script)) {
-    errors.push('language is required');
-  } else {
-    const languageResult = validateSupportedLanguage(script.language);
-    if (!languageResult.valid) errors.push(...languageResult.errors);
-  }
-
   return createValidationResult(errors.length === 0, errors);
 }
 
 /**
  * Validate a single teaching step
  */
-function validateStep(step: unknown, index: number): ValidationResult {
+function validateStep(step: unknown, index: number): TeachingScriptValidationResult {
   const errors: string[] = [];
+  const warnings: string[] = [];
   const prefix = `steps[${index}]`;
 
-  // Check if step is an object
   if (!step || typeof step !== 'object') {
-    return createValidationResult(false, [`${prefix} must be an object`]);
+    return { valid: false, errors: [`${prefix} must be an object`], warnings };
   }
 
   const stepObj = step as Record<string, unknown>;
 
-  // Validate type: required and must be valid TeachingStepType
   if (!('type' in stepObj)) {
     errors.push(`${prefix}.type is required`);
   } else if (typeof stepObj.type !== 'string') {
     errors.push(`${prefix}.type must be a string`);
-  } else if (!VALID_STEP_TYPES.includes(stepObj.type as TeachingStepType)) {
-    errors.push(`${prefix}.type must be one of: ${VALID_STEP_TYPES.join(', ')}`);
+  } else if ((RETIRED_STEP_TYPES as readonly string[]).includes(stepObj.type)) {
+    warnings.push(`${prefix}: '${stepObj.type}' steps are no longer supported and are ignored`);
+  } else if (!(TEACHING_STEP_TYPES as readonly string[]).includes(stepObj.type)) {
+    errors.push(`${prefix}.type must be one of: ${TEACHING_STEP_TYPES.join(', ')}`);
   }
 
-  const stepType = stepObj.type as TeachingStepType;
-
-  // Validate content: required non-empty string
   if (!('content' in stepObj)) {
     errors.push(`${prefix}.content is required`);
   } else {
@@ -132,92 +108,54 @@ function validateStep(step: unknown, index: number): ValidationResult {
     if (!contentResult.valid) errors.push(...contentResult.errors);
   }
 
-  // Validate trigger constraints based on step type
-  if ('trigger' in stepObj && stepObj.trigger !== undefined) {
-    // Check trigger is a string
-    const triggerResult = validateString(stepObj.trigger, `${prefix}.trigger`, {
-      allowEmpty: false,
-    });
-    if (!triggerResult.valid) {
-      errors.push(...triggerResult.errors);
-    }
-
-    // Check if step type should not have triggers
-    if (NO_TRIGGER_TYPES.includes(stepType)) {
-      errors.push(`${prefix}: '${stepType}' steps must not have triggers (they are always shown)`);
+  const retiredStep = warnings.length > 0;
+  for (const field of ['trigger', 'keywords']) {
+    if (!retiredStep && field in stepObj) {
+      warnings.push(`${prefix}.${field} is no longer supported and is ignored`);
     }
   }
 
-  // Check if required triggers are missing
-  if (REQUIRES_TRIGGER_TYPES.includes(stepType)) {
-    if (!('trigger' in stepObj) || !stepObj.trigger) {
-      errors.push(`${prefix}: '${stepType}' steps must have a trigger`);
-    }
-  }
-
-  // Validate keywords constraints
-  if ('keywords' in stepObj && stepObj.keywords !== undefined) {
-    // Keywords only valid for on_request type
-    if (stepType !== 'on_request') {
-      errors.push(`${prefix}: 'keywords' are only valid for 'on_request' steps`);
-    }
-
-    // Validate keywords is array of strings
-    const keywordsResult = validateArray(stepObj.keywords, `${prefix}.keywords`, (item) =>
-      validateString(item, 'keyword', { allowEmpty: false }),
-    );
-    if (!keywordsResult.valid) errors.push(...keywordsResult.errors);
-  }
-
-  // on_request steps must have keywords
-  if (stepType === 'on_request') {
-    if (!('keywords' in stepObj) || !stepObj.keywords) {
-      errors.push(`${prefix}: 'on_request' steps must have keywords`);
-    }
-  }
-
-  return createValidationResult(errors.length === 0, errors);
+  return { valid: errors.length === 0, errors, warnings };
 }
 
 /**
  * Validate steps array
  */
-function validateSteps(script: Record<string, unknown>): ValidationResult {
+function validateSteps(script: Record<string, unknown>): TeachingScriptValidationResult {
   const errors: string[] = [];
 
   // Check steps exists and is an array
   if (!('steps' in script)) {
     errors.push('steps is required');
-    return createValidationResult(false, errors);
+    return { valid: false, errors, warnings: [] };
   }
 
   if (!Array.isArray(script.steps)) {
     errors.push('steps must be an array');
-    return createValidationResult(false, errors);
+    return { valid: false, errors, warnings: [] };
   }
 
   // Check steps is non-empty
   if (script.steps.length === 0) {
     errors.push('steps must have at least one step');
-    return createValidationResult(false, errors);
+    return { valid: false, errors, warnings: [] };
   }
 
-  // Validate each step
+  const warnings: string[] = [];
   for (let i = 0; i < script.steps.length; i++) {
     const stepResult = validateStep(script.steps[i], i);
-    if (!stepResult.valid) {
-      errors.push(...stepResult.errors);
-    }
+    errors.push(...stepResult.errors);
+    warnings.push(...stepResult.warnings);
   }
 
-  return createValidationResult(errors.length === 0, errors);
+  return { valid: errors.length === 0, errors, warnings };
 }
 
 /**
  * Validate a teaching script against the DSL specification.
  *
- * Validates all required fields and enforces step type constraints.
- * Returns all validation errors to provide helpful feedback.
+ * Validates all required fields and step types. Returns all errors, plus a
+ * warning for each retired DSL feature the script still uses.
  *
  * @param script - The script object to validate (typically from parsed YAML)
  * @returns ValidationResult with all errors aggregated
@@ -230,20 +168,19 @@ function validateSteps(script: Record<string, unknown>): ValidationResult {
  * }
  * ```
  */
-export function validateTeachingScript(script: unknown): ValidationResult {
-  // Check if script is an object (but not an array or null)
+export function validateTeachingScript(script: unknown): TeachingScriptValidationResult {
   if (!script || typeof script !== 'object' || Array.isArray(script)) {
-    return createValidationResult(false, ['script must be an object']);
+    return { valid: false, errors: ['script must be an object'], warnings: [] };
   }
 
   const scriptObj = script as Record<string, unknown>;
-
-  // Validate metadata and steps
   const metadataResult = validateScriptMetadata(scriptObj);
   const stepsResult = validateSteps(scriptObj);
 
-  // Combine all validation results
-  return combineValidationResults(metadataResult, stepsResult);
+  return {
+    ...combineValidationResults(metadataResult, stepsResult),
+    warnings: stepsResult.warnings,
+  };
 }
 
 /**

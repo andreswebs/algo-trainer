@@ -326,7 +326,7 @@ algo-trainer config set preferences.theme dark
 algo-trainer config set preferences.verbosity verbose
 algo-trainer config set preferences.useEmoji false
 
-# Enable/disable AI features
+# Enable/disable teaching guides on challenge
 algo-trainer config set aiEnabled true
 ```
 

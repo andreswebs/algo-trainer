@@ -3,7 +3,7 @@
  */
 
 import { afterEach, beforeEach, describe, it } from 'bun:test';
-import { deepStrictEqual } from 'node:assert/strict';
+import { deepStrictEqual, ok } from 'node:assert/strict';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { extractTeachOptions, teachCommand } from '../src/cli/commands/teach.ts';
@@ -128,6 +128,32 @@ steps:
     const result = await teachCommand(args);
     deepStrictEqual(result.success, true);
     deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
+  });
+
+  it('should accept a script with retired steps and warn about them', async () => {
+    const scriptPath = join(tempDir, 'retired-trainer.yaml');
+    await writeFile(
+      scriptPath,
+      'id: two-sum\ntitle: Two Sum\ndifficulty: easy\ntags: [array]\nlanguage: typescript\nsteps:\n  - type: intro\n    content: Welcome\n  - type: hint\n    trigger: attempts > 1\n    content: Old hint\n',
+    );
+    const output: string[] = [];
+    const originalError = console.error;
+    console.error = (...args: unknown[]): void => {
+      output.push(args.map(String).join(' '));
+    };
+
+    let result: Awaited<ReturnType<typeof teachCommand>>;
+    try {
+      result = await teachCommand({ _: ['teach', 'validate', scriptPath] });
+    } finally {
+      console.error = originalError;
+    }
+
+    deepStrictEqual(result.exitCode, ExitCode.SUCCESS);
+    ok(
+      output.join('\n').includes("steps[1]: 'hint' steps are no longer supported and are ignored"),
+      output.join('\n'),
+    );
   });
 
   it('should reject an invalid teaching script', async () => {

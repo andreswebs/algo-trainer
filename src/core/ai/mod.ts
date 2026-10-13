@@ -5,157 +5,68 @@
  *
  * ## Overview
  *
- * The AI Teaching System provides intelligent, proactive coaching for users solving
- * algorithmic problems. It uses a YAML-based DSL (trainer.yaml) to define teaching
- * scripts that respond to user code, execution results, and progress patterns.
- *
- * ## Key Capabilities
- *
- * - **Proactive guidance**: Provides contextual hints without explicit requests
- * - **Code analysis**: Analyzes user code patterns to provide relevant feedback
- * - **Execution feedback**: Interprets stdout, stderr, and test results
- * - **Progressive hints**: Escalates guidance based on attempts and struggle patterns
- * - **Script generation**: Auto-generates teaching scripts from problem metadata
+ * A teaching script (trainer.yaml) holds problem-specific guidance: an
+ * introduction and pre-coding advice that `challenge` shows when a problem starts.
+ * Scripts are looked up in the workspace problem directory, then in the user's
+ * data directory, then among the built-in scripts.
  *
  * ## Quick Start
  *
- * ### Basic Usage with TeachingEngine
- *
  * ```ts
- * import { TeachingEngine, TeachingSession } from './core/ai/mod.ts';
+ * import { TeachingEngine } from './core/ai/mod.ts';
  *
- * // Create session and engine
- * const session = new TeachingSession('two-sum');
- * const engine = new TeachingEngine(session);
- *
- * // Load teaching script
+ * const engine = new TeachingEngine('two-sum');
  * const loaded = await engine.loadScript('./problems/two-sum');
  * if (loaded) {
- *   // Get introduction
- *   const intro = engine.getIntroduction();
- *   console.log(intro);
- *
- *   // Get pre-coding guidance
- *   const prePrompt = engine.getPrePrompt();
- *   console.log(prePrompt);
- *
- *   // Record attempt and process execution
- *   session.recordAttempt(userCode);
- *   const feedback = engine.processExecution(userCode, executionResult);
- *   if (feedback) {
- *     console.log('Feedback:', feedback);
- *   }
- *
- *   // Get contextual hint
- *   const hint = engine.getHint(userCode);
- *   if (hint) {
- *     console.log('Hint:', hint);
- *   }
- *
- *   // Handle explicit request
- *   const help = engine.handleRequest('how to optimize?');
- *   if (help) {
- *     console.log(help);
- *   }
+ *   console.log(engine.getIntroduction());
+ *   console.log(engine.getPrePrompt());
  * }
- * ```
- *
- * ### Using Trigger Evaluator
- *
- * The trigger evaluator provides secure evaluation of JavaScript-like expressions
- * to determine when guidance should be shown. For comprehensive documentation on
- * supported operations, security features, and examples, see:
- * [Trigger Evaluator Documentation](../../../docs/trigger-evaluator.md)
- *
- * ```ts
- * import { evaluateTrigger } from './core/ai/mod.ts';
- * import type { TriggerContext } from './core/ai/mod.ts';
- *
- * const context: TriggerContext = {
- *   code: 'function twoSum() { for (let i = 0; i < n; i++) {} }',
- *   stdout: '',
- *   stderr: '',
- *   passed: false,
- *   attempts: 3
- * };
- *
- * evaluateTrigger('attempts > 2', context); // true
- * evaluateTrigger('code.includes("for")', context); // true
  * ```
  *
  * ### Loading and Validating Scripts
  *
  * ```ts
- * import {
- *   loadAndValidateScript,
- *   validateTeachingScript,
- *   isValidTeachingScript
- * } from './core/ai/mod.ts';
+ * import { loadAndValidateScript, validateTeachingScript } from './core/ai/mod.ts';
  *
- * // Load from file
  * const script = await loadAndValidateScript('./problems/two-sum/trainer.yaml');
  *
- * // Validate existing script
- * const result = validateTeachingScript(script);
+ * const result = validateTeachingScript(parsedYaml);
  * if (!result.valid) {
  *   console.error('Validation errors:', result.errors);
  * }
- *
- * // Type guard for validation
- * if (isValidTeachingScript(unknownValue)) {
- *   // TypeScript now knows unknownValue is a TeachingScript
- *   console.log(unknownValue.title);
+ * for (const warning of result.warnings) {
+ *   console.warn(warning);
  * }
  * ```
  *
  * ### Generating Scripts
  *
  * ```ts
- * import {
- *   TeachingScriptGenerator,
- *   type ScriptGeneratorOptions,
- *   type ScriptTemplateType
- * } from './core/ai/mod.ts';
+ * import { TeachingScriptGenerator } from './core/ai/mod.ts';
  *
- * // Basic usage with defaults
  * const generator = new TeachingScriptGenerator();
- * const script = generator.generate(problem);
  * const yaml = generator.generateYaml(problem);
- *
- * // Advanced usage with custom options
- * const customGenerator = new TeachingScriptGenerator({
- *   templateType: 'advanced',
- *   language: 'typescript',
- *   includeTopicHints: true,
- * });
- * const advancedScript = customGenerator.generate(problem);
  * ```
  *
  * ## Key Exports
  *
  * ### Classes
- * - **TeachingEngine** - Main engine for orchestrating teaching system
- * - **TeachingSession** - Session state management
+ * - **TeachingEngine** - Loads a problem's teaching script and provides its guidance
  * - **TeachingScriptGenerator** - Generate teaching scripts from problem metadata
  *
  * ### Functions
- * - **evaluateTrigger** - Evaluate trigger expressions
  * - **loadAndValidateScript** - Load and validate teaching script from file
  * - **loadTeachingScript** - Load teaching script without validation
  * - **parseTeachingScript** - Parse YAML content into TeachingScript
- * - **validateTeachingScript** - Validate teaching script
+ * - **validateTeachingScript** - Validate teaching script, with warnings for retired features
  * - **isValidTeachingScript** - Type guard for TeachingScript validation
  * - **findScriptPath** - Find trainer.yaml in problem directory
  * - **findTeachingScript** - Find teaching script by problem slug (searches user custom and built-in)
  *
  * ### Types
- * - **TriggerContext** - Context variables available for evaluation
  * - **TeachingStepType** - Types of teaching steps
  * - **TeachingStep** - Individual teaching step definition
  * - **TeachingScript** - Complete teaching script
- * - **TeachingSessionState** - User session state
- * - **ExecutionResult** - Code execution results
- * - **TestResult** - Individual test case results
  * - **ScriptInfo** - Script metadata
  * - **ScriptTemplateType** - Template types for script generation
  * - **ScriptGeneratorOptions** - Configuration options for script generator
@@ -178,10 +89,7 @@ export {
   loadTeachingScript,
   parseTeachingScript,
 } from './parser.ts';
-// Session management
-export { TeachingSession } from './session.ts';
-// Trigger evaluator
-export { evaluateTrigger } from './triggers.ts';
 // Types
 export * from './types.ts';
+export type { TeachingScriptValidationResult } from './validator.ts';
 export { isValidTeachingScript, validateTeachingScript } from './validator.ts';

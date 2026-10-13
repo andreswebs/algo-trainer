@@ -28,27 +28,12 @@ difficulty: easy
 tags:
   - array
   - hash-table
-language: typescript
 steps:
   - type: intro
     content: |
       Welcome to Two Sum! This is a classic problem.
   - type: pre_prompt
     content: Think about using a hash table.
-  - type: on_run
-    content: Great attempt! Try again.
-    trigger: passed === false && attempts > 1
-  - type: hint
-    content: Consider using a Map to store seen numbers.
-    trigger: code.includes('for') && !code.includes('Map')
-  - type: after_success
-    content: Congratulations! You solved it!
-  - type: on_request
-    content: For optimization, use a hash table instead of nested loops.
-    keywords:
-      - optimization
-      - faster
-      - improve
 `;
 
 /**
@@ -58,7 +43,6 @@ const MINIMAL_SCRIPT_YAML = `
 id: minimal
 title: Minimal Problem
 difficulty: medium
-language: python
 steps:
   - type: intro
     content: Hello world
@@ -70,7 +54,6 @@ steps:
 const MISSING_ID_YAML = `
 title: Missing ID
 difficulty: easy
-language: typescript
 steps:
   - type: intro
     content: Test
@@ -83,7 +66,6 @@ const INVALID_STEPS_YAML = `
 id: invalid-steps
 title: Invalid Steps
 difficulty: easy
-language: typescript
 steps: not_an_array
 `;
 
@@ -103,27 +85,15 @@ describe('parseTeachingScript', () => {
     deepStrictEqual(script.title, 'Two Sum');
     deepStrictEqual(script.difficulty, 'easy');
     deepStrictEqual(script.tags, ['array', 'hash-table']);
-    deepStrictEqual(script.language, 'typescript');
-    deepStrictEqual(script.steps.length, 6);
-
-    // Verify step types
+    deepStrictEqual(script.steps.length, 2);
     deepStrictEqual(script.steps[0].type, 'intro');
     deepStrictEqual(script.steps[1].type, 'pre_prompt');
-    deepStrictEqual(script.steps[2].type, 'on_run');
-    deepStrictEqual(script.steps[3].type, 'hint');
-    deepStrictEqual(script.steps[4].type, 'after_success');
-    deepStrictEqual(script.steps[5].type, 'on_request');
 
     // Verify step content
     deepStrictEqual(
       script.steps[0].content.trim(),
       'Welcome to Two Sum! This is a classic problem.',
     );
-
-    // Verify optional fields
-    deepStrictEqual(script.steps[2].trigger, 'passed === false && attempts > 1');
-    deepStrictEqual(script.steps[3].trigger, "code.includes('for') && !code.includes('Map')");
-    deepStrictEqual(script.steps[5].keywords, ['optimization', 'faster', 'improve']);
   });
 
   test('should parse minimal valid YAML', () => {
@@ -133,12 +103,9 @@ describe('parseTeachingScript', () => {
     deepStrictEqual(script.title, 'Minimal Problem');
     deepStrictEqual(script.difficulty, 'medium');
     deepStrictEqual(script.tags, []); // Should default to empty array
-    deepStrictEqual(script.language, 'python');
     deepStrictEqual(script.steps.length, 1);
     deepStrictEqual(script.steps[0].type, 'intro');
     deepStrictEqual(script.steps[0].content, 'Hello world');
-    deepStrictEqual(script.steps[0].trigger, undefined);
-    deepStrictEqual(script.steps[0].keywords, undefined);
   });
 
   test('should normalize tags array', () => {
@@ -146,7 +113,6 @@ describe('parseTeachingScript', () => {
 id: test
 title: Test
 difficulty: easy
-language: typescript
 tags:
   - valid-tag
   - 123
@@ -165,7 +131,6 @@ steps:
 id: test
 title: Test
 difficulty: easy
-language: typescript
 steps:
   - type: intro
     content: Test
@@ -174,31 +139,34 @@ steps:
     deepStrictEqual(script.tags, []);
   });
 
-  test('should handle steps with optional fields', () => {
-    const yamlWithOptionalFields = `
-id: test
-title: Test
+  test('should skip retired step types and fields and accept a script without language', () => {
+    const script = parseTeachingScript(`
+id: two-sum
+title: Two Sum
 difficulty: easy
-language: typescript
+tags: [array]
 steps:
   - type: intro
-    content: Test
+    content: Welcome.
   - type: hint
-    content: Hint
-    trigger: attempts > 2
+    trigger: code.includes('for')
+    content: Avoid nested loops.
+  - type: pre_prompt
+    content: Think first.
+  - type: on_run
+    trigger: '!passed'
+    content: Try again.
+  - type: after_success
+    content: Well done.
   - type: on_request
-    content: Help
-    keywords:
-      - help
-      - hint
-`;
-    const script = parseTeachingScript(yamlWithOptionalFields);
-    deepStrictEqual(script.steps[0].trigger, undefined);
-    deepStrictEqual(script.steps[0].keywords, undefined);
-    deepStrictEqual(script.steps[1].trigger, 'attempts > 2');
-    deepStrictEqual(script.steps[1].keywords, undefined);
-    deepStrictEqual(script.steps[2].trigger, undefined);
-    deepStrictEqual(script.steps[2].keywords, ['help', 'hint']);
+    keywords: [help]
+    content: Here is help.
+`);
+
+    deepStrictEqual(script.steps, [
+      { type: 'intro', content: 'Welcome.' },
+      { type: 'pre_prompt', content: 'Think first.' },
+    ]);
   });
 
   test('should throw ScriptError on missing required field (id)', () => {
@@ -236,7 +204,6 @@ steps:
 id: test
 title: Test
 difficulty: easy
-language: typescript
 steps:
   - not_an_object
 `;
@@ -254,7 +221,6 @@ steps:
 id: test
 title: Test
 difficulty: easy
-language: typescript
 steps:
   - content: Test
 `;
@@ -272,7 +238,6 @@ steps:
 id: test
 title: Test
 difficulty: easy
-language: typescript
 steps:
   - type: intro
 `;
@@ -406,7 +371,6 @@ id: test
 title: Test
 difficulty: super-hard
 tags: [test]
-language: typescript
 steps:
   - type: intro
     content: Test
@@ -423,28 +387,19 @@ steps:
     );
   });
 
-  test('should throw ScriptError on step constraint violation', async () => {
-    // intro step should not have triggers
-    const invalidScript = `
-id: test
-title: Test
-difficulty: easy
-tags: [test]
-language: typescript
-steps:
-  - type: intro
-    content: Test
-    trigger: passed === true
-`;
-    const filePath = join(tempDir, 'invalid-constraint.yaml');
-    await writeFile(filePath, invalidScript);
+  test('should throw ScriptError on an unknown step type', async () => {
+    const filePath = join(tempDir, 'unknown-step-type.yaml');
+    await writeFile(
+      filePath,
+      'id: test\ntitle: Test\ndifficulty: easy\ntags: [test]\nsteps:\n  - type: outro\n    content: Bye\n',
+    );
 
     await assertRejectsWith(
       async () => {
         await loadAndValidateScript(filePath);
       },
       ScriptError,
-      'Teaching script validation failed',
+      'steps[0].type must be one of: intro, pre_prompt',
     );
   });
 
@@ -454,7 +409,6 @@ id: test
 title: Test
 difficulty: invalid-difficulty
 tags: [test]
-language: typescript
 steps:
   - type: intro
     content: Test
@@ -472,50 +426,15 @@ steps:
     }
   });
 
-  test('should validate hint steps require triggers', async () => {
-    const invalidScript = `
-id: test
-title: Test
-difficulty: easy
-tags: [test]
-language: typescript
-steps:
-  - type: hint
-    content: Test hint without trigger
-`;
-    const filePath = join(tempDir, 'hint-without-trigger.yaml');
-    await writeFile(filePath, invalidScript);
-
-    await assertRejectsWith(
-      async () => {
-        await loadAndValidateScript(filePath);
-      },
-      ScriptError,
-      'Teaching script validation failed',
+  test('should load a script whose steps are all retired as a script without steps', async () => {
+    const filePath = join(tempDir, 'only-retired-steps.yaml');
+    await writeFile(
+      filePath,
+      'id: test\ntitle: Test\ndifficulty: easy\ntags: [test]\nsteps:\n  - type: hint\n    content: Old hint\n',
     );
-  });
 
-  test('should validate on_request steps require keywords', async () => {
-    const invalidScript = `
-id: test
-title: Test
-difficulty: easy
-tags: [test]
-language: typescript
-steps:
-  - type: on_request
-    content: Test request without keywords
-`;
-    const filePath = join(tempDir, 'request-without-keywords.yaml');
-    await writeFile(filePath, invalidScript);
-
-    await assertRejectsWith(
-      async () => {
-        await loadAndValidateScript(filePath);
-      },
-      ScriptError,
-      'Teaching script validation failed',
-    );
+    const script = await loadAndValidateScript(filePath);
+    deepStrictEqual(script?.steps, []);
   });
 });
 

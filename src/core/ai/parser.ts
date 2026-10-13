@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { getConfigPaths, getDataRoot } from '../../config/paths.ts';
 import { createErrorContext, ScriptError } from '../../utils/errors.ts';
 import { pathExists } from '../../utils/fs.ts';
-import type { TeachingScript } from './types.ts';
+import { RETIRED_STEP_TYPES, type TeachingScript } from './types.ts';
 import { validateTeachingScript } from './validator.ts';
 
 /**
@@ -89,13 +89,6 @@ export function parseTeachingScript(yamlContent: string): TeachingScript {
     );
   }
 
-  if (!obj.language || typeof obj.language !== 'string') {
-    throw new ScriptError(
-      'Missing or invalid required field: language',
-      createErrorContext('parseTeachingScript'),
-    );
-  }
-
   if (!Array.isArray(obj.steps)) {
     throw new ScriptError(
       'Missing or invalid required field: steps (must be an array)',
@@ -108,8 +101,7 @@ export function parseTeachingScript(yamlContent: string): TeachingScript {
     ? obj.tags.filter((tag): tag is string => typeof tag === 'string')
     : [];
 
-  // Normalize steps array
-  const steps = obj.steps.map((step: unknown, index: number) => {
+  const steps = obj.steps.flatMap((step: unknown, index: number) => {
     if (!step || typeof step !== 'object') {
       throw new ScriptError(
         `Invalid step at index ${index}: must be an object`,
@@ -133,14 +125,11 @@ export function parseTeachingScript(yamlContent: string): TeachingScript {
       );
     }
 
-    return {
-      type: stepObj.type as string,
-      content: stepObj.content as string,
-      trigger: typeof stepObj.trigger === 'string' ? stepObj.trigger : undefined,
-      keywords: Array.isArray(stepObj.keywords)
-        ? stepObj.keywords.filter((k): k is string => typeof k === 'string')
-        : undefined,
-    };
+    if ((RETIRED_STEP_TYPES as readonly string[]).includes(stepObj.type)) {
+      return [];
+    }
+
+    return [{ type: stepObj.type, content: stepObj.content }];
   });
 
   return {
@@ -148,7 +137,6 @@ export function parseTeachingScript(yamlContent: string): TeachingScript {
     title: obj.title,
     difficulty: obj.difficulty as 'easy' | 'medium' | 'hard',
     tags,
-    language: obj.language as string,
     steps,
   } as TeachingScript;
 }
@@ -244,8 +232,9 @@ export async function loadAndValidateScript(filePath: string): Promise<TeachingS
     return null;
   }
 
-  // Validate the loaded script
-  const validationResult = validateTeachingScript(script);
+  // Validate the raw YAML, as `teach validate` does: the parsed script has
+  // retired steps removed, which would hide them from the validator.
+  const validationResult = validateTeachingScript(Bun.YAML.parse(await readFile(filePath, 'utf8')));
 
   if (!validationResult.valid) {
     throw new ScriptError(
