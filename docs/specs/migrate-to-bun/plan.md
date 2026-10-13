@@ -403,10 +403,13 @@ Goal: generated test and solution files are valid code in every language, and ge
 - In test templates, render the examples as line comments in the language's syntax (`//` for TypeScript, JavaScript, Go, Java and Rust; `#` for Python), through a new language-aware placeholder.
 - Python test classes must still have a body: emit `pass` when the class would otherwise contain only comments.
 - Turning examples into executable assertions is possible follow-up work.
+- Corrected 2026-10-13: the placeholder is `{{EXAMPLES_AS_COMMENTS}}`, indented in each template; `replacePlaceholders` applies the indentation of a placeholder alone on its line to every line of the value. The minimal Python class gets a skipped `test_examples` method instead of `pass`, because `python3 -m unittest` exits 5 when no test runs.
 
 ### 5.2 Comment every description line
 
 `{{PROBLEM_DESCRIPTION}}` follows a single line comment in the documented `solution.tpl` for TypeScript and JavaScript (`//`) and in the documented and comprehensive `solution.tpl` for Rust (`//!`), so lines after the first are bare text. Comment every line, through the renderer or a per-line placeholder.
+
+Corrected 2026-10-13: the comprehensive Rust `solution.tpl` also had `//! {{CONSTRAINTS}}` and `/// {{EXAMPLES}}`, both multi-line. `replacePlaceholders` now repeats a `//`, `///` or `//!` prefix on every line of the value, which fixed all six sites without editing a template.
 
 ### 5.3 Switch the TypeScript and JavaScript tests to node:test
 
@@ -431,6 +434,8 @@ With the built binary, generate a `two-sum` workspace for every language and sty
 - Go, Java, Python and Rust, each style: the generated files parse or compile with the language's own tool where it is installed (`gofmt -e`, `javac`, `python3 -m py_compile`, `rustc --edition 2021 --crate-type lib` or `cargo check`).
 
 Record which runtimes and tools were checked.
+
+Corrected 2026-10-13: `gofmt -e` only parses, and the minimal Go test failed to compile (`"testing" imported and not used`) once the examples were commented. The gate also ran `go vet` and `go test` with a temporary `go.mod`, JUnit against the Java tests, `rustc --test` on `tests.rs`, and C++ with `-std=c++23 -DLC_LOCAL` as the generated `CMakeLists.txt` builds it.
 
 ## Definition of done
 
