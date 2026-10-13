@@ -122,7 +122,7 @@ deno task generate-problems
 
 ## Project Structure
 
-```
+```text
 src/
 ├── main.ts                 # Entry point
 ├── cli/
