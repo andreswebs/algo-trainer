@@ -5,6 +5,6 @@ import { {{FUNCTION_NAME}} } from './solution{{FILE_EXTENSION}}';
 // {{PROBLEM_TITLE}} tests
 {{EXAMPLES_AS_COMMENTS}}
 
-test('{{PROBLEM_TITLE}}', () => {
+test({{PROBLEM_TITLE_LITERAL}}, () => {
   assert.equal(typeof {{FUNCTION_NAME}}, 'function');
 });

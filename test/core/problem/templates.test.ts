@@ -619,3 +619,21 @@ for (const language of ['typescript', 'javascript'] as const) {
     });
   }
 }
+
+const quotedTitleProblem: Problem = { ...mockProblem, title: `Pascal's "Quoted" \\ Title` };
+
+for (const [language, style, expected] of [
+  ['typescript', 'minimal', `test('Pascal\\'s "Quoted" \\\\ Title', () => {`],
+  ['typescript', 'documented', `describe('Pascal\\'s "Quoted" \\\\ Title', () => {`],
+  ['javascript', 'comprehensive', `describe('Pascal\\'s "Quoted" \\\\ Title', () => {`],
+  ['java', 'documented', `@DisplayName("Pascal's \\"Quoted\\" \\\\ Title")`],
+] as const) {
+  test(`renderTemplate - ${language} ${style} test template escapes quotes in the title`, async () => {
+    const rendered = await renderTemplate(
+      { problem: quotedTitleProblem, config: { ...mockTemplateConfig, language, style } },
+      'test',
+    );
+
+    ok(rendered.includes(expected), rendered);
+  });
+}

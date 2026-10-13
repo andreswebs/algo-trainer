@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { {{FUNCTION_NAME}}, {{FUNCTION_NAME}}Alternative } from './solution{{FILE_EXTENSION}}';
 
-describe('{{PROBLEM_TITLE}}', () => {
+describe({{PROBLEM_TITLE_LITERAL}}, () => {
   /**
    * Test cases from problem examples
    */

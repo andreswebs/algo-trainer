@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { {{FUNCTION_NAME}} } from './solution{{FILE_EXTENSION}}';
 
-describe('{{PROBLEM_TITLE}}', () => {
+describe({{PROBLEM_TITLE_LITERAL}}, () => {
   /**
    * Examples from the problem description
    */

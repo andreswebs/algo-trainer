@@ -132,6 +132,7 @@ export interface TemplateContext {
  */
 interface PlaceholderValues {
   PROBLEM_TITLE: string;
+  PROBLEM_TITLE_LITERAL: string;
   PROBLEM_SLUG: string;
   PROBLEM_ID: string;
   PROBLEM_DIFFICULTY: string;
@@ -152,6 +153,16 @@ interface PlaceholderValues {
   CLASS_NAME: string;
   SIGNATURE: string;
   FILE_EXTENSION: string;
+}
+
+/**
+ * Render a value as a string literal: single-quoted for TypeScript and JavaScript, double-quoted
+ * otherwise. JSON escapes are valid in Java too.
+ */
+function stringLiteral(value: string, language: SupportedLanguage): string {
+  const json = JSON.stringify(value);
+  if (language !== 'typescript' && language !== 'javascript') return json;
+  return `'${json.slice(1, -1).replaceAll('\\"', '"').replaceAll("'", "\\'")}'`;
 }
 
 /**
@@ -569,6 +580,7 @@ function buildPlaceholderValues(context: TemplateContext): PlaceholderValues {
 
   return {
     PROBLEM_TITLE: problem.title,
+    PROBLEM_TITLE_LITERAL: stringLiteral(problem.title, config.language),
     PROBLEM_SLUG: problem.slug,
     PROBLEM_ID: problem.id,
     PROBLEM_DIFFICULTY: problem.difficulty,

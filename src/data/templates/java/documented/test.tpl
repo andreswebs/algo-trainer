@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("{{PROBLEM_TITLE}}")
+@DisplayName({{PROBLEM_TITLE_LITERAL}})
 class SolutionTest {
     private final Solution solution = new Solution();
 
