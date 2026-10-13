@@ -2,7 +2,7 @@
  * Generated problem data
  *
  * This file is auto-generated from src/data/problems/*.json
- * DO NOT EDIT MANUALLY - run `deno task generate-problems` to regenerate
+ * DO NOT EDIT MANUALLY - run `bun run generate-problems` to regenerate
  *
  * Total problems: 16
  */

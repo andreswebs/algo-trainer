@@ -2,5 +2,6 @@
 
 set -o errexit -o nounset -o pipefail
 
-deno task fmt
-deno task lint:fix
+bun run format
+bun run lint:fix
+bun run build

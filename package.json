@@ -14,6 +14,9 @@
     "bun": ">=1.4.3"
   },
   "scripts": {
+    "dev": "bun --watch src/main.ts",
+    "generate-problems": "bun scripts/generate-problems.ts",
+    "build": "bun run generate-problems && bun build --compile --asset ./src/data/templates --asset ./src/data/scripts --outfile ./bin/algo-trainer ./src/main.ts && rm -f ./.*.bun-build",
     "typecheck": "bun check --no-pretty",
     "format": "biome check --write --linter-enabled=false",
     "format:check": "biome check --linter-enabled=false",

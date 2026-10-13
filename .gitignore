@@ -1,3 +1,5 @@
 /node_modules
 /bin
 .claude/settings.local.json
+# bun build --compile leaves a temporary copy of the runtime in the working directory
+/.*.bun-build

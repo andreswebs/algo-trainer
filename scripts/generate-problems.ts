@@ -1,13 +1,13 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-env
+#!/usr/bin/env bun
 /**
  * Generate TypeScript module from problem JSON files
  *
  * This script reads all JSON files from src/data/problems/ and generates a
  * TypeScript module that exports them as constants. This allows the problems
- * to be bundled with `deno compile` instead of being read from the file system.
+ * to be bundled with `bun build --compile` instead of being read from the file system.
  *
  * Usage:
- *   deno run --allow-read --allow-write scripts/generate-problems.ts
+ *   bun run generate-problems
  */
 
 import { spawnSync } from 'node:child_process';
@@ -50,7 +50,7 @@ async function main(): Promise<void> {
   lines.push(' * Generated problem data');
   lines.push(' *');
   lines.push(' * This file is auto-generated from src/data/problems/*.json');
-  lines.push(' * DO NOT EDIT MANUALLY - run `deno task generate-problems` to regenerate');
+  lines.push(' * DO NOT EDIT MANUALLY - run `bun run generate-problems` to regenerate');
   lines.push(' *');
   lines.push(` * Total problems: ${problems.length}`);
   lines.push(' */');
@@ -89,8 +89,8 @@ async function main(): Promise<void> {
   // Write the generated file
   await writeFile(OUTPUT_FILE, output);
 
-  // Format the output so `deno task fmt:check` is stable after generation.
-  const result = spawnSync('bunx', ['@biomejs/biome@2.5.15', 'format', '--write', OUTPUT_FILE], {
+  // Format the output so `bun run format:check` is stable after generation.
+  const result = spawnSync('bunx', ['biome', 'format', '--write', OUTPUT_FILE], {
     stdio: ['ignore', 'ignore', 'pipe'],
     encoding: 'utf8',
   });
