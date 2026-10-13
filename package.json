@@ -18,7 +18,10 @@
     "format": "biome check --write --linter-enabled=false",
     "format:check": "biome check --linter-enabled=false",
     "lint": "biome lint --error-on-warnings",
-    "lint:fix": "biome lint --write"
+    "lint:fix": "biome lint --write",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "verify": "bun run typecheck && biome ci --error-on-warnings && bun test"
   },
   "dependencies": {
     "@std/cli": "npm:@jsr/std__cli@^1.0.32",
