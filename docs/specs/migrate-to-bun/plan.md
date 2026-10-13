@@ -384,10 +384,11 @@ Goal: Deno is no longer required anywhere.
 bun run verify
 bun run generate-problems && git diff --exit-code -- src/data/problems.generated.ts
 bun run build && ./scripts/smoke.sh "${PWD}/bin/algo-trainer"
-git grep -niE '\bdeno\b' -- ':!docs/specs/done' ':!.tickets' ':!docs/specs/migrate-to-bun'
+git grep -niw deno -- ':!docs/specs/done' ':!.tickets' ':!docs/specs/migrate-to-bun'
 ```
 
 - The final `grep` returns only deliberate historical mentions, such as `docs/story.md`.
+- Corrected 2026-10-13: the gate first used `git grep -niE '\bdeno\b'`, which matched nothing on macOS, because git's extended regular expressions there do not support `\b`. `-w` matches whole words everywhere.
 - CI passes on the pull request.
 
 ## Phase 5: generated workspace templates
