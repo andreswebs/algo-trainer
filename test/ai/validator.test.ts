@@ -8,8 +8,8 @@
  * - Edge cases and error aggregation
  */
 
-import { assertEquals } from '@std/assert';
-import { describe, it } from '@std/testing/bdd';
+import { describe, it } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
 import type { TeachingScript } from '../../src/core/ai/types.ts';
 import { isValidTeachingScript, validateTeachingScript } from '../../src/core/ai/validator.ts';
 
@@ -31,8 +31,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, true);
-      assertEquals(result.errors.length, 0);
+      deepStrictEqual(result.valid, true);
+      deepStrictEqual(result.errors.length, 0);
     });
 
     it('should accept a comprehensive valid script', () => {
@@ -74,8 +74,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, true);
-      assertEquals(result.errors.length, 0);
+      deepStrictEqual(result.valid, true);
+      deepStrictEqual(result.errors.length, 0);
     });
 
     it('should accept on_run steps without triggers', () => {
@@ -94,8 +94,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, true);
-      assertEquals(result.errors.length, 0);
+      deepStrictEqual(result.valid, true);
+      deepStrictEqual(result.errors.length, 0);
     });
 
     it('should accept all supported languages', () => {
@@ -112,7 +112,7 @@ describe('validateTeachingScript', () => {
         };
 
         const result = validateTeachingScript(script);
-        assertEquals(result.valid, true, `Language ${language} should be valid`);
+        deepStrictEqual(result.valid, true, `Language ${language} should be valid`);
       }
     });
 
@@ -130,7 +130,7 @@ describe('validateTeachingScript', () => {
         };
 
         const result = validateTeachingScript(script);
-        assertEquals(result.valid, true, `Difficulty ${difficulty} should be valid`);
+        deepStrictEqual(result.valid, true, `Difficulty ${difficulty} should be valid`);
       }
     });
 
@@ -160,7 +160,7 @@ describe('validateTeachingScript', () => {
         };
 
         const result = validateTeachingScript(script);
-        assertEquals(result.valid, true, `Step type ${type} should be valid`);
+        deepStrictEqual(result.valid, true, `Step type ${type} should be valid`);
       }
     });
   });
@@ -176,8 +176,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('id')),
         true,
       );
@@ -194,8 +194,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('id')),
         true,
       );
@@ -211,8 +211,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('title')),
         true,
       );
@@ -229,8 +229,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('title')),
         true,
       );
@@ -246,8 +246,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('difficulty')),
         true,
       );
@@ -264,8 +264,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('difficulty')),
         true,
       );
@@ -281,8 +281,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('tags')),
         true,
       );
@@ -299,8 +299,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('tags')),
         true,
       );
@@ -317,8 +317,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('tag')),
         true,
       );
@@ -334,8 +334,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('language')),
         true,
       );
@@ -352,8 +352,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('language')),
         true,
       );
@@ -371,8 +371,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('steps')),
         true,
       );
@@ -389,8 +389,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('steps')),
         true,
       );
@@ -407,8 +407,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('steps')),
         true,
       );
@@ -425,8 +425,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('type')),
         true,
       );
@@ -443,8 +443,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('type')),
         true,
       );
@@ -461,8 +461,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('content')),
         true,
       );
@@ -479,8 +479,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('content')),
         true,
       );
@@ -505,8 +505,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('intro') && e.includes('trigger')),
         true,
       );
@@ -529,8 +529,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('pre_prompt') && e.includes('trigger')),
         true,
       );
@@ -553,8 +553,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('after_success') && e.includes('trigger')),
         true,
       );
@@ -576,8 +576,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('hint') && e.includes('trigger')),
         true,
       );
@@ -599,8 +599,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('on_request') && e.includes('keywords')),
         true,
       );
@@ -623,8 +623,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('keywords')),
         true,
       );
@@ -647,8 +647,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('keywords')),
         true,
       );
@@ -671,8 +671,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('keyword')),
         true,
       );
@@ -695,8 +695,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('trigger')),
         true,
       );
@@ -724,9 +724,9 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
+      deepStrictEqual(result.valid, false);
       // Should have multiple errors (at least 6+)
-      assertEquals(result.errors.length > 5, true);
+      deepStrictEqual(result.errors.length > 5, true);
     });
 
     it('should aggregate errors from multiple steps', () => {
@@ -756,17 +756,17 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
+      deepStrictEqual(result.valid, false);
       // Should have errors for all three steps
-      assertEquals(result.errors.length >= 3, true);
+      deepStrictEqual(result.errors.length >= 3, true);
     });
   });
 
   describe('edge cases', () => {
     it('should reject null script', () => {
       const result = validateTeachingScript(null);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('object')),
         true,
       );
@@ -774,8 +774,8 @@ describe('validateTeachingScript', () => {
 
     it('should reject undefined script', () => {
       const result = validateTeachingScript(undefined);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('object')),
         true,
       );
@@ -783,8 +783,8 @@ describe('validateTeachingScript', () => {
 
     it('should reject non-object script', () => {
       const result = validateTeachingScript('not an object');
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('object')),
         true,
       );
@@ -792,8 +792,8 @@ describe('validateTeachingScript', () => {
 
     it('should reject array script', () => {
       const result = validateTeachingScript([]);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('object')),
         true,
       );
@@ -810,8 +810,8 @@ describe('validateTeachingScript', () => {
       };
 
       const result = validateTeachingScript(script);
-      assertEquals(result.valid, false);
-      assertEquals(
+      deepStrictEqual(result.valid, false);
+      deepStrictEqual(
         result.errors.some((e) => e.includes('object')),
         true,
       );
@@ -829,7 +829,7 @@ describe('validateTeachingScript', () => {
         steps: [{ type: 'intro', content: 'Test' }],
       };
 
-      assertEquals(isValidTeachingScript(script), true);
+      deepStrictEqual(isValidTeachingScript(script), true);
     });
 
     it('should return false for invalid scripts', () => {
@@ -838,7 +838,7 @@ describe('validateTeachingScript', () => {
         // missing required fields
       };
 
-      assertEquals(isValidTeachingScript(script), false);
+      deepStrictEqual(isValidTeachingScript(script), false);
     });
 
     it('should narrow type when true', () => {
@@ -854,7 +854,7 @@ describe('validateTeachingScript', () => {
       if (isValidTeachingScript(script)) {
         // TypeScript should recognize script as TeachingScript here
         const id: string = script.id;
-        assertEquals(typeof id, 'string');
+        deepStrictEqual(typeof id, 'string');
       }
     });
   });

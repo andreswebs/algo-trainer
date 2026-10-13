@@ -4,7 +4,8 @@
  * @module tests/escaping
  */
 
-import { assertEquals } from '@std/assert';
+import { test } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
 import {
   detectDangerousPatterns,
   escapeForAllContexts,
@@ -17,140 +18,140 @@ import {
   isSafeForAllContexts,
 } from '../src/core/problem/escaping.ts';
 
-Deno.test('escapeForBlockComment - should escape */ sequences', () => {
-  assertEquals(escapeForBlockComment('Two Sum'), 'Two Sum');
-  assertEquals(escapeForBlockComment('Sum */'), 'Sum * /');
-  assertEquals(escapeForBlockComment('A */ B */ C'), 'A * / B * / C');
-  assertEquals(escapeForBlockComment('*/'), '* /');
+test('escapeForBlockComment - should escape */ sequences', () => {
+  deepStrictEqual(escapeForBlockComment('Two Sum'), 'Two Sum');
+  deepStrictEqual(escapeForBlockComment('Sum */'), 'Sum * /');
+  deepStrictEqual(escapeForBlockComment('A */ B */ C'), 'A * / B * / C');
+  deepStrictEqual(escapeForBlockComment('*/'), '* /');
 });
 
-Deno.test('escapeForBlockComment - should handle injection attack', () => {
+test('escapeForBlockComment - should handle injection attack', () => {
   const malicious = 'Two Sum */ alert("hacked"); /*';
   const escaped = escapeForBlockComment(malicious);
-  assertEquals(escaped, 'Two Sum * / alert("hacked"); /*');
+  deepStrictEqual(escaped, 'Two Sum * / alert("hacked"); /*');
 });
 
-Deno.test('escapeForSingleLineComment - should escape newlines', () => {
-  assertEquals(escapeForSingleLineComment('Two Sum'), 'Two Sum');
-  assertEquals(escapeForSingleLineComment('Line1\nLine2'), 'Line1 Line2');
-  assertEquals(escapeForSingleLineComment('A\r\nB'), 'A B');
-  assertEquals(escapeForSingleLineComment('A\n\n\nB'), 'A B');
+test('escapeForSingleLineComment - should escape newlines', () => {
+  deepStrictEqual(escapeForSingleLineComment('Two Sum'), 'Two Sum');
+  deepStrictEqual(escapeForSingleLineComment('Line1\nLine2'), 'Line1 Line2');
+  deepStrictEqual(escapeForSingleLineComment('A\r\nB'), 'A B');
+  deepStrictEqual(escapeForSingleLineComment('A\n\n\nB'), 'A B');
 });
 
-Deno.test('escapeForSingleQuotedString - should escape single quotes', () => {
-  assertEquals(escapeForSingleQuotedString('Two Sum'), 'Two Sum');
-  assertEquals(escapeForSingleQuotedString("It's"), "It\\'s");
-  assertEquals(escapeForSingleQuotedString("'test'"), "\\'test\\'");
+test('escapeForSingleQuotedString - should escape single quotes', () => {
+  deepStrictEqual(escapeForSingleQuotedString('Two Sum'), 'Two Sum');
+  deepStrictEqual(escapeForSingleQuotedString("It's"), "It\\'s");
+  deepStrictEqual(escapeForSingleQuotedString("'test'"), "\\'test\\'");
 });
 
-Deno.test('escapeForSingleQuotedString - should escape backslashes', () => {
-  assertEquals(escapeForSingleQuotedString('path\\to\\file'), 'path\\\\to\\\\file');
-  assertEquals(escapeForSingleQuotedString("test\\'"), "test\\\\\\'");
+test('escapeForSingleQuotedString - should escape backslashes', () => {
+  deepStrictEqual(escapeForSingleQuotedString('path\\to\\file'), 'path\\\\to\\\\file');
+  deepStrictEqual(escapeForSingleQuotedString("test\\'"), "test\\\\\\'");
 });
 
-Deno.test('escapeForSingleQuotedString - should handle injection attack', () => {
+test('escapeForSingleQuotedString - should handle injection attack', () => {
   const malicious = "Two Sum', () => { evil() }); describe('X";
   const escaped = escapeForSingleQuotedString(malicious);
-  assertEquals(escaped, "Two Sum\\', () => { evil() }); describe(\\'X");
+  deepStrictEqual(escaped, "Two Sum\\', () => { evil() }); describe(\\'X");
 });
 
-Deno.test('escapeForDoubleQuotedString - should escape double quotes', () => {
-  assertEquals(escapeForDoubleQuotedString('Two Sum'), 'Two Sum');
-  assertEquals(escapeForDoubleQuotedString('Say "hello"'), 'Say \\"hello\\"');
+test('escapeForDoubleQuotedString - should escape double quotes', () => {
+  deepStrictEqual(escapeForDoubleQuotedString('Two Sum'), 'Two Sum');
+  deepStrictEqual(escapeForDoubleQuotedString('Say "hello"'), 'Say \\"hello\\"');
 });
 
-Deno.test('escapeForDoubleQuotedString - should escape backslashes', () => {
-  assertEquals(escapeForDoubleQuotedString('path\\to\\file'), 'path\\\\to\\\\file');
+test('escapeForDoubleQuotedString - should escape backslashes', () => {
+  deepStrictEqual(escapeForDoubleQuotedString('path\\to\\file'), 'path\\\\to\\\\file');
 });
 
-Deno.test('escapeForTemplateLiteral - should escape backticks', () => {
-  assertEquals(escapeForTemplateLiteral('Two Sum'), 'Two Sum');
-  assertEquals(escapeForTemplateLiteral('`code`'), '\\`code\\`');
+test('escapeForTemplateLiteral - should escape backticks', () => {
+  deepStrictEqual(escapeForTemplateLiteral('Two Sum'), 'Two Sum');
+  deepStrictEqual(escapeForTemplateLiteral('`code`'), '\\`code\\`');
 });
 
-Deno.test('escapeForTemplateLiteral - should escape template expressions', () => {
-  assertEquals(escapeForTemplateLiteral('Result: ${value}'), 'Result: \\${value}');
-  assertEquals(escapeForTemplateLiteral('${evil()}'), '\\${evil()}');
+test('escapeForTemplateLiteral - should escape template expressions', () => {
+  deepStrictEqual(escapeForTemplateLiteral('Result: ${value}'), 'Result: \\${value}');
+  deepStrictEqual(escapeForTemplateLiteral('${evil()}'), '\\${evil()}');
 });
 
-Deno.test('escapeForTemplateLiteral - should escape backslashes', () => {
-  assertEquals(escapeForTemplateLiteral('\\n'), '\\\\n');
+test('escapeForTemplateLiteral - should escape backslashes', () => {
+  deepStrictEqual(escapeForTemplateLiteral('\\n'), '\\\\n');
 });
 
-Deno.test('escapeForContext - should route to correct escape function', () => {
+test('escapeForContext - should route to correct escape function', () => {
   const input = "Two Sum */ '";
 
-  assertEquals(escapeForContext(input, 'block-comment'), "Two Sum * / '");
-  assertEquals(escapeForContext(input, 'single-quoted-string'), "Two Sum */ \\'");
-  assertEquals(escapeForContext(input, 'none'), input);
+  deepStrictEqual(escapeForContext(input, 'block-comment'), "Two Sum * / '");
+  deepStrictEqual(escapeForContext(input, 'single-quoted-string'), "Two Sum */ \\'");
+  deepStrictEqual(escapeForContext(input, 'none'), input);
 });
 
-Deno.test('escapeForContext - should handle all context types', () => {
+test('escapeForContext - should handle all context types', () => {
   const input = 'test';
 
-  assertEquals(escapeForContext(input, 'block-comment'), 'test');
-  assertEquals(escapeForContext(input, 'single-line-comment'), 'test');
-  assertEquals(escapeForContext(input, 'single-quoted-string'), 'test');
-  assertEquals(escapeForContext(input, 'double-quoted-string'), 'test');
-  assertEquals(escapeForContext(input, 'template-literal'), 'test');
-  assertEquals(escapeForContext(input, 'markdown'), 'test');
-  assertEquals(escapeForContext(input, 'none'), 'test');
+  deepStrictEqual(escapeForContext(input, 'block-comment'), 'test');
+  deepStrictEqual(escapeForContext(input, 'single-line-comment'), 'test');
+  deepStrictEqual(escapeForContext(input, 'single-quoted-string'), 'test');
+  deepStrictEqual(escapeForContext(input, 'double-quoted-string'), 'test');
+  deepStrictEqual(escapeForContext(input, 'template-literal'), 'test');
+  deepStrictEqual(escapeForContext(input, 'markdown'), 'test');
+  deepStrictEqual(escapeForContext(input, 'none'), 'test');
 });
 
-Deno.test('escapeForAllContexts - should escape for all dangerous contexts', () => {
+test('escapeForAllContexts - should escape for all dangerous contexts', () => {
   const malicious = "Two Sum */ 'evil'\ninjected";
   const escaped = escapeForAllContexts(malicious);
 
-  assertEquals(escaped.includes('*/'), false);
-  assertEquals(escaped.includes('\n'), false);
-  assertEquals(escaped.includes("\\'"), true);
+  deepStrictEqual(escaped.includes('*/'), false);
+  deepStrictEqual(escaped.includes('\n'), false);
+  deepStrictEqual(escaped.includes("\\'"), true);
 });
 
-Deno.test('detectDangerousPatterns - should detect all dangerous patterns', () => {
+test('detectDangerousPatterns - should detect all dangerous patterns', () => {
   const patterns = detectDangerousPatterns('test */ \' " ` \n ${x}');
 
-  assertEquals(patterns.hasBlockCommentBreaker, true);
-  assertEquals(patterns.hasSingleQuote, true);
-  assertEquals(patterns.hasDoubleQuote, true);
-  assertEquals(patterns.hasBacktick, true);
-  assertEquals(patterns.hasNewline, true);
-  assertEquals(patterns.hasTemplateExpression, true);
+  deepStrictEqual(patterns.hasBlockCommentBreaker, true);
+  deepStrictEqual(patterns.hasSingleQuote, true);
+  deepStrictEqual(patterns.hasDoubleQuote, true);
+  deepStrictEqual(patterns.hasBacktick, true);
+  deepStrictEqual(patterns.hasNewline, true);
+  deepStrictEqual(patterns.hasTemplateExpression, true);
 });
 
-Deno.test('detectDangerousPatterns - should return false for safe strings', () => {
+test('detectDangerousPatterns - should return false for safe strings', () => {
   const patterns = detectDangerousPatterns('Two Sum');
 
-  assertEquals(patterns.hasBlockCommentBreaker, false);
-  assertEquals(patterns.hasSingleQuote, false);
-  assertEquals(patterns.hasDoubleQuote, false);
-  assertEquals(patterns.hasBacktick, false);
-  assertEquals(patterns.hasNewline, false);
-  assertEquals(patterns.hasTemplateExpression, false);
+  deepStrictEqual(patterns.hasBlockCommentBreaker, false);
+  deepStrictEqual(patterns.hasSingleQuote, false);
+  deepStrictEqual(patterns.hasDoubleQuote, false);
+  deepStrictEqual(patterns.hasBacktick, false);
+  deepStrictEqual(patterns.hasNewline, false);
+  deepStrictEqual(patterns.hasTemplateExpression, false);
 });
 
-Deno.test('isSafeForAllContexts - should return true for safe strings', () => {
-  assertEquals(isSafeForAllContexts('Two Sum'), true);
-  assertEquals(isSafeForAllContexts('Valid Problem Title'), true);
-  assertEquals(isSafeForAllContexts('123-abc'), true);
+test('isSafeForAllContexts - should return true for safe strings', () => {
+  deepStrictEqual(isSafeForAllContexts('Two Sum'), true);
+  deepStrictEqual(isSafeForAllContexts('Valid Problem Title'), true);
+  deepStrictEqual(isSafeForAllContexts('123-abc'), true);
 });
 
-Deno.test('isSafeForAllContexts - should return false for dangerous strings', () => {
-  assertEquals(isSafeForAllContexts("It's dangerous"), false);
-  assertEquals(isSafeForAllContexts('Break out */'), false);
-  assertEquals(isSafeForAllContexts('New\nLine'), false);
-  assertEquals(isSafeForAllContexts('${injection}'), false);
+test('isSafeForAllContexts - should return false for dangerous strings', () => {
+  deepStrictEqual(isSafeForAllContexts("It's dangerous"), false);
+  deepStrictEqual(isSafeForAllContexts('Break out */'), false);
+  deepStrictEqual(isSafeForAllContexts('New\nLine'), false);
+  deepStrictEqual(isSafeForAllContexts('${injection}'), false);
 });
 
-Deno.test('escaping - should handle empty strings', () => {
-  assertEquals(escapeForBlockComment(''), '');
-  assertEquals(escapeForSingleLineComment(''), '');
-  assertEquals(escapeForSingleQuotedString(''), '');
-  assertEquals(escapeForDoubleQuotedString(''), '');
-  assertEquals(escapeForTemplateLiteral(''), '');
+test('escaping - should handle empty strings', () => {
+  deepStrictEqual(escapeForBlockComment(''), '');
+  deepStrictEqual(escapeForSingleLineComment(''), '');
+  deepStrictEqual(escapeForSingleQuotedString(''), '');
+  deepStrictEqual(escapeForDoubleQuotedString(''), '');
+  deepStrictEqual(escapeForTemplateLiteral(''), '');
 });
 
-Deno.test('escaping - should preserve safe unicode characters', () => {
+test('escaping - should preserve safe unicode characters', () => {
   const unicode = '二和 (Two Sum) 🎯';
-  assertEquals(escapeForBlockComment(unicode), unicode);
-  assertEquals(escapeForSingleQuotedString(unicode), unicode);
+  deepStrictEqual(escapeForBlockComment(unicode), unicode);
+  deepStrictEqual(escapeForSingleQuotedString(unicode), unicode);
 });

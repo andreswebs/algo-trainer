@@ -8,32 +8,37 @@
  * @module test/core/runner
  */
 
-import { assertEquals, assertRejects, assertStringIncludes } from '@std/assert';
+import { test } from 'bun:test';
+import { deepStrictEqual, ok } from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { diffStrings, runSolution } from '../../src/core/runner.ts';
 import { WorkspaceError } from '../../src/utils/errors.ts';
+import { assertRejectsWith } from '../helpers/assert.ts';
 
-Deno.test('diffStrings - returns empty string for identical inputs', () => {
-  assertEquals(diffStrings('a\nb\nc\n', 'a\nb\nc\n'), '');
-  assertEquals(diffStrings('', ''), '');
+test('diffStrings - returns empty string for identical inputs', () => {
+  deepStrictEqual(diffStrings('a\nb\nc\n', 'a\nb\nc\n'), '');
+  deepStrictEqual(diffStrings('', ''), '');
 });
 
-Deno.test('diffStrings - flags differing lines with -/+ markers', () => {
+test('diffStrings - flags differing lines with -/+ markers', () => {
   const out = diffStrings('a\nb\nc\n', 'a\nB\nc\n');
-  assertStringIncludes(out, '  1: a');
-  assertStringIncludes(out, '- 2: b');
-  assertStringIncludes(out, '+ 2: B');
-  assertStringIncludes(out, '  3: c');
+  ok(out.includes('  1: a'));
+  ok(out.includes('- 2: b'));
+  ok(out.includes('+ 2: B'));
+  ok(out.includes('  3: c'));
 });
 
-Deno.test('diffStrings - handles length mismatches by padding with empty lines', () => {
+test('diffStrings - handles length mismatches by padding with empty lines', () => {
   const out = diffStrings('one\ntwo\n', 'one\n');
-  assertStringIncludes(out, '  1: one');
-  assertStringIncludes(out, '- 2: two');
-  assertStringIncludes(out, '+ 2: ');
+  ok(out.includes('  1: one'));
+  ok(out.includes('- 2: two'));
+  ok(out.includes('+ 2: '));
 });
 
-Deno.test('runSolution - rejects unsupported languages with a WorkspaceError', async () => {
-  await assertRejects(
+test('runSolution - rejects unsupported languages with a WorkspaceError', async () => {
+  await assertRejectsWith(
     () =>
       runSolution('python', {
         problemDir: '/tmp/does-not-exist',
@@ -45,11 +50,11 @@ Deno.test('runSolution - rejects unsupported languages with a WorkspaceError', a
   );
 });
 
-Deno.test('runSolution (cpp) - surfaces a clear error when the problem dir is missing files', async () => {
-  const tmp = await Deno.makeTempDir({ prefix: 'algo-trainer-runner-' });
+test('runSolution (cpp) - surfaces a clear error when the problem dir is missing files', async () => {
+  const tmp = await mkdtemp(join(tmpdir(), 'algo-trainer-runner-'));
   try {
     // Empty directory — no CMakeLists.txt, no solution.cpp.
-    await assertRejects(
+    await assertRejectsWith(
       () =>
         runSolution('cpp', {
           problemDir: tmp,
@@ -60,6 +65,6 @@ Deno.test('runSolution (cpp) - surfaces a clear error when the problem dir is mi
       'Missing CMakeLists.txt',
     );
   } finally {
-    await Deno.remove(tmp, { recursive: true });
+    await rm(tmp, { recursive: true, force: true });
   }
 });

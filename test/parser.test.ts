@@ -4,8 +4,11 @@
  * @module tests/parser
  */
 
-import { assertEquals, assertRejects } from '@std/assert';
-import { join } from '@std/path';
+import { test } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   normalizeProblem,
   parseProblemFromFile,
@@ -13,6 +16,7 @@ import {
 } from '../src/core/problem/parser.ts';
 import type { RawProblemJson } from '../src/core/problem/types.ts';
 import { ProblemError } from '../src/utils/errors.ts';
+import { assertRejectsWith } from './helpers/assert.ts';
 
 const VALID_PROBLEM_JSON: RawProblemJson = {
   id: '1',
@@ -54,59 +58,59 @@ const MINIMAL_PROBLEM_JSON: RawProblemJson = {
   ],
 };
 
-Deno.test('parseProblemFromJson - parses valid complete problem', () => {
+test('parseProblemFromJson - parses valid complete problem', () => {
   const json = JSON.stringify(VALID_PROBLEM_JSON);
   const problem = parseProblemFromJson(json);
 
-  assertEquals(problem.id, '1');
-  assertEquals(problem.slug, 'two-sum');
-  assertEquals(problem.title, 'Two Sum');
-  assertEquals(problem.difficulty, 'easy');
-  assertEquals(problem.examples.length, 1);
-  assertEquals(problem.constraints, ['2 <= nums.length <= 10^4']);
-  assertEquals(problem.hints, ['Use a hash map']);
-  assertEquals(problem.tags, ['array', 'hash-table']);
-  assertEquals(problem.companies, ['Amazon', 'Google']);
-  assertEquals(problem.leetcodeUrl, 'https://leetcode.com/problems/two-sum/');
+  deepStrictEqual(problem.id, '1');
+  deepStrictEqual(problem.slug, 'two-sum');
+  deepStrictEqual(problem.title, 'Two Sum');
+  deepStrictEqual(problem.difficulty, 'easy');
+  deepStrictEqual(problem.examples.length, 1);
+  deepStrictEqual(problem.constraints, ['2 <= nums.length <= 10^4']);
+  deepStrictEqual(problem.hints, ['Use a hash map']);
+  deepStrictEqual(problem.tags, ['array', 'hash-table']);
+  deepStrictEqual(problem.companies, ['Amazon', 'Google']);
+  deepStrictEqual(problem.leetcodeUrl, 'https://leetcode.com/problems/two-sum/');
 });
 
-Deno.test('parseProblemFromJson - parses minimal problem with array normalization', () => {
+test('parseProblemFromJson - parses minimal problem with array normalization', () => {
   const json = JSON.stringify(MINIMAL_PROBLEM_JSON);
   const problem = parseProblemFromJson(json);
 
-  assertEquals(problem.id, '2');
-  assertEquals(problem.slug, 'minimal-problem');
-  assertEquals(problem.constraints, []);
-  assertEquals(problem.hints, []);
-  assertEquals(problem.tags, []);
-  assertEquals(problem.companies, undefined);
-  assertEquals(problem.leetcodeUrl, undefined);
-  assertEquals(problem.metadata, undefined);
+  deepStrictEqual(problem.id, '2');
+  deepStrictEqual(problem.slug, 'minimal-problem');
+  deepStrictEqual(problem.constraints, []);
+  deepStrictEqual(problem.hints, []);
+  deepStrictEqual(problem.tags, []);
+  deepStrictEqual(problem.companies, undefined);
+  deepStrictEqual(problem.leetcodeUrl, undefined);
+  deepStrictEqual(problem.metadata, undefined);
 });
 
-Deno.test('parseProblemFromJson - converts date strings to Date objects', () => {
+test('parseProblemFromJson - converts date strings to Date objects', () => {
   const json = JSON.stringify(VALID_PROBLEM_JSON);
   const problem = parseProblemFromJson(json);
 
-  assertEquals(problem.createdAt instanceof Date, true);
-  assertEquals(problem.updatedAt instanceof Date, true);
-  assertEquals(problem.createdAt?.toISOString(), '2024-01-15T10:30:00.000Z');
-  assertEquals(problem.updatedAt?.toISOString(), '2024-06-20T14:45:00.000Z');
+  deepStrictEqual(problem.createdAt instanceof Date, true);
+  deepStrictEqual(problem.updatedAt instanceof Date, true);
+  deepStrictEqual(problem.createdAt?.toISOString(), '2024-01-15T10:30:00.000Z');
+  deepStrictEqual(problem.updatedAt?.toISOString(), '2024-06-20T14:45:00.000Z');
 });
 
-Deno.test('parseProblemFromJson - throws on invalid JSON', () => {
+test('parseProblemFromJson - throws on invalid JSON', () => {
   const invalidJson = '{ not valid json }';
 
   try {
     parseProblemFromJson(invalidJson, 'test.json');
     throw new Error('Expected ProblemError to be thrown');
   } catch (error) {
-    assertEquals(error instanceof ProblemError, true);
-    assertEquals((error as ProblemError).message, 'Invalid JSON format');
+    deepStrictEqual(error instanceof ProblemError, true);
+    deepStrictEqual((error as ProblemError).message, 'Invalid JSON format');
   }
 });
 
-Deno.test('parseProblemFromJson - throws on missing required fields', () => {
+test('parseProblemFromJson - throws on missing required fields', () => {
   const missingFields = JSON.stringify({
     id: '1',
     slug: 'test',
@@ -116,12 +120,12 @@ Deno.test('parseProblemFromJson - throws on missing required fields', () => {
     parseProblemFromJson(missingFields, 'test.json');
     throw new Error('Expected ProblemError to be thrown');
   } catch (error) {
-    assertEquals(error instanceof ProblemError, true);
-    assertEquals((error as ProblemError).message.includes('Invalid problem data'), true);
+    deepStrictEqual(error instanceof ProblemError, true);
+    deepStrictEqual((error as ProblemError).message.includes('Invalid problem data'), true);
   }
 });
 
-Deno.test('parseProblemFromJson - throws on invalid difficulty', () => {
+test('parseProblemFromJson - throws on invalid difficulty', () => {
   const invalidDifficulty = JSON.stringify({
     ...VALID_PROBLEM_JSON,
     difficulty: 'super-hard',
@@ -131,31 +135,31 @@ Deno.test('parseProblemFromJson - throws on invalid difficulty', () => {
     parseProblemFromJson(invalidDifficulty, 'test.json');
     throw new Error('Expected ProblemError to be thrown');
   } catch (error) {
-    assertEquals(error instanceof ProblemError, true);
-    assertEquals((error as ProblemError).message.includes('Invalid problem data'), true);
+    deepStrictEqual(error instanceof ProblemError, true);
+    deepStrictEqual((error as ProblemError).message.includes('Invalid problem data'), true);
   }
 });
 
-Deno.test('normalizeProblem - normalizes missing arrays to empty arrays', () => {
+test('normalizeProblem - normalizes missing arrays to empty arrays', () => {
   const problem = normalizeProblem(MINIMAL_PROBLEM_JSON);
 
-  assertEquals(Array.isArray(problem.constraints), true);
-  assertEquals(problem.constraints.length, 0);
-  assertEquals(Array.isArray(problem.hints), true);
-  assertEquals(problem.hints.length, 0);
-  assertEquals(Array.isArray(problem.tags), true);
-  assertEquals(problem.tags.length, 0);
+  deepStrictEqual(Array.isArray(problem.constraints), true);
+  deepStrictEqual(problem.constraints.length, 0);
+  deepStrictEqual(Array.isArray(problem.hints), true);
+  deepStrictEqual(problem.hints.length, 0);
+  deepStrictEqual(Array.isArray(problem.tags), true);
+  deepStrictEqual(problem.tags.length, 0);
 });
 
-Deno.test('normalizeProblem - preserves existing arrays', () => {
+test('normalizeProblem - preserves existing arrays', () => {
   const problem = normalizeProblem(VALID_PROBLEM_JSON);
 
-  assertEquals(problem.constraints, ['2 <= nums.length <= 10^4']);
-  assertEquals(problem.hints, ['Use a hash map']);
-  assertEquals(problem.tags, ['array', 'hash-table']);
+  deepStrictEqual(problem.constraints, ['2 <= nums.length <= 10^4']);
+  deepStrictEqual(problem.hints, ['Use a hash map']);
+  deepStrictEqual(problem.tags, ['array', 'hash-table']);
 });
 
-Deno.test('normalizeProblem - handles invalid date strings gracefully', () => {
+test('normalizeProblem - handles invalid date strings gracefully', () => {
   const raw: RawProblemJson = {
     ...MINIMAL_PROBLEM_JSON,
     createdAt: 'not-a-date',
@@ -166,24 +170,24 @@ Deno.test('normalizeProblem - handles invalid date strings gracefully', () => {
 
   const problem = normalizeProblem(raw);
 
-  assertEquals(problem.createdAt, undefined);
-  assertEquals(problem.metadata?.source, 'test');
+  deepStrictEqual(problem.createdAt, undefined);
+  deepStrictEqual(problem.metadata?.source, 'test');
 });
 
-Deno.test('parseProblemFromFile - parses existing problem file', async () => {
-  const path = join(Deno.cwd(), 'src/data/problems/two-sum.json');
+test('parseProblemFromFile - parses existing problem file', async () => {
+  const path = join(import.meta.dir, '..', 'src', 'data', 'problems', 'two-sum.json');
   const problem = await parseProblemFromFile(path);
 
-  assertEquals(problem.id, '1');
-  assertEquals(problem.slug, 'two-sum');
-  assertEquals(problem.title, 'Two Sum');
-  assertEquals(problem.difficulty, 'easy');
+  deepStrictEqual(problem.id, '1');
+  deepStrictEqual(problem.slug, 'two-sum');
+  deepStrictEqual(problem.title, 'Two Sum');
+  deepStrictEqual(problem.difficulty, 'easy');
 });
 
-Deno.test('parseProblemFromFile - throws on non-existent file', async () => {
-  const path = join(Deno.cwd(), 'src/data/problems/non-existent.json');
+test('parseProblemFromFile - throws on non-existent file', async () => {
+  const path = join(import.meta.dir, '..', 'src', 'data', 'problems', 'non-existent.json');
 
-  await assertRejects(
+  await assertRejectsWith(
     async () => {
       await parseProblemFromFile(path);
     },
@@ -192,14 +196,14 @@ Deno.test('parseProblemFromFile - throws on non-existent file', async () => {
   );
 });
 
-Deno.test('parseProblemFromFile - throws on filename-slug mismatch', async () => {
-  const tempDir = await Deno.makeTempDir({ prefix: 'parser-test-' });
+test('parseProblemFromFile - throws on filename-slug mismatch', async () => {
+  const tempDir = await mkdtemp(join(tmpdir(), 'parser-test-'));
 
   try {
     const wrongFilename = join(tempDir, 'wrong-name.json');
-    await Deno.writeTextFile(wrongFilename, JSON.stringify(MINIMAL_PROBLEM_JSON));
+    await writeFile(wrongFilename, JSON.stringify(MINIMAL_PROBLEM_JSON));
 
-    await assertRejects(
+    await assertRejectsWith(
       async () => {
         await parseProblemFromFile(wrongFilename);
       },
@@ -207,20 +211,20 @@ Deno.test('parseProblemFromFile - throws on filename-slug mismatch', async () =>
       'Filename must match slug',
     );
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
-Deno.test('parseProblemFromFile - accepts matching filename-slug', async () => {
-  const tempDir = await Deno.makeTempDir({ prefix: 'parser-test-' });
+test('parseProblemFromFile - accepts matching filename-slug', async () => {
+  const tempDir = await mkdtemp(join(tmpdir(), 'parser-test-'));
 
   try {
     const correctFilename = join(tempDir, 'minimal-problem.json');
-    await Deno.writeTextFile(correctFilename, JSON.stringify(MINIMAL_PROBLEM_JSON));
+    await writeFile(correctFilename, JSON.stringify(MINIMAL_PROBLEM_JSON));
 
     const problem = await parseProblemFromFile(correctFilename);
-    assertEquals(problem.slug, 'minimal-problem');
+    deepStrictEqual(problem.slug, 'minimal-problem');
   } finally {
-    await Deno.remove(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true, force: true });
   }
 });

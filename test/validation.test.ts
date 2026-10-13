@@ -4,14 +4,15 @@
  * @module tests/validation
  */
 
-import { assertEquals } from '@std/assert';
+import { test } from 'bun:test';
+import { deepStrictEqual } from 'node:assert/strict';
 import { validateISODateString, validateProblem, validateSlug } from '../src/utils/validation.ts';
 
 // -----------------------------------------------------------------------------
 // validateSlug tests
 // -----------------------------------------------------------------------------
 
-Deno.test('validateSlug - valid kebab-case slugs', () => {
+test('validateSlug - valid kebab-case slugs', () => {
   const validSlugs = [
     'two-sum',
     'add-two-numbers',
@@ -25,12 +26,12 @@ Deno.test('validateSlug - valid kebab-case slugs', () => {
 
   for (const slug of validSlugs) {
     const result = validateSlug(slug);
-    assertEquals(result.valid, true, `Expected "${slug}" to be valid`);
-    assertEquals(result.errors.length, 0);
+    deepStrictEqual(result.valid, true, `Expected "${slug}" to be valid`);
+    deepStrictEqual(result.errors.length, 0);
   }
 });
 
-Deno.test('validateSlug - rejects invalid slugs', () => {
+test('validateSlug - rejects invalid slugs', () => {
   const invalidCases = [
     { slug: '', expectedError: 'cannot be empty' },
     { slug: 'Two-Sum', expectedError: 'kebab-case' },
@@ -44,8 +45,8 @@ Deno.test('validateSlug - rejects invalid slugs', () => {
 
   for (const { slug, expectedError } of invalidCases) {
     const result = validateSlug(slug);
-    assertEquals(result.valid, false, `Expected "${slug}" to be invalid`);
-    assertEquals(
+    deepStrictEqual(result.valid, false, `Expected "${slug}" to be invalid`);
+    deepStrictEqual(
       result.errors.some((e) => e.includes(expectedError)),
       true,
       `Expected error containing "${expectedError}" for slug "${slug}", got: ${result.errors}`,
@@ -53,20 +54,20 @@ Deno.test('validateSlug - rejects invalid slugs', () => {
   }
 });
 
-Deno.test('validateSlug - rejects slugs over 100 characters', () => {
+test('validateSlug - rejects slugs over 100 characters', () => {
   const longSlug = 'a'.repeat(101);
   const result = validateSlug(longSlug);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('100 characters')),
     true,
   );
 });
 
-Deno.test('validateSlug - rejects non-string values', () => {
+test('validateSlug - rejects non-string values', () => {
   const result = validateSlug(123);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('must be a string')),
     true,
   );
@@ -76,7 +77,7 @@ Deno.test('validateSlug - rejects non-string values', () => {
 // validateISODateString tests
 // -----------------------------------------------------------------------------
 
-Deno.test('validateISODateString - valid ISO-8601 dates', () => {
+test('validateISODateString - valid ISO-8601 dates', () => {
   const validDates = [
     '2024-01-15T10:30:00.000Z',
     '2024-06-20T14:45:00Z',
@@ -86,23 +87,23 @@ Deno.test('validateISODateString - valid ISO-8601 dates', () => {
 
   for (const date of validDates) {
     const result = validateISODateString(date, 'testDate');
-    assertEquals(result.valid, true, `Expected "${date}" to be valid`);
+    deepStrictEqual(result.valid, true, `Expected "${date}" to be valid`);
   }
 });
 
-Deno.test('validateISODateString - rejects invalid dates', () => {
+test('validateISODateString - rejects invalid dates', () => {
   const invalidDates = ['not-a-date', '2024-13-01', '', 'invalid'];
 
   for (const date of invalidDates) {
     const result = validateISODateString(date, 'testDate');
-    assertEquals(result.valid, false, `Expected "${date}" to be invalid`);
+    deepStrictEqual(result.valid, false, `Expected "${date}" to be invalid`);
   }
 });
 
-Deno.test('validateISODateString - rejects non-string values', () => {
+test('validateISODateString - rejects non-string values', () => {
   const result = validateISODateString(12345, 'testDate');
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('must be a string')),
     true,
   );
@@ -112,7 +113,7 @@ Deno.test('validateISODateString - rejects non-string values', () => {
 // validateProblem tests - valid problems
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - accepts valid minimal problem', () => {
+test('validateProblem - accepts valid minimal problem', () => {
   const problem = {
     id: '1',
     slug: 'two-sum',
@@ -128,11 +129,11 @@ Deno.test('validateProblem - accepts valid minimal problem', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, true);
-  assertEquals(result.errors.length, 0);
+  deepStrictEqual(result.valid, true);
+  deepStrictEqual(result.errors.length, 0);
 });
 
-Deno.test('validateProblem - accepts valid complete problem', () => {
+test('validateProblem - accepts valid complete problem', () => {
   const problem = {
     id: '1',
     slug: 'two-sum',
@@ -164,11 +165,11 @@ Deno.test('validateProblem - accepts valid complete problem', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, true);
-  assertEquals(result.errors.length, 0);
+  deepStrictEqual(result.valid, true);
+  deepStrictEqual(result.errors.length, 0);
 });
 
-Deno.test('validateProblem - accepts examples with null output', () => {
+test('validateProblem - accepts examples with null output', () => {
   const problem = {
     id: '1',
     slug: 'test-problem',
@@ -184,20 +185,20 @@ Deno.test('validateProblem - accepts examples with null output', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, true);
+  deepStrictEqual(result.valid, true);
 });
 
 // -----------------------------------------------------------------------------
 // validateProblem tests - required fields
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - rejects missing required fields', () => {
+test('validateProblem - rejects missing required fields', () => {
   const result = validateProblem({});
-  assertEquals(result.valid, false);
+  deepStrictEqual(result.valid, false);
 
   const requiredFields = ['id', 'slug', 'title', 'difficulty', 'description', 'examples'];
   for (const field of requiredFields) {
-    assertEquals(
+    deepStrictEqual(
       result.errors.some((e) => e.includes(`${field} is required`)),
       true,
       `Expected error for missing ${field}`,
@@ -205,10 +206,10 @@ Deno.test('validateProblem - rejects missing required fields', () => {
   }
 });
 
-Deno.test('validateProblem - rejects non-object value', () => {
+test('validateProblem - rejects non-object value', () => {
   const result = validateProblem('not an object');
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('must be an object')),
     true,
   );
@@ -218,7 +219,7 @@ Deno.test('validateProblem - rejects non-object value', () => {
 // validateProblem tests - slug validation
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - rejects invalid slug format', () => {
+test('validateProblem - rejects invalid slug format', () => {
   const baseProblem = {
     id: '1',
     title: 'Two Sum',
@@ -230,8 +231,8 @@ Deno.test('validateProblem - rejects invalid slug format', () => {
   const invalidSlugs = ['Two_Sum', 'two--sum', '-start', 'end-', 'CAPS'];
   for (const slug of invalidSlugs) {
     const result = validateProblem({ ...baseProblem, slug });
-    assertEquals(result.valid, false, `Expected slug "${slug}" to be invalid`);
-    assertEquals(
+    deepStrictEqual(result.valid, false, `Expected slug "${slug}" to be invalid`);
+    deepStrictEqual(
       result.errors.some((e) => e.includes('kebab-case')),
       true,
     );
@@ -242,7 +243,7 @@ Deno.test('validateProblem - rejects invalid slug format', () => {
 // validateProblem tests - examples validation
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - rejects empty examples array', () => {
+test('validateProblem - rejects empty examples array', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -253,14 +254,14 @@ Deno.test('validateProblem - rejects empty examples array', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('at least 1 item')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects examples without input object', () => {
+test('validateProblem - rejects examples without input object', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -271,14 +272,14 @@ Deno.test('validateProblem - rejects examples without input object', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('input is required')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects examples with non-object input', () => {
+test('validateProblem - rejects examples with non-object input', () => {
   const baseProblem = {
     id: '1',
     slug: 'test',
@@ -295,15 +296,15 @@ Deno.test('validateProblem - rejects examples with non-object input', () => {
       examples: [{ input, output: 1 }],
     };
     const result = validateProblem(problem);
-    assertEquals(result.valid, false, `Expected input ${JSON.stringify(input)} to be invalid`);
-    assertEquals(
+    deepStrictEqual(result.valid, false, `Expected input ${JSON.stringify(input)} to be invalid`);
+    deepStrictEqual(
       result.errors.some((e) => e.includes('must be an object with named parameters')),
       true,
     );
   }
 });
 
-Deno.test('validateProblem - rejects examples without output', () => {
+test('validateProblem - rejects examples without output', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -314,14 +315,14 @@ Deno.test('validateProblem - rejects examples without output', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('output is required')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects empty explanation string', () => {
+test('validateProblem - rejects empty explanation string', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -332,8 +333,8 @@ Deno.test('validateProblem - rejects empty explanation string', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('explanation') && e.includes('empty')),
     true,
   );
@@ -343,7 +344,7 @@ Deno.test('validateProblem - rejects empty explanation string', () => {
 // validateProblem tests - string array fields
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - rejects non-array tags', () => {
+test('validateProblem - rejects non-array tags', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -355,14 +356,14 @@ Deno.test('validateProblem - rejects non-array tags', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('tags must be an array')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects empty strings in tags', () => {
+test('validateProblem - rejects empty strings in tags', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -374,14 +375,14 @@ Deno.test('validateProblem - rejects empty strings in tags', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('tags[1]') && e.includes('empty')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects non-string values in companies', () => {
+test('validateProblem - rejects non-string values in companies', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -393,14 +394,14 @@ Deno.test('validateProblem - rejects non-string values in companies', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('companies[1]') && e.includes('string')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects empty strings in constraints', () => {
+test('validateProblem - rejects empty strings in constraints', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -412,14 +413,14 @@ Deno.test('validateProblem - rejects empty strings in constraints', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('constraints[1]') && e.includes('empty')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects empty strings in hints', () => {
+test('validateProblem - rejects empty strings in hints', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -431,8 +432,8 @@ Deno.test('validateProblem - rejects empty strings in hints', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('hints[1]') && e.includes('empty')),
     true,
   );
@@ -442,7 +443,7 @@ Deno.test('validateProblem - rejects empty strings in hints', () => {
 // validateProblem tests - leetcodeUrl validation
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - accepts valid leetcodeUrl', () => {
+test('validateProblem - accepts valid leetcodeUrl', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -454,10 +455,10 @@ Deno.test('validateProblem - accepts valid leetcodeUrl', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, true);
+  deepStrictEqual(result.valid, true);
 });
 
-Deno.test('validateProblem - rejects invalid leetcodeUrl', () => {
+test('validateProblem - rejects invalid leetcodeUrl', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -469,8 +470,8 @@ Deno.test('validateProblem - rejects invalid leetcodeUrl', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('leetcodeUrl') && e.includes('valid URL')),
     true,
   );
@@ -480,7 +481,7 @@ Deno.test('validateProblem - rejects invalid leetcodeUrl', () => {
 // validateProblem tests - metadata validation
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - accepts valid metadata', () => {
+test('validateProblem - accepts valid metadata', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -497,10 +498,10 @@ Deno.test('validateProblem - accepts valid metadata', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, true);
+  deepStrictEqual(result.valid, true);
 });
 
-Deno.test('validateProblem - rejects invalid createdAt date', () => {
+test('validateProblem - rejects invalid createdAt date', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -514,14 +515,14 @@ Deno.test('validateProblem - rejects invalid createdAt date', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('createdAt') && e.includes('ISO-8601')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects invalid updatedAt date', () => {
+test('validateProblem - rejects invalid updatedAt date', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -535,14 +536,14 @@ Deno.test('validateProblem - rejects invalid updatedAt date', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('updatedAt') && e.includes('ISO-8601')),
     true,
   );
 });
 
-Deno.test('validateProblem - rejects empty source string', () => {
+test('validateProblem - rejects empty source string', () => {
   const problem = {
     id: '1',
     slug: 'test',
@@ -556,8 +557,8 @@ Deno.test('validateProblem - rejects empty source string', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(
     result.errors.some((e) => e.includes('source') && e.includes('empty')),
     true,
   );
@@ -567,7 +568,7 @@ Deno.test('validateProblem - rejects empty source string', () => {
 // validateProblem tests - error aggregation
 // -----------------------------------------------------------------------------
 
-Deno.test('validateProblem - aggregates multiple errors', () => {
+test('validateProblem - aggregates multiple errors', () => {
   const problem = {
     id: '',
     slug: 'Invalid_Slug',
@@ -583,6 +584,6 @@ Deno.test('validateProblem - aggregates multiple errors', () => {
   };
 
   const result = validateProblem(problem);
-  assertEquals(result.valid, false);
-  assertEquals(result.errors.length >= 5, true, 'Should have multiple errors');
+  deepStrictEqual(result.valid, false);
+  deepStrictEqual(result.errors.length >= 5, true, 'Should have multiple errors');
 });
