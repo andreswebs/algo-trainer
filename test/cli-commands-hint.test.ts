@@ -9,7 +9,6 @@ import { deepStrictEqual } from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import {
   extractHintOptions,
   hintCommand,
@@ -19,6 +18,7 @@ import {
 } from '../src/cli/commands/hint.ts';
 import { ENV_VARS } from '../src/cli/env.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import type { Args } from '../src/cli/types.ts';
 import { configManager } from '../src/config/manager.ts';
 import { getSolutionFileName } from '../src/core/workspace/files.ts';
 

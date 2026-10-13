@@ -7,7 +7,6 @@ import { deepStrictEqual, notDeepStrictEqual } from 'node:assert/strict';
 import { mkdtemp, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import type { ChallengeOptions } from '../src/cli/commands/challenge.ts';
 import {
   challengeCommand,
@@ -16,6 +15,7 @@ import {
   resolveProblemSelection,
 } from '../src/cli/commands/challenge.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import type { Args } from '../src/cli/types.ts';
 import { configManager } from '../src/config/manager.ts';
 import { initWorkspace, ProblemManager } from '../src/core/mod.ts';
 

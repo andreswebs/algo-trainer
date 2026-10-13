@@ -6,9 +6,9 @@ import { afterEach, beforeEach, describe, it } from 'bun:test';
 import { deepStrictEqual } from 'node:assert/strict';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import { extractTeachOptions, teachCommand } from '../src/cli/commands/teach.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import type { Args } from '../src/cli/types.ts';
 import { initializeConfig } from '../src/config/manager.ts';
 
 describe('extractTeachOptions', () => {

@@ -9,6 +9,8 @@
 import type { Args } from '@std/cli/parse-args';
 import type { CommandResult } from '../types/global.ts';
 
+export type { Args };
+
 /**
  * Handler function for a CLI command
  */

@@ -9,9 +9,9 @@ import { deepStrictEqual } from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import { extractInitOptions, initCommand } from '../src/cli/commands/init.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import type { Args } from '../src/cli/types.ts';
 import { isWorkspaceInitialized } from '../src/core/mod.ts';
 
 describe('extractInitOptions', () => {

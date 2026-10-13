@@ -18,7 +18,6 @@ import { deepStrictEqual, ok } from 'node:assert/strict';
 import { mkdtemp, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import { challengeCommand } from '../../src/cli/commands/challenge.ts';
 import { completeCommand } from '../../src/cli/commands/complete.ts';
 import { configCommand } from '../../src/cli/commands/config.ts';
@@ -26,6 +25,7 @@ import { initCommand } from '../../src/cli/commands/init.ts';
 import { progressCommand } from '../../src/cli/commands/progress.ts';
 import { ENV_VARS } from '../../src/cli/env.ts';
 import { ExitCode } from '../../src/cli/exit-codes.ts';
+import type { Args } from '../../src/cli/types.ts';
 import { configManager } from '../../src/config/manager.ts';
 import { problemExists } from '../../src/core/mod.ts';
 

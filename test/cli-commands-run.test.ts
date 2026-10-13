@@ -9,8 +9,8 @@ import { deepStrictEqual } from 'node:assert/strict';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import { extractRunOptions, resolveFilePath, resolveLanguage } from '../src/cli/commands/run.ts';
+import type { Args } from '../src/cli/types.ts';
 
 describe('extractRunOptions', () => {
   it('extracts slug from positional args', () => {

@@ -6,9 +6,9 @@
 
 import { afterEach, beforeEach, describe, it } from 'bun:test';
 import { deepStrictEqual } from 'node:assert/strict';
-import type { Args } from '@std/cli/parse-args';
 import { extractListOptions, listCommand } from '../src/cli/commands/list.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import type { Args } from '../src/cli/types.ts';
 
 describe('extractListOptions', () => {
   it('should extract default options', () => {

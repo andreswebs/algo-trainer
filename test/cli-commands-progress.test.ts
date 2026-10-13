@@ -13,7 +13,6 @@ import { deepStrictEqual, ok } from 'node:assert/strict';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Args } from '@std/cli/parse-args';
 import type { ProblemStatusMetadata } from '../src/cli/commands/progress.ts';
 import {
   buildCategoryStats,
@@ -24,6 +23,7 @@ import {
   progressCommand,
 } from '../src/cli/commands/progress.ts';
 import { ExitCode } from '../src/cli/exit-codes.ts';
+import type { Args } from '../src/cli/types.ts';
 import { configManager } from '../src/config/manager.ts';
 import { initWorkspace } from '../src/core/mod.ts';
 
